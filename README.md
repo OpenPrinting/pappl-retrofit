@@ -50,7 +50,7 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
 - To be able to get best printing results from any client platform the
   PPD options are mapped to standard job IPP attributes, not only
   paper sizes, types, trays, duplex, but especially "print-color-mode"
-  (color/monochrome), "print-quality" (draft/normal/high", and
+  (color/monochrome), "print-quality" (draft/normal/high), and
   "print-content-optimize" (auto/photo/graphics/text/text&graphics)
   are auto-selecting the best possible PPS option settings, and that
   for ~10000 PPD files without any manually created database of option
