@@ -197,8 +197,9 @@ to get a feeling how to create a Printer Application in your desired configurati
 ## Setting up
 
 If you have your Printer Application, start it as a server
-
+```
 sudo test-printer-app server &
+```
 
 Enter the web interface
 ```
@@ -210,11 +211,9 @@ media and the option defaults.
 
 Then print PDF, PostScript, JPEG, Apple Raster, or PWG Raster files
 with
-
 ```
 test-printer-app FILE
 ```
-
 or print with CUPS, CUPS (and also cups-browsed) discover and treat
 the printers set up with this Printer Application as driverless IPP
 printers (IPP Everywhere and AirPrint).
@@ -262,7 +261,7 @@ test-printer-app --help
 ```
 for more options.
 
-Use the "--debug" argument for verbose logging in your terminal window.
+Use the `--debug` argument for verbose logging in your terminal window.
 
 
 ## EXAMPLE PRINTER APPLICATION
