@@ -2,11 +2,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% If you can read this, your printer is not a PostScript printer.        %%%%
 %%%%                                                                        %%%%
-%%%% Do not set it up with the PostScript Printer Application.              %%%%
+%%%% Do not set it up with this Printer Application/in PostScript mode.     %%%%
 %%%%                                                                        %%%%
-%%%% If the PostScript Printer Application has set it up automatically,     %%%%
+%%%% If your Printer Application has set up your printer automatically,     %%%%
 %%%% this is a bug. Report it here:                                         %%%%
-%%%%    https://github.com/OpenPrinting/ps-printer-app/issues               %%%%
+%%%%    https://github.com/OpenPrinting/pappl-retrofit/issues               %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%BoundingBox: 0 0 612 792
 %%Pages: 1
@@ -21,7 +21,7 @@
 %%BeginProlog
 %%BeginResource procset testprint 2.3 0
 %
-% Test Page for the PostScript Printer Application
+% Test Page of the OpenPrinting CUPS Printer Driver Retrofit Library
 % (derived from the PostScript Test Page for CUPS)
 %
 % Copyright (c) 2020 by Till Kamppeter
@@ -557,12 +557,12 @@ gsave
   bigFont setfont			% Font
   (Printer Test Page) CENTER		% Show text centered
 
-  % Draw PostScript Printer Application text...
+  % Draw bottom message text...
   pageWidth 36 mul			% Center of page
   pageHeight 14 mul			% Bottom of page
   moveto				% Position text
   mediumBoldFont setfont		% Font
-  (Printed with the OpenPrinting PostScript Printer Application) CENTER
+  (OpenPrinting (http://www.openprinting.org/)) CENTER
 
   % Draw the copyright notice at the bottom...
   pageWidth 4 mul			% Left side of page
