@@ -23,6 +23,7 @@ config.sub
 config.status
 configure
 depcomp
+install-sh
 libtool
 ltmain.sh
 Makefile.in
@@ -38,3 +39,4 @@ test
 ABOUT-NLS
 tmp
 m4
+test-printer-app
