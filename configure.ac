@@ -17,7 +17,7 @@ AC_INIT([pappl-retrofit],[pappl_retrofit_version])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.11 gnu dist-xz dist-bzip2 subdir-objects])
 AM_SILENT_RULES([yes])
-AC_LANG([C++])
+AC_LANG([C])
 # Workaround to fix Snap build
 m4_pattern_allow([AC_DEFINE])
 AC_CONFIG_HEADERS([config.h])
@@ -50,11 +50,11 @@ AH_BOTTOM([
 # Find required base packages
 # ===========================
 AC_PROG_CC
-AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX([11],[noext],[mandatory])
+#AC_PROG_CXX
+#AX_CXX_COMPILE_STDCXX([11],[noext],[mandatory])
 AM_PROG_CC_C_O
 AM_ICONV
-AC_PROG_CPP
+#AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
