@@ -6,6 +6,8 @@
 #*
 .#*
 *~
+*.rej
+*.orig
 *.pc
 *.tar.*
 core
