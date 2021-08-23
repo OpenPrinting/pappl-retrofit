@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+                                                                       
+Name: libpappl-retrofit
+Description: Library for retro-fitting CUPS drivers into Printer Applications
+Version: @VERSION@
+
+Libs: -L${libdir} -lpappl-retrofit
+Libs.private: @CUPS_LIBS@ @CUPSFILTERS_LIBS@ @PPD_LIBS@ @PAPPL_LIBS@
+Cflags: -I${includedir}/pappl-retrofit
