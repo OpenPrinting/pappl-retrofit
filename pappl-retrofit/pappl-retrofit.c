@@ -243,7 +243,7 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
   if (best >= 0)
     ret = drivers[best].name;
   // None of the PPDs matches? Assign the generic PPD if we have one
-  else if (strcasecmp(drivers[0].name, "generic"))
+  else if (!strcasecmp(drivers[0].name, "generic"))
     ret = "generic";
   else
     ret = NULL;
