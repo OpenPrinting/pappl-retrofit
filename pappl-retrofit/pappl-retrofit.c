@@ -408,6 +408,22 @@ pr_supports_pcl5(const char *device_id)
 
 
 //
+// 'pr_supports_pcl5c()' - Check by the device ID whether a printer
+//                         supports PCL 5c (color)
+//
+
+bool
+pr_supports_pcl5c(const char *device_id)
+{
+  const char *regexp = "^(PCL[ -]?5[ -]?c)$";
+  return(pr_regex_match_devid_field(device_id, "CMD",
+				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
+	 pr_regex_match_devid_field(device_id, "COMMAND SET",
+				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
+}
+
+
+//
 // 'pr_supports_pclxl()' - Check by the device ID whether a printer
 //                         supports PCL-XL
 //

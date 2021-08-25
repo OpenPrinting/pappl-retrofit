@@ -268,6 +268,7 @@ extern int  pr_regex_match_devid_field(const char *device_id,
 extern bool pr_supports_postscript(const char *device_id);
 extern bool pr_supports_pdf(const char *device_id);
 extern bool pr_supports_pcl5(const char *device_id);
+extern bool pr_supports_pcl5c(const char *device_id);
 extern bool pr_supports_pclxl(const char *device_id);
 extern const char *pr_autoadd(const char *device_info, const char *device_uri,
 			      const char *device_id, void *data);
