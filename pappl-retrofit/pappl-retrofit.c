@@ -3790,8 +3790,10 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  // Sort the new entry into the list via the extension
 	  for (k = i;
 	       k > 0 &&
-	       strcmp((char *)(drivers[k - 1].extension),
-		      (char *)(drivers[k].extension)) > 0;
+		 ((strncmp(drivers[k - 1].extension, "generic  ", 9) &&
+		   !strncmp(drivers[k].extension, "generic  ", 9)) ||
+		  strcmp((char *)(drivers[k - 1].extension),
+			 (char *)(drivers[k].extension)) > 0);
 	       k --)
 	  {
 	    swap = drivers[k - 1];
