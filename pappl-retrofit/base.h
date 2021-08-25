@@ -86,10 +86,19 @@ typedef struct pr_backend_s
 enum pr_coptions_e                           // Component option bits
 {
   PR_COPTIONS_NONE = 0x0000,                 // No options
-  PR_COPTIONS_QUERY_PS_DEFAULTS = 0x0001,    // Support query code in PPDs
-  PR_COPTIONS_WEB_ADD_PPDS = 0x0002,         // Support user adding PPDs
-  PR_COPTIONS_CUPS_BACKENDS = 0x0004,        // Also use CUPS backends
-  PR_COPTIONS_NO_PAPPL_BACKENDS = 0x0008     // Only use CUPS backends
+  PR_COPTIONS_USE_ONLY_MATCHING_NICKNAMES = 0x0001, // Skip PPD files where the
+                                             // *NickName does not match the
+                                             // regular expression
+                                             // driver_display_regex
+  PR_COPTIONS_PPD_NO_EXTRA_PRODUCTS = 0x0002,// Do not generate extra PPD list
+                                             // entries by the *Product lines
+                                             // in the PPD files
+  PR_COPTIONS_NO_GENERIC_DRIVER = 0x0004,    // Do not create a "generic"
+                                             // fallback driver entry
+  PR_COPTIONS_QUERY_PS_DEFAULTS = 0x0008,    // Support query code in PPDs
+  PR_COPTIONS_WEB_ADD_PPDS = 0x0010,         // Support user adding PPDs
+  PR_COPTIONS_CUPS_BACKENDS = 0x0020,        // Also use CUPS backends
+  PR_COPTIONS_NO_PAPPL_BACKENDS = 0x0040     // Only use CUPS backends
 };
 typedef unsigned int pr_coptions_t;          // Bitfield for component options
 
@@ -137,6 +146,70 @@ typedef struct pr_printer_app_config_s
   // For pr_testpage() this is simply the file name of the only one test
   // page without directory
   void              *testpage_data;
+
+  // Regular expression to select the part of the PPD's *NickName
+  // which is not the printer make/model name any more. This part
+  // gives extra info about PostScript versions, drivers, ... If a
+  // Printer Application includes more than one driver option for a
+  // printer, this extra information is valuable and should be visible
+  // in the model/driver list entries, so that the PPDs for different
+  // drivers on the same model are not skipped as duplicate and the
+  // driver name can also be used for both manual and automatic driver
+  // selection.
+  //
+  // Thee regular expression must match the whole extra information,
+  // beginning from the character right after the model name. If it
+  // contains parantheses, the substring in the first matching pair of
+  // parantheses will be considered the driver name and displayed
+  // after the model name in the driver list entry. Otherwise the
+  // whole extra information string, up to the end of the *Nickname
+  // will be displayed.
+  //
+  // If the regular expression is " +Foomatic/(.+)$", the *Nickname
+  //
+  //   "Brother DCP-7020 Foomatic/hl1250 (recommended)"
+  //
+  // will appear in the model/driver list as
+  //
+  //   "Brother DCP-7020, hl1250 (recommended)"
+  //
+  // Use NULL for not using this facility
+  const char        *driver_display_regex;
+
+  // The function to automatically find the best PPD for a printer
+  // given by its device ID, pr_best_matching_ppd(), to be used by the
+  // auto-add callbacks, uses these regular expressions to prioritize
+  // between PPD files if they are for the same printer model and the
+  // same UI language. A matching PPD is prioritized against a
+  // non-matching and between two matching the one where the earlier
+  // regular expression in the list matches.
+  //
+  // The string to match the regular expression against is NOT the
+  // human-readable *NickName, but the driver name, which is the
+  // driver entry of the PPD list, converted into IPP attribute style.
+  //
+  // If the regular expression list is (note especially how Foomatic
+  // driver names with numbers translate into PAPPL driver name
+  // components)
+  //
+  //    "-recommended-"
+  //    "-postscript-"
+  //    "-pxlcolor-"
+  //    "-pxlmono-"
+  //    "-ljet-4-d-"
+  //    "-ljet-4-"
+  //
+  // and the PPDs for our printer Acme LaserStar 100 got the following
+  // driver names
+  //
+  //   "acme--laserstar-100--ljet4d-recommended-en"
+  //   "acme--laserstar-100--pxlmono-en"
+  //   "acme--laserstar-100--laserstar-en"
+  //
+  // The first entry has highest priority, the third entry lowest.
+  //
+  // Use NULL for not using this facility
+  cups_array_t      *driver_selection_regex_list;
 } pr_printer_app_config_t;
 
 // Global variables for this Printer Application.

@@ -57,6 +57,8 @@ pr_retrofit_printer_app(pr_printer_app_config_t *printer_app_config,
   // Clean up
   cupsArrayDelete(global_data.config->spooling_conversions);
   cupsArrayDelete(global_data.config->stream_formats);
+  if (global_data.config->driver_selection_regex_list)
+    cupsArrayDelete(global_data.config->driver_selection_regex_list);
   
   return (ret);
 }
@@ -85,7 +87,7 @@ const char *			// O - Driver name or `NULL` for none
 pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 		     pr_printer_app_global_data_t *global_data)
 {
-  int           i;
+  int           i, j;
   const char	*ret = NULL;		// Return value
   int		num_did;		// Number of device ID key/value pairs
   cups_option_t	*did = NULL;		// Device ID key/value pairs
@@ -95,6 +97,9 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
   char          buf[1024];
   int           score, best_score = 0,
                 best = -1;
+  cups_array_t  *compiled_re_list = NULL;
+  regex_t       *re;
+  const char    *regex;
   int           num_drivers = global_data->num_drivers;
   pappl_pr_driver_t *drivers = global_data->drivers;
 
@@ -117,9 +122,39 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
   {
     // Normalize device ID to format of driver name and match
     ieee1284NormalizeMakeAndModel(device_id, NULL,
-				  IEEE1284_NORMALIZE_IPP,
+				  IEEE1284_NORMALIZE_IPP, NULL,
 				  buf, sizeof(buf),
-				  NULL, NULL);
+				  NULL, NULL, NULL);
+
+    // Compile regular expressions to prioritize drivers
+    if (global_data->config->driver_selection_regex_list)
+    {
+      compiled_re_list = cupsArrayNew(NULL, NULL);
+      for (regex = (const char *)
+	     cupsArrayFirst(global_data->config->driver_selection_regex_list);
+	   regex;
+	   regex = (const char *)
+	     cupsArrayNext(global_data->config->driver_selection_regex_list))
+      {
+	if ((re = (regex_t *)calloc(1, sizeof(regex_t))) != NULL)
+        {
+	  if (regcomp(re, regex, REG_ICASE | REG_EXTENDED | REG_NOSUB))
+	  {
+	    regfree(re);
+	    papplLog(global_data->system, PAPPL_LOGLEVEL_ERROR,
+		     "Invalid regular expression: %s", regex);
+	    continue;
+	  }
+	}
+	else
+	{
+	  papplLog(global_data->system, PAPPL_LOGLEVEL_ERROR,
+		   "Out of memory, cannot add more regular expressions to driver priorization list, first not included one is: %s", regex);
+	  break;
+	}
+	cupsArrayAdd(compiled_re_list, re);
+      }
+    }
 
     // Match make and model with device ID of driver list entry
     for (i = 1; i < num_drivers; i ++)
@@ -139,14 +174,14 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 	    strcasecmp(mfg, dmfg) == 0 &&
 	    strcasecmp(mdl, dmdl) == 0)
 	  // Match
-	  score += 2;
+	  score += 2000;
 	cupsFreeOptions(num_ddid, ddid);
       }
 
       // Match normalized device ID with driver name
       if (score == 0 && strncmp(buf, drivers[i].name, strlen(buf)) == 0)
 	// Match
-	score += 1;
+	score += 1000;
 
       // PPD must at least match make and model to get considered
       if (score == 0)
@@ -155,17 +190,37 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
       // User-added? Prioritize, as if the user adds something, he wants
       // to use it
       if (strstr(drivers[i].name, "-user-added"))
-	score += 32;
+	score += 32000;
 
       // PPD matches user's/system's language?
       // To be added when PAPPL supports internationalization (TODO)
-      // score + 8 for 2-char language
-      // score + 16 for 5-char language/country
+      // score + 8000 for 2-char language
+      // score + 16000 for 5-char language/country
 
       // PPD is English language version?
-      if (!strcmp(drivers[i].name + strlen(drivers[i].name) - 4, "--en") ||
-	  !strncmp(drivers[i].name + strlen(drivers[i].name) - 7, "--en-", 5))
-	score += 4;
+      if (!strcmp(drivers[i].name + strlen(drivers[i].name) - 3, "-en") ||
+	  !strncmp(drivers[i].name + strlen(drivers[i].name) - 6, "-en-", 4))
+	score += 4000;
+
+      // Match the regular expressions on the driver name
+      if (compiled_re_list)
+      {
+	for (j = 0, re = (regex_t *)cupsArrayFirst(compiled_re_list);
+	     re; j ++, re = (regex_t *)cupsArrayNext(compiled_re_list))
+	{
+	  if (!regexec(re, drivers[i].name, 0, NULL, 0))
+	  {
+	    // Regular expression matches
+	    score += (500 - j);
+	    papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
+		     "Driver %s matched driver priority regular expression %d: \"%s\"",
+		     drivers[i].name, j + 1,
+		     cupsArrayIndex(
+		       global_data->config->driver_selection_regex_list, j));
+	    break;
+	  }
+	}
+      }
 
       // Better match than the previous one?
       if (score > best_score)
@@ -174,13 +229,20 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 	best = i;
       }
     }
+
+    if (compiled_re_list)
+    {
+      for (re = (regex_t *)cupsArrayFirst(compiled_re_list);
+	   re; re = (regex_t *)cupsArrayNext(compiled_re_list))
+	regfree(re);
+      cupsArrayDelete(compiled_re_list);
+    }
   }
 
   // Found at least one match? Take the best one
   if (best >= 0)
     ret = drivers[best].name;
-  // PostScript printer but none of the PPDs match? Assign the generic PPD
-  // if we have one
+  // None of the PPDs matches? Assign the generic PPD if we have one
   else if (strcasecmp(drivers[0].name, "generic"))
     ret = "generic";
   else
@@ -3479,11 +3541,13 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 {
   int              i, j, k;
   char             *generic_ppd, *mfg_mdl, *dev_id;
+  char             *end_model, *drv_name;
   pr_ppd_path_t    *ppd_path;
   int              num_options = 0;
   cups_option_t    *options = NULL;
   cups_array_t     *ppds;
   ppd_info_t       *ppd;
+  char             driver_info[1024];
   char             buf1[1024], buf2[1024];
   int              pre_normalized;
   pappl_pr_driver_t swap;
@@ -3492,6 +3556,7 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
   pappl_pr_driver_t *drivers = global_data->drivers;
   cups_array_t     *ppd_paths = global_data->ppd_paths,
                    *ppd_collections = global_data->ppd_collections;
+  regex_t          *driver_re = NULL;
 
 
   //
@@ -3512,28 +3577,31 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
     num_drivers = cupsArrayCount(ppds);
     papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	     "Found %d PPD files.", num_drivers);
-    // Search for a generic PPD to use as generic PostScript driver
     generic_ppd = NULL;
-    for (ppd = (ppd_info_t *)cupsArrayFirst(ppds);
-	 ppd;
-	 ppd = (ppd_info_t *)cupsArrayNext(ppds))
+    if (!(global_data->config->components & PR_COPTIONS_NO_GENERIC_DRIVER))
     {
-      if (!strcasecmp(ppd->record.make, "Generic") ||
-	  !strncasecmp(ppd->record.make_and_model, "Generic", 7) ||
-	  !strncasecmp(ppd->record.products[0], "Generic", 7))
+      // Search for a generic PPD to use as generic PostScript driver
+      for (ppd = (ppd_info_t *)cupsArrayFirst(ppds);
+	   ppd;
+	   ppd = (ppd_info_t *)cupsArrayNext(ppds))
       {
-	generic_ppd = ppd->record.name;
-	break;
+	if (!strcasecmp(ppd->record.make, "Generic") ||
+	    !strncasecmp(ppd->record.make_and_model, "Generic", 7) ||
+	    !strncasecmp(ppd->record.products[0], "Generic", 7))
+	{
+	  generic_ppd = ppd->record.name;
+	  break;
+	}
       }
+      if (generic_ppd)
+	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		 "Found generic PPD file: %s", generic_ppd);
+      else
+	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		 "No generic PPD file found, "
+		 "Printer Application will only support printers "
+		 "explicitly supported by the PPD files");
     }
-    if (generic_ppd)
-      papplLog(system, PAPPL_LOGLEVEL_DEBUG,
-	       "Found generic PPD file: %s", generic_ppd);
-    else
-      papplLog(system, PAPPL_LOGLEVEL_DEBUG,
-	       "No generic PPD file found, "
-	       "Printer Application will only support printers "
-	       "explicitly supported by the PPD files");
     // Create driver indices
     if (drivers)
       free(drivers);
@@ -3546,8 +3614,8 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
     if (generic_ppd)
     {
       drivers[i].name = strdup("generic");
-      drivers[i].description = strdup("Generic PostScript Printer");
-      drivers[i].device_id = strdup("CMD:POSTSCRIPT;");
+      drivers[i].description = strdup("Generic Printer");
+      drivers[i].device_id = strdup("");
       drivers[i].extension = strdup(" generic");
       i ++;
       ppd_path = (pr_ppd_path_t *)calloc(1, sizeof(pr_ppd_path_t));
@@ -3555,18 +3623,77 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
       ppd_path->ppd_path = strdup(generic_ppd);
       cupsArrayAdd(ppd_paths, ppd_path);
     }
+    if (global_data->config->driver_display_regex)
+    {
+      // Compile the regular expression for separating the driver info
+      // from the model name
+      if ((driver_re = (regex_t *)calloc(1, sizeof(regex_t))) != NULL)
+      {
+	if (regcomp(driver_re, global_data->config->driver_display_regex,
+		    REG_ICASE | REG_EXTENDED))
+	{
+	  regfree(driver_re);
+	  driver_re = NULL;
+	  papplLog(system, PAPPL_LOGLEVEL_ERROR,
+		   "Invalid regular expression: %s",
+		   global_data->config->driver_display_regex);
+	}
+      }
+    }
     for (ppd = (ppd_info_t *)cupsArrayFirst(ppds);
 	 ppd;
 	 ppd = (ppd_info_t *)cupsArrayNext(ppds))
     {
       if (!generic_ppd || strcmp(ppd->record.name, generic_ppd))
       {
+	// If we have a regular expression to extract the extra info
+	// (driver info) from the *NickName entries of the PPDs (for
+	// example if the Printer Application contains more than one
+	// driver for some printers) we separate this extra info (at
+	// least the driver name in it) to combine it also with extra
+	// make/model names from *Product entries.
+	driver_info[0] = '\0';
+	if (driver_re)
+        {
+	  // Get driver info from *NickName entry
+	  ieee1284NormalizeMakeAndModel(ppd->record.make_and_model,
+					NULL,
+					IEEE1284_NORMALIZE_HUMAN,
+				        driver_re,
+					buf2, sizeof(buf2),
+					NULL, &end_model, &drv_name);
+	  if (end_model)
+	  {
+	    ppd->record.make_and_model[end_model - buf2 - strlen(buf2) +
+				       strlen(ppd->record.make_and_model)] =
+	      '\0';
+	    if (drv_name)
+	    {
+	      if (drv_name[0])
+		snprintf(driver_info, sizeof(driver_info), ", %s", drv_name);
+	    }
+	    else
+	    {
+	      if (end_model[0])
+		snprintf(driver_info, sizeof(driver_info), ", %s", end_model);
+	    }
+	  }
+	  else if (global_data->config->components &
+		   PR_COPTIONS_USE_ONLY_MATCHING_NICKNAMES)
+	  {
+	    free(ppd);
+	    continue;
+	  }
+	}
 	// Note: The last entry in the product list is the ModelName of the
 	// PPD not an actual Product entry. Therefore we ignore it
 	// (Hidden feature of ppdCollectionListPPDs())
-        for (j = -1; j < PPD_MAX_PROD - 1; j ++)
+        for (j = -1;
+	     j < (global_data->config->components &
+		  PR_COPTIONS_PPD_NO_EXTRA_PRODUCTS ? 0 : PPD_MAX_PROD - 1);
+	     j ++)
 	{
-	  // End of product list;
+	  // End of product list
           if (j >= 0 &&
 	      (!ppd->record.products[j][0] || !ppd->record.products[j + 1][0]))
             break;
@@ -3598,8 +3725,8 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	      mfg_mdl = ieee1284NormalizeMakeAndModel(ppd->record.device_id,
 						      NULL,
 						      IEEE1284_NORMALIZE_HUMAN,
-						      buf2, sizeof(buf2),
-						      NULL, NULL);
+						      NULL, buf2, sizeof(buf2),
+						      NULL, NULL, NULL);
 	      pre_normalized = 1;
 	    }
 	    else if (ppd->record.products[0][0])
@@ -3615,8 +3742,8 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  ppd_path = (pr_ppd_path_t *)calloc(1, sizeof(pr_ppd_path_t));
 	  // Base make/model/language string to generate the needed index
 	  // strings
-	  snprintf(buf1, sizeof(buf1) - 1, "%s%s (%s)",
-		   mfg_mdl,
+	  snprintf(buf1, sizeof(buf1) - 1, "%s%s%s (%s)",
+		   mfg_mdl, driver_info,
 		   (!strncmp(ppd->record.name, global_data->user_ppd_dir,
 			     strlen(global_data->user_ppd_dir)) ?
 		    " - USER-ADDED" : ""),
@@ -3625,8 +3752,8 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  drivers[i].name =
 	    strdup(ieee1284NormalizeMakeAndModel(buf1, ppd->record.make,
 						 IEEE1284_NORMALIZE_IPP,
-						 buf2, sizeof(buf2),
-						 NULL, NULL));
+						 NULL, buf2, sizeof(buf2),
+						 NULL, NULL, NULL));
 	  ppd_path->driver_name = strdup(drivers[i].name);
 	  // Path to grab PPD from repositories
 	  ppd_path->ppd_path = strdup(ppd->record.name);
@@ -3638,8 +3765,8 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	    drivers[i].description =
 	      strdup(ieee1284NormalizeMakeAndModel(buf1, ppd->record.make,
 						   IEEE1284_NORMALIZE_HUMAN,
-						   buf2, sizeof(buf2),
-						   NULL, NULL));
+						   NULL, buf2, sizeof(buf2),
+						   NULL, NULL, NULL));
 	  // We only register device IDs actually found in the PPD files,
 	  // PPDs without explicit device ID get matched by the
 	  // ieee1284NormalizeMakeAndModel() function
@@ -3652,8 +3779,8 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 					IEEE1284_NORMALIZE_LOWERCASE |
 					IEEE1284_NORMALIZE_SEPARATOR_SPACE |
 					IEEE1284_NORMALIZE_PAD_NUMBERS,
-					buf2, sizeof(buf2),
-					NULL, NULL));
+					NULL, buf2, sizeof(buf2),
+					NULL, NULL, NULL));
 	  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		   "File: %s; Printer (%d): %s; --> Entry %d: Driver %s; "
 		   "Description: %s; Device ID: %s; Sorting index: %s",
@@ -3698,6 +3825,11 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
       }
       free(ppd);
     }
+
+    // Free the compiled regular expression
+    if (driver_re)
+      regfree(driver_re);
+
     cupsArrayDelete(ppds);
 
     // Final adjustment of allocated memory

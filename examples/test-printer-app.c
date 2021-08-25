@@ -81,7 +81,8 @@ main(int  argc,				// I - Number of command-line arguments
      char *argv[])			// I - Command-line arguments
 {
   cups_array_t *spooling_conversions,
-               *stream_formats;
+               *stream_formats,
+               *driver_selection_regex_list;
 
   // Array of spooling conversions, most desirables first
   //
@@ -107,29 +108,66 @@ main(int  argc,				// I - Number of command-line arguments
   cupsArrayAdd(stream_formats, &pr_stream_postscript);
   cupsArrayAdd(stream_formats, &pr_stream_pdf);
 
+  // Array of regular expressions for driver priorization
+  driver_selection_regex_list = cupsArrayNew(NULL, NULL);
+  cupsArrayAdd(driver_selection_regex_list, "-recommended-");
+  cupsArrayAdd(driver_selection_regex_list, "-postscript-");
+  cupsArrayAdd(driver_selection_regex_list, "-hl-1250-");
+  cupsArrayAdd(driver_selection_regex_list, "-hl-7-x-0-");
+  cupsArrayAdd(driver_selection_regex_list, "-pxlcolor-");
+  cupsArrayAdd(driver_selection_regex_list, "-pxlmono-");
+  cupsArrayAdd(driver_selection_regex_list, "-ljet-4-d-");
+  cupsArrayAdd(driver_selection_regex_list, "-ljet-4-");
+  cupsArrayAdd(driver_selection_regex_list, "-gutenprint-");
+
   // Configuration record of the Printer Application
   pr_printer_app_config_t printer_app_config =
   {
-    SYSTEM_NAME,
-    SYSTEM_PACKAGE_NAME,
-    SYSTEM_VERSION_STR,
+    SYSTEM_NAME,              // Display name for Printer Application
+    SYSTEM_PACKAGE_NAME,      // Package/executable name
+    SYSTEM_VERSION_STR,       // Version as a string
     {
-      SYSTEM_VERSION_ARR_0,
-      SYSTEM_VERSION_ARR_1,
-      SYSTEM_VERSION_ARR_2,
-      SYSTEM_VERSION_ARR_3
+      SYSTEM_VERSION_ARR_0,   // Version 1st number
+      SYSTEM_VERSION_ARR_1,   //         2nd
+      SYSTEM_VERSION_ARR_2,   //         3rd
+      SYSTEM_VERSION_ARR_3    //         4th
     },
-    SYSTEM_WEB_IF_FOOTER,
-    PR_COPTIONS_QUERY_PS_DEFAULTS | PR_COPTIONS_WEB_ADD_PPDS |
-      PR_COPTIONS_CUPS_BACKENDS,
-    test_autoadd,
-    pr_identify,
-    pr_testpage,
-    spooling_conversions,
-    stream_formats,
+    SYSTEM_WEB_IF_FOOTER,     // Foother for web interface (in HTML)
+    PR_COPTIONS_QUERY_PS_DEFAULTS | // pappl-retrofit special features to be
+    PR_COPTIONS_WEB_ADD_PPDS |      // used
+    PR_COPTIONS_CUPS_BACKENDS |
+    PR_COPTIONS_NO_GENERIC_DRIVER,
+    test_autoadd,             // Auto-add (driver assignment) callback
+    pr_identify,              // Printer identify callback
+    pr_testpage,              // Test page print callback
+    spooling_conversions,     // Array of data format conversion rules for
+                              // printing in spooling mode
+    stream_formats,           // Arrray for stream formats to be generated
+                              // when printing in streaming mode
     "driverless, driverless-fax, dnssd, ipp, ipps, http, https",
+                              // CUPS backends to be ignored
     "", //"hp, gutenprint53+usb",
-    TESTPAGE
+                              // CUPS backends to be used exclusively
+                              // If empty all but the ignored backends are used
+    TESTPAGE,                 // Test page (printable file), used by the
+                              // standard test print callback pr_testpage()
+    " +Foomatic/(.+)$| +- +CUPS\\+(Gutenprint)",
+                              // Regular expression to separate the
+                              // extra information after make/model in
+                              // the PPD's *NickName. Also extracts a
+                              // contained driver name (by using
+                              // parentheses)
+    driver_selection_regex_list
+                              // Regular expression for the driver
+                              // auto-selection to prioritize a driver
+                              // when there is more than one for a
+                              // given printer. If a regular
+                              // expression matches on the driver
+                              // name, the driver gets priority. If
+                              // there is more than one matching
+                              // driver, the driver name on which the
+                              // earlier regular expression in the
+                              // list matches, gets the priority.
   };
 
   return (pr_retrofit_printer_app(&printer_app_config, argc, argv));

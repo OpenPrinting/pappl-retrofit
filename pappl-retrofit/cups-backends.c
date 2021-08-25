@@ -132,15 +132,15 @@ pr_cups_compare_devices(pr_backend_device_t *d0,// I - First device
 						IEEE1284_NORMALIZE_LOWERCASE |
 						IEEE1284_NORMALIZE_SEPARATOR_SPACE |
 						IEEE1284_NORMALIZE_PAD_NUMBERS,
-						buf0, sizeof(buf0),
-						NULL, NULL),
+						NULL, buf0, sizeof(buf0),
+						NULL, NULL, NULL),
 		  ieee1284NormalizeMakeAndModel(d1->device_info, NULL,
 						IEEE1284_NORMALIZE_COMPARE |
 						IEEE1284_NORMALIZE_LOWERCASE |
 						IEEE1284_NORMALIZE_SEPARATOR_SPACE |
 						IEEE1284_NORMALIZE_PAD_NUMBERS,
-						buf1, sizeof(buf1),
-						NULL, NULL))) != 0)
+						NULL, buf1, sizeof(buf1),
+						NULL, NULL, NULL))) != 0)
     return (diff);
   else if ((diff = strcasecmp(d0->device_class, d1->device_class)) != 0)
     return (diff);
