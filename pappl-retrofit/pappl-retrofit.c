@@ -3760,8 +3760,11 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  // strings
 	  snprintf(buf1, sizeof(buf1) - 1, "%s%s%s (%s)",
 		   mfg_mdl, driver_info,
-		   (!strncmp(ppd->record.name, global_data->user_ppd_dir,
-			     strlen(global_data->user_ppd_dir)) ?
+		   ((global_data->config->components &
+		     PR_COPTIONS_WEB_ADD_PPDS) &&
+		    !strncmp(ppd->record.name, global_data->user_ppd_dir,
+			     strlen(global_data->user_ppd_dir)) &&
+		    ppd->record.name[strlen(global_data->user_ppd_dir)] == '/' ?
 		    " - USER-ADDED" : ""),
 		   ppd->record.languages[0]);
 	  // IPP-compatible string as driver name
