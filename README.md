@@ -108,6 +108,13 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
   PPD for a printer or checking which PDLs (Page Description
   Languages) the printer supports.
 
+- An included test Printer Application allows to easily check whether
+  a CUPS driver works inside a Printer Application. Simply install the
+  driver normally (into the system's conventionally installed CUPS)
+  and the test Printer Application looks for the driver's files in the
+  usual CUPS directories. It also serves as example to create your own
+  driver-retro-fitting Printer Application.
+
 
 ### Remark
 
@@ -162,6 +169,16 @@ Application. Out of a fully constrained Snap you cannot simply access
 the system's files and so this does not work (otherwise the CUPS Snap
 would support claasic printer drivers).
 
+Please have a look at the [PostScript Printer
+Application](https://github.com/OpenPrinting/ps-printer-app) and the
+[Ghostscript Printer
+Application](https://github.com/OpenPrinting/ghostscript-printer-app)
+for examples on how Snaps of Printer Applications are created. Both of
+these Printer Applications use this library, one is retro-fitting
+PostScript printer PPD files, the other
+[Ghostscript](http://www.ghostscript.com/) drivers with
+[Foomatic](https://github.com/OpenPrinting/foomatic-db) PPD files.
+
 
 ## Installation
 
@@ -193,6 +210,7 @@ and
 pappl-retrofit/base.h
 ```
 to get a feeling how to create a Printer Application in your desired configuration.
+
 
 ## Setting up
 
@@ -264,16 +282,52 @@ for more options.
 Use the `--debug` argument for verbose logging in your terminal window.
 
 
-## EXAMPLE PRINTER APPLICATION
+## EXAMPLE/TEST PRINTER APPLICATION
 
-The example printer application simply points to the directories of the
-CUPS installed conventionally (not the CUPS Snap) on your system. So it
-makes (nearly) all of your installed printer drivers available in a Printer
-Application.
+The example/test printer application simply points to the directories
+of the CUPS installed conventionally (not the CUPS Snap) on your
+system. So it makes (nearly) all of your installed printer drivers
+available in a Printer Application. The only drivers currently not
+getting available are the ones where the PPDs get auto-generated from
+`*.drv` files in the `/usr/share/cups/drv/` directory. Support for
+those will get added later. For the time being pre-build the PPD files
+from `*.drv` files using the `ppdc` utility of CUPS 2.3.x or older.
 
-It searches for PPDs, PPD archives, and PPD-generating executables on
+So you can use this Printer Application to test the driver which you
+want to retro-fit, before you start to configure your Printer
+Application executable and package everything into a Snap. This
+library and the function of the
+[cups-filters](https://github.com/OpenPrinting/cups-filters) used by
+it try to resemble the CUPS environment for the filters and backends
+as well as possible: Environment variables, command lines, even side
+and back channels. But it is always better to test whether the driver
+behaves correctly, whether the PPD options are represented well on the
+"Device Settings", "Media", and "Printing Defaults" pages of the web
+interface, and whether the printer reacts correctly to IPP attributes
+supplied with the job, especially `print-color-mode`, `print-quality`,
+and `print-content-optimize`.
+
+If anything behaves wrongly and you cannot get it working by modifying
+the configuration of your Printer Application, your callbacks, regular
+expressions, conversion rule selections, ... please report an [issue
+on
+libpappl-retrofit](https://github.com/OpenPrinting/pappl-retrofit/issues)
+(we move it to cups-filters if it is actually there).
+
+Please also have a look at the [PostScript Printer
+Application](https://github.com/OpenPrinting/ps-printer-app) and the
+[Ghostscript Printer
+Application](https://github.com/OpenPrinting/ghostscript-printer-app)
+for examples of Printer Applications already created with
+libpappl-retrofit. One is retro-fitting PostScript printer PPD files,
+the other [Ghostscript](http://www.ghostscript.com/) drivers with
+[Foomatic](https://github.com/OpenPrinting/foomatic-db) PPD files.
+
+The test Printer Application searches for PPDs, PPD archives, and
+PPD-generating executables on
 ```
 /usr/share/ppd/
+/usr/share/cups/model/
 /usr/lib/cups/driver/
 /var/lib/test-printer-app/ppd/
 ```
@@ -286,7 +340,7 @@ It uses the following directories for its files:
 /usr/share/test-printer-app
 /usr/lib/test-printer-app
 ```
-The last one is linked to `/usr/lib/cups` so that the Printer Application
+The last directory is linked to `/usr/lib/cups` so that the Printer Application
 sees the filters and backends of CUPS.
 
 The test page
