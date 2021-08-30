@@ -215,7 +215,7 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 	    papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
 		     "Driver %s matched driver priority regular expression %d: \"%s\"",
 		     drivers[i].name, j + 1,
-		     cupsArrayIndex(
+		     (char *)cupsArrayIndex(
 		       global_data->config->driver_selection_regex_list, j));
 	    break;
 	  }
@@ -2017,8 +2017,6 @@ pr_driver_setup(
        i ++, pwg_size ++)
     if (!(update && ppdInstallableConflict(ppd, "PageSize", pwg_size->map.ppd)))
     {
-      driver_data->media[j] =
-	strdup(pwg_size->map.pwg);
       if (!strchr(pwg_size->map.ppd, '.') &&
 	  (j == 0 ||
 	   (!update && choice && !strcmp(pwg_size->map.ppd, choice->choice)) ||
@@ -2060,6 +2058,10 @@ pr_driver_setup(
       // fitting size, including variants selected for the job.
       if (strchr(pwg_size->map.ppd, '.'))
 	continue;
+
+      // Add size to list
+      driver_data->media[j] =
+	strdup(pwg_size->map.pwg);
       j ++;
     }
 
@@ -2096,11 +2098,11 @@ pr_driver_setup(
 		 &(driver_data->media_default));
     // We use the general margins of the driver data here and not the
     // individual, page-size-specific margins of the PPD, as PAPPL
-    // does not allow registering individual per-page-size with the
-    // available page sizes. To not have the Printer Application
-    // behave different from being started until the first page size
-    // change we change to the general margins also for the default
-    // media entry.
+    // does not allow registering individual margins per-page-size
+    // with the available page sizes. To not have the Printer
+    // Application behave different from being started until the first
+    // page size change we change to the general margins also for the
+    // default media entry.
     driver_data->media_default.left_margin = driver_data->left_right;
     driver_data->media_default.right_margin = driver_data->left_right;
     driver_data->media_default.top_margin = driver_data->bottom_top;
@@ -2166,6 +2168,46 @@ pr_driver_setup(
 		    sizeof(driver_data->media_ready[j].source) - 1);
 	  }
 	}
+
+	// Check margins of the medis-ready entry as the PPD file can have
+	// been changed and so data loaded from the state file can have wrong
+	// margins
+	if (!(driver_data->borderless &&
+	      driver_data->media_ready[j].left_margin == 0 &&
+	      driver_data->media_ready[j].right_margin == 0 &&
+	      driver_data->media_ready[j].top_margin == 0 &&
+	      driver_data->media_ready[j].bottom_margin == 0))
+	{
+	  driver_data->media_ready[j].left_margin = driver_data->left_right;
+	  driver_data->media_ready[j].right_margin = driver_data->left_right;
+	  driver_data->media_ready[j].top_margin = driver_data->bottom_top;
+	  driver_data->media_ready[j].bottom_margin =driver_data->bottom_top;
+	}
+
+	// Check media size (name?) of the medis-ready entry as the
+	// PPD file can have been changed and so data loaded from the
+	// state file can have a media size not available in this PPD
+	for (k = 0; k < driver_data->num_media; k ++)
+	  if (!strcasecmp(driver_data->media_ready[j].size_name,
+			  driver_data->media[k]))
+	    break;
+	if (k == driver_data->num_media)
+	  strncpy(driver_data->media_ready[j].size_name,
+		  driver_data->media_default.size_name,
+		  sizeof(driver_data->media_ready[j].size_name));
+
+	// Check media type of the medis-ready entry as the
+	// PPD file can have been changed and so data loaded from the
+	// state file can have a media size not available in this PPD
+	for (k = 0; k < driver_data->num_type; k ++)
+	  if (!strcasecmp(driver_data->media_ready[j].type,
+			  driver_data->type[k]))
+	    break;
+	if (k == driver_data->num_type)
+	  strncpy(driver_data->media_ready[j].type,
+		  driver_data->media_default.type,
+		  sizeof(driver_data->media_ready[j].type));
+
 	// Go on with next media source
 	j ++;
       }
