@@ -2208,6 +2208,13 @@ pr_driver_setup(
 		  driver_data->media_default.type,
 		  sizeof(driver_data->media_ready[j].type));
 
+	// Did we now create the media-ready emntry for the media source
+	// which is the default? Then copy its content into the default media
+	if (!strcasecmp(driver_data->media_ready[j].source,
+			driver_data->media_default.source))
+	  memcpy(&(driver_data->media_default), &(driver_data->media_ready[j]),
+		 sizeof(pappl_media_col_t));
+
 	// Go on with next media source
 	j ++;
       }
