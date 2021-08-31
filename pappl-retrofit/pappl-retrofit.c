@@ -4321,7 +4321,7 @@ pr_system_cb(int           num_options,	// I - Number of options
   global_data->system = system;
   
   papplSystemAddListeners(system, NULL);
-  papplSystemSetHostname(system, hostname);
+  papplSystemSetHostName(system, hostname);
   pr_setup(global_data);
 
   papplSystemSetFooterHTML(system, global_data->config->web_if_footer);
