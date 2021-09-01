@@ -3735,12 +3735,18 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	    if (drv_name)
 	    {
 	      if (drv_name[0])
-		snprintf(driver_info, sizeof(driver_info), ", %s", drv_name);
+	      {
+		if (end_model[0] &&
+		    !strncasecmp(drv_name, end_model, strlen(drv_name)))
+		  snprintf(driver_info, sizeof(driver_info), "%s", drv_name);
+		else
+		  snprintf(driver_info, sizeof(driver_info), ", %s", drv_name);
+	      }
 	    }
 	    else
 	    {
 	      if (end_model[0])
-		snprintf(driver_info, sizeof(driver_info), ", %s", end_model);
+		snprintf(driver_info, sizeof(driver_info), "%s", end_model);
 	    }
 	  }
 	  else if (global_data->config->components &
