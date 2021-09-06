@@ -676,6 +676,13 @@ pr_driver_delete(
   extension = (pr_driver_extension_t *)driver_data->extension;
 
   // PPD file
+
+  // We do the removal of the PPD cache separately to assure that the
+  // function of libppd (and not of libcups) is used, as in libppd the
+  // PPD cache data structure is different (Content optimize presets
+  // added).
+  ppdCacheDestroy(extension->ppd->cache);
+  extension->ppd->cache = NULL;
   ppdClose(extension->ppd);
 
   // Media source
@@ -1430,6 +1437,12 @@ pr_driver_setup(
       papplLog(system, PAPPL_LOGLEVEL_ERROR,
 	       "No format found for printing in streaming mode");
       free(ptr);
+      // We do the removal of the PPD cache separately to assure that
+      // the function of libppd (and not of libcups) is used, as in
+      // libppd the PPD cache data structure is different (Content
+      // optimize presets added).
+      ppdCacheDestroy(extension->ppd->cache);
+      extension->ppd->cache = NULL;
       ppdClose(extension->ppd);
       free(extension);
       return (false);
