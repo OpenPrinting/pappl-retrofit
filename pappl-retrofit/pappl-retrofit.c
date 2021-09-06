@@ -2489,10 +2489,24 @@ pr_driver_setup(
 	  else if (k == 1 || k == 3)
 	  {
 	    // Remove common prefixes from previously tried name
+	    //
+	    // We could use memmove() here but this give Valgrind
+	    // messages about memcpy() use with overlapping memory
+	    // reasons. Probably a bug somewhere in the libraries or
+	    // in Valgrind a memmove() is made for overlapping memory
+	    // regions.
 	    if (strncmp(ipp_opt, "print-", 6) == 0)
-	      memmove(ipp_opt, ipp_opt + 6, strlen(ipp_opt) - 5);
+	    {
+	      for (p = ipp_opt, q = ipp_opt + 6; *q; p ++, q ++)
+		*p = *q;
+	      *p = '\0';
+	    }
 	    else if (strncmp(ipp_opt, "printer-", 8) == 0)
-	      memmove(ipp_opt, ipp_opt + 8, strlen(ipp_opt) - 7);
+	    {
+	      for (p = ipp_opt, q = ipp_opt + 8; *q; p ++, q ++)
+		*p = *q;
+	      *p = '\0';
+	    }
 	    else
 	      // No prefix to remove
 	      continue;
