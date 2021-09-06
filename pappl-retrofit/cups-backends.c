@@ -264,6 +264,10 @@ pr_cups_devlist(pappl_device_cb_t cb,
   filter_data.logfunc = pr_cups_devlog;
   filter_data.logdata = &devlog_data;
 
+  // Initialize backends list and link with global data
+  memset(backends, 0, sizeof(backends));
+  global_data->backend_list = backends;
+
   // Listen to child signals to get note of backends which have finished or
   // errorred to take their status and remove them from the poll
   memset(&action, 0, sizeof(action));
@@ -272,7 +276,6 @@ pr_cups_devlist(pappl_device_cb_t cb,
   action.sa_flags = SA_SIGINFO;
   action.sa_sigaction = pr_cups_sigchld_sigaction;
   sigaction(SIGCHLD, &action, &old_action);
-  global_data->backend_list = backends;
 
   pr_cups_devlog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
 		 "Backend directory: %s; Ignoring backends: %s; Using only backends: %s",
