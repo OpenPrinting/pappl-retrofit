@@ -1102,11 +1102,20 @@ pr_filter(
     ret = true;
 
   //
-  // Disconnect the job's filter_data from the backend
+  // Stop the backend and disconnect the job's filter_data from the backend
   //
 
   if (strncmp(job_data->device_uri, "cups:", 5) == 0)
   {
+    papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+		"Shutting down CUPS backend");
+
+    // Stop the backend
+    // We stop it here explicitly as we will free the filter_data structure
+    // and without it the backend shutdoen will not have access to the log
+    // function any more.
+    pr_cups_dev_stop_backend(device);
+
     // Get the device data
     device_data = (pr_cups_device_data_t *)papplDeviceGetData(device);
 
@@ -1329,7 +1338,12 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
 
   // Stop the CUPS backend if we are using one
   if (strncmp(device_uri, "cups:", 5) == 0)
+  {
+    if (log)
+      log(ld, FILTER_LOGLEVEL_DEBUG,
+	  "Output data stream ended, shutting down CUPS backend");
     pr_cups_dev_stop_backend(device);
+  }
 
   //close(fd);
   close(inputfd);
@@ -1495,13 +1509,24 @@ pr_rcleanupjob(pappl_job_t      *job,      // I - Job
 
 
   // Stop the filter chain
+  papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+	      "Shutting down filter chain");
   fclose(job_data->device_file);
   filterPClose(job_data->device_fd, job_data->device_pid,
 	       job_data->filter_data);
 
-  // Disconnect the job's filter_data to the backend
+  // Stop the backend and disconnect the job's filter_data to the backend
   if (strncmp(job_data->device_uri, "cups:", 5) == 0)
   {
+    papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+		"Shutting down CUPS backend");
+
+    // Stop the backend
+    // We stop it here explicitly as we will free the filter_data structure
+    // and without it the backend shutdoen will not have access to the log
+    // function any more.
+    pr_cups_dev_stop_backend(device);
+
     // Get the device data
     device_data = (pr_cups_device_data_t *)papplDeviceGetData(device);
 
