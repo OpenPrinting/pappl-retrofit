@@ -1620,7 +1620,7 @@ pr_driver_setup(
 	res[1][1] = res[1][0];
     }
     else
-      // Resort to 3oo dpi
+      // Resort to 300 dpi
       res[1][0] = res[1][1] = 300;
   }
     
@@ -1639,6 +1639,31 @@ pr_driver_setup(
     res[2][0] = res[1][0];
     res[2][1] = res[1][1];
   }
+
+  // The resolutions here are actually only used for Apple/PWG Raster
+  // and image input data. As in case of Apple/PWG Raster jobs the
+  // client needs to provide the data in the given resolution, a
+  // client can get easily overloaded by having extremely high
+  // resolutions here. Therefore we limit these resolutions to a
+  // maximum of 1440 dpi for high, 720 dpi for normal, and 360 dpi for
+  // draft quality.
+  //
+  // The resolutions in the PPD files are the hardware resolutions of
+  // the printers, which are used for high-quality dithering. For the
+  // input data usually resolutions of 1440 dpi for drawings/lines and
+  // 720 dpi for photos/images are good enough.
+  //
+  // Higher resolutions we reduce by halving them until they are below
+  // the limit. This way the input resolution and the device
+  // resolution stay multiples of 2 and so the pwgtoraster() filter
+  // function of cups-filters is able to convert the resolution if
+  // needed.
+  while (res[0][0] >  360) res[0][0] /= 2;
+  while (res[0][1] >  360) res[0][1] /= 2;
+  while (res[1][0] >  720) res[1][0] /= 2;
+  while (res[1][1] >  720) res[1][1] /= 2;
+  while (res[2][0] > 1440) res[2][0] /= 2;
+  while (res[2][1] > 1440) res[2][1] /= 2;
 
   // Default resolution (In update mode we keep the current default)
   if (!update ||
@@ -1711,7 +1736,7 @@ pr_driver_setup(
     driver_data->y_resolution[0] = res[1][1];
     driver_data->num_resolution = 1;
   }
-  
+
   papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	   "Resolutions from presets (missing ones filled with defaults): Draft: %dx%ddpi, Normal: %dx%ddpi, High: %dx%ddpi",
 	   res[0][0], res[0][1], res[1][0], res[1][1], res[2][0], res[2][1]);
@@ -1895,12 +1920,25 @@ pr_driver_setup(
       for (i = 0; i < driver_data->num_source; i ++)
 	free((char *)(driver_data->source[i]));
     def_source = NULL;
+    papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+	     "Media source entries:");
     for (i = 0, j = 0, pwg_map = pc->sources;
 	 i < count && j < PAPPL_MAX_SOURCE;
 	 i ++, pwg_map ++)
       if (!(update &&
 	    ppdInstallableConflict(ppd, pc->source_option, pwg_map->ppd)))
       {
+	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		 "  PPD: %s PWG: %s", pwg_map->ppd, pwg_map->pwg);
+	for (k = 0; k < j; k++)
+	  if (strcmp(driver_data->source[k], pwg_map->pwg) == NULL)
+	  {
+	    papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		     "    -> Skipping duplicate source");
+	    break;
+	  }
+	if (k < j)
+	  continue;
 	driver_data->source[j] = strdup(pwg_map->pwg);
 	if (j == 0 ||
 	    (!update && choice && !strcmp(pwg_map->ppd, choice->choice)) ||
@@ -1930,11 +1968,24 @@ pr_driver_setup(
       for (i = 0; i < driver_data->num_type; i ++)
 	free((char *)(driver_data->type[i]));
     def_type = NULL;
+    papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+	     "Media type entries:");
     for (i = 0, j = 0, pwg_map = pc->types;
 	 i < count && j < PAPPL_MAX_TYPE;
 	 i ++, pwg_map ++)
       if (!(update && ppdInstallableConflict(ppd, "MediaType", pwg_map->ppd)))
       {
+	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		 "  PPD: %s PWG: %s", pwg_map->ppd, pwg_map->pwg);
+	for (k = 0; k < j; k++)
+	  if (strcmp(driver_data->type[k], pwg_map->pwg) == NULL)
+	  {
+	    papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		     "    -> Skipping duplicate type");
+	    break;
+	  }
+	if (k < j)
+	  continue;
 	driver_data->type[j] = strdup(pwg_map->pwg);
 	if (j == 0 ||
 	    (!update && choice && !strcmp(pwg_map->ppd, choice->choice)) ||
@@ -2025,11 +2076,24 @@ pr_driver_setup(
   }
 
   // Standard page sizes
+  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+	   "Media size entries:");
   for (i = 0, pwg_size = pc->sizes;
        i < count && j < PAPPL_MAX_MEDIA;
        i ++, pwg_size ++)
     if (!(update && ppdInstallableConflict(ppd, "PageSize", pwg_size->map.ppd)))
     {
+      papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+	       "  PPD: %s PWG: %s", pwg_size->map.ppd, pwg_size->map.pwg);
+      for (k = 0; k < j; k++)
+	if (strcmp(driver_data->media[k], pwg_size->map.pwg) == NULL)
+	{
+	  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		   "    -> Skipping duplicate size");
+	  break;
+	}
+      if (k < j)
+	continue;
       if (!strchr(pwg_size->map.ppd, '.') &&
 	  (j == 0 ||
 	   (!update && choice && !strcmp(pwg_size->map.ppd, choice->choice)) ||
@@ -2103,6 +2167,10 @@ pr_driver_setup(
   papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	   "Margins: Left/Right: %d, Bottom/Top: %d",
 	   driver_data->left_right, driver_data->bottom_top);
+  if (driver_data->left_right == 0 && driver_data->bottom_top == 0)
+    // Remove "Borderless" switch again as the paper sizes are
+    // borderless anyway
+    driver_data->borderless = false;
 
   // Set default for media
   if (def_media)
@@ -2197,7 +2265,7 @@ pr_driver_setup(
 	  driver_data->media_ready[j].bottom_margin =driver_data->bottom_top;
 	}
 
-	// Check media size (name?) of the medis-ready entry as the
+	// Check media size (name?) of the media-ready entry as the
 	// PPD file can have been changed and so data loaded from the
 	// state file can have a media size not available in this PPD
 	for (k = 0; k < driver_data->num_media; k ++)
@@ -2209,7 +2277,7 @@ pr_driver_setup(
 		  driver_data->media_default.size_name,
 		  sizeof(driver_data->media_ready[j].size_name));
 
-	// Check media type of the medis-ready entry as the
+	// Check media type of the media-ready entry as the
 	// PPD file can have been changed and so data loaded from the
 	// state file can have a media size not available in this PPD
 	for (k = 0; k < driver_data->num_type; k ++)
@@ -2221,7 +2289,7 @@ pr_driver_setup(
 		  driver_data->media_default.type,
 		  sizeof(driver_data->media_ready[j].type));
 
-	// Did we now create the media-ready emntry for the media source
+	// Did we now create the media-ready entry for the media source
 	// which is the default? Then copy its content into the default media
 	if (!strcasecmp(driver_data->media_ready[j].source,
 			driver_data->media_default.source))
