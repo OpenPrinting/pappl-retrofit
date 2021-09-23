@@ -381,7 +381,7 @@ pr_create_job_data(pappl_job_t *job,
   pappl_pr_driver_data_t driver_data;   // Printer driver data
   cups_option_t         *opt;
   ipp_t                 *driver_attrs;  // Printer (driver) IPP attributes
-  char                  buf[16384];     // Buffer for building strings
+  char                  buf[1024];      // Buffer for building strings
   const char            *choicestr,     // Choice name from PPD option
                         *val;           // Value string from IPP option
   ipp_t                 *attrs;         // IPP Attributes structure
@@ -892,11 +892,9 @@ pr_create_job_data(pappl_job_t *job,
   }
 
   // Log the option settings which will get used
-  snprintf(buf, sizeof(buf) - 1, "PPD options to be used:");
+  papplLogJob(job, PAPPL_LOGLEVEL_DEBUG, "PPD options to be used:");
   for (i = job_data->num_options, opt = job_data->options; i > 0; i --, opt ++)
-    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf) - 1,
-	     " %s=%s", opt->name, opt->value);
-  papplLogJob(job, PAPPL_LOGLEVEL_DEBUG, "%s", buf);
+    papplLogJob(job, PAPPL_LOGLEVEL_DEBUG, "  %s=%s", opt->name, opt->value);
 
   // Clean up
   ippDelete(driver_attrs);
@@ -1327,7 +1325,7 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
     {
       if (log)
 	log(ld, FILTER_LOGLEVEL_ERROR,
-	    "Output to device: Unable to send %d bytes to printer.\n",
+	    "Output to device: Unable to send %d bytes to printer.",
 	    (int)bytes);
       close(inputfd);
       close(outputfd);
