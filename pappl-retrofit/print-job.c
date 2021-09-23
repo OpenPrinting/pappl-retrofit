@@ -381,7 +381,7 @@ pr_create_job_data(pappl_job_t *job,
   pappl_pr_driver_data_t driver_data;   // Printer driver data
   cups_option_t         *opt;
   ipp_t                 *driver_attrs;  // Printer (driver) IPP attributes
-  char                  buf[1024];      // Buffer for building strings
+  char                  buf[16384];     // Buffer for building strings
   const char            *choicestr,     // Choice name from PPD option
                         *val;           // Value string from IPP option
   ipp_t                 *attrs;         // IPP Attributes structure
