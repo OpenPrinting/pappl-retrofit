@@ -1931,7 +1931,7 @@ pr_driver_setup(
 	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		 "  PPD: %s PWG: %s", pwg_map->ppd, pwg_map->pwg);
 	for (k = 0; k < j; k++)
-	  if (strcmp(driver_data->source[k], pwg_map->pwg) == NULL)
+	  if (strcmp(driver_data->source[k], pwg_map->pwg) == 0)
 	  {
 	    papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		     "    -> Skipping duplicate source");
@@ -1978,7 +1978,7 @@ pr_driver_setup(
 	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		 "  PPD: %s PWG: %s", pwg_map->ppd, pwg_map->pwg);
 	for (k = 0; k < j; k++)
-	  if (strcmp(driver_data->type[k], pwg_map->pwg) == NULL)
+	  if (strcmp(driver_data->type[k], pwg_map->pwg) == 0)
 	  {
 	    papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		     "    -> Skipping duplicate type");
@@ -2086,7 +2086,7 @@ pr_driver_setup(
       papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	       "  PPD: %s PWG: %s", pwg_size->map.ppd, pwg_size->map.pwg);
       for (k = 0; k < j; k++)
-	if (strcmp(driver_data->media[k], pwg_size->map.pwg) == NULL)
+	if (strcmp(driver_data->media[k], pwg_size->map.pwg) == 0)
 	{
 	  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		   "    -> Skipping duplicate size");
