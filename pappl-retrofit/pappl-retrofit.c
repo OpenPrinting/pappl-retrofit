@@ -3658,14 +3658,39 @@ pr_printer_update_for_installable_options(
 
 
 //
-// 'pr_printer_extra_setup()' - Extra code for setting up a printer, for
-//                              example to get extra buttons/pages on the web
-//                              interface for this printer.
+// 'pr_setup_add_ppd_files_page()' - Add web admin interface page for adding
+//                                   PPD files.
 //
 
 void
-pr_printer_extra_setup(pappl_printer_t *printer, // I - Printer
-		       void *data)               // I - Global data (unused)
+pr_setup_add_ppd_files_page (void *data)  // I - Global data
+{
+  pr_printer_app_global_data_t *global_data =
+    (pr_printer_app_global_data_t *)data;
+  pappl_system_t   *system = global_data->system;
+
+  if (global_data->config->components & PR_COPTIONS_WEB_ADD_PPDS)
+  {
+    papplSystemAddResourceCallback(system, "/addppd", "text/html",
+				   (pappl_resource_cb_t)pr_system_web_add_ppd,
+				   global_data);
+    papplSystemAddLink(system, "Add PPD Files", "/addppd",
+		       PAPPL_LOPTIONS_OTHER | PAPPL_LOPTIONS_HTTPS_REQUIRED);
+  }
+}
+
+
+//
+// 'pr_setup_device_settings_page()' - Add web admin interface page for
+//                                     device settings: Installable
+//                                     accessories and polling PostScript
+//                                     option defaults
+//
+
+void
+pr_setup_device_settings_page(pappl_printer_t *printer, // I - Printer
+			      void *data)               // I - Global data
+                                                        //     (unused)
 {
   char                   path[256];     // Path to resource
   pappl_system_t         *system;	// System
@@ -4018,13 +4043,13 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 
   papplSystemSetPrinterDrivers(system, num_drivers, drivers,
 			       global_data->config->autoadd_cb,
-			       pr_printer_extra_setup,
+			       global_data->config->printer_extra_setup_cb,
 			       pr_driver_setup, global_data);
 }
 
 
 //
-// 'pr_setup()' - Setup PostScript driver.
+// 'pr_setup()' - Setup CUPS driver(s).
 //
 
 void
@@ -4088,19 +4113,6 @@ pr_setup(pr_printer_app_global_data_t *global_data)  // I - Global data
   //
 
   pr_setup_driver_list(global_data);
-
-  //
-  // Add web admin interface page for adding PPD files
-  //
-
-  if (global_data->config->components & PR_COPTIONS_WEB_ADD_PPDS)
-  {
-    papplSystemAddResourceCallback(system, "/addppd", "text/html",
-				   (pappl_resource_cb_t)pr_system_web_add_ppd,
-				   global_data);
-    papplSystemAddLink(system, "Add PPD Files", "/addppd",
-		       PAPPL_LOPTIONS_OTHER | PAPPL_LOPTIONS_HTTPS_REQUIRED);
-  }
 
   //
   // Add filters for the different input data formats
@@ -4424,6 +4436,10 @@ pr_system_cb(int           num_options,	// I - Number of options
   papplSystemAddListeners(system, NULL);
   papplSystemSetHostName(system, hostname);
   pr_setup(global_data);
+
+  // Extra setup steps for the system (like adding buttos/pages)
+  if (global_data->config->extra_setup_cb)
+    (global_data->config->extra_setup_cb)(global_data);
 
   papplSystemSetFooterHTML(system, global_data->config->web_if_footer);
   papplSystemSetSaveCallback(system, (pappl_save_cb_t)papplSystemSaveState,

@@ -140,6 +140,9 @@ main(int  argc,				// I - Number of command-line arguments
     test_autoadd,             // Auto-add (driver assignment) callback
     pr_identify,              // Printer identify callback
     pr_testpage,              // Test page print callback
+    pr_setup_add_ppd_files_page, // Set up "Add PPD Files" web interface page
+    pr_setup_device_settings_page, // Set up "Device Settings" printer web
+                              // interface page
     spooling_conversions,     // Array of data format conversion rules for
                               // printing in spooling mode
     stream_formats,           // Arrray for stream formats to be generated

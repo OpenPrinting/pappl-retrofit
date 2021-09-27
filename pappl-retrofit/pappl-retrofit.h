@@ -127,7 +127,6 @@ extern void   pr_printer_update_for_installable_options(
 					   pappl_printer_t *printer,
 					   pappl_pr_driver_data_t driver_data,
 					   const char *instoptstr);
-extern void   pr_printer_extra_setup(pappl_printer_t *printer, void *data);
 extern void   pr_setup_driver_list(pr_printer_app_global_data_t *global_data);
 extern void   pr_setup(pr_printer_app_global_data_t *global_data);
 extern void   pr_system_web_add_ppd(pappl_client_t *client, void *data);

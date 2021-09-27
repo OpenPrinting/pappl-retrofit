@@ -102,6 +102,8 @@ enum pr_coptions_e                           // Component option bits
 };
 typedef unsigned int pr_coptions_t;          // Bitfield for component options
 
+typedef void (*pr_extra_setup_cb_t)(void *data);
+
 // Items to configure the properties of this Printer Application
 // These items do not change while the Printer Application is running
 typedef struct pr_printer_app_config_s
@@ -118,9 +120,24 @@ typedef struct pr_printer_app_config_s
   pr_coptions_t     components;
 
   // Callback functions
+
+  // Auto-add (automatic driver assignment) callback
   pappl_pr_autoadd_cb_t autoadd_cb;
+
+  // Printer identify callback (Printer makes noise, lights up display, ...
+  // without printing, to find printer under several others)
   pappl_pr_identify_cb_t identify_cb;
+
+  // Print a test page (To check whether configuration is OK)
   pappl_pr_testpage_cb_t testpage_cb;
+
+  // Additional setup steps for the system (like web interface buttons and/or
+  // pages, not for particular print queue)
+  pr_extra_setup_cb_t extra_setup_cb;
+
+  // Additional setup steps for a print queue (like web interface buttons and/or
+  // pages for this print queue)
+  pappl_pr_create_cb_t printer_extra_setup_cb;
 
   // Spooling conversion paths (input and output mime type, filter function,
   // parameters), more desired (simpler) conversions first, less desired
@@ -300,6 +317,9 @@ extern bool   pr_ps_rstartpage(pappl_job_t *job, pappl_pr_options_t *options,
 extern bool   pr_ps_rwriteline(pappl_job_t *job, pappl_pr_options_t *options,
 			       pappl_device_t *device, unsigned y,
 			       const unsigned char *pixels);
+extern void   pr_setup_add_ppd_files_page(void *data);
+extern void   pr_setup_device_settings_page(pappl_printer_t *printer,
+					    void *data);
 
 
 //
