@@ -3879,6 +3879,7 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	// Note: The last entry in the product list is the ModelName of the
 	// PPD not an actual Product entry. Therefore we ignore it
 	// (Hidden feature of ppdCollectionListPPDs())
+	papplLog(system, PAPPL_LOGLEVEL_DEBUG, "XXX: |%s|%s|%s|", ppd->record.products[0], ppd->record.products[1], ppd->record.products[2]);
         for (j = -1;
 	     j < (global_data->config->components &
 		  PR_COPTIONS_PPD_NO_EXTRA_PRODUCTS ? 0 : PPD_MAX_PROD - 1);
@@ -3920,7 +3921,9 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 						      NULL, NULL, NULL);
 	      pre_normalized = 1;
 	    }
-	    else if (ppd->record.products[0][0])
+	    else if (ppd->record.products[0][0] &&
+		     ppd->record.products[1][0] &&
+		     ppd->record.products[2][0])
 	      mfg_mdl = ppd->record.products[0];
 	    else
 	      mfg_mdl = ppd->record.make_and_model;
