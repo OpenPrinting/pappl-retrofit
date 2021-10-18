@@ -814,8 +814,11 @@ pr_ppd_find_cups_filter(const char *input_format, // I - Input data format
       return (NULL);
   }
 
-  for (i = 0, filter_str = *filters; i < num_filters; i++, filter_str ++)
+  for (i = 0; i < num_filters; i++)
   {
+    // String of the "*cupsfilter:" or "*cupsfilter2:"
+    filter_str = filters[i];
+
     // First word of the filter entry string is the input format of the filter
     if (strncmp(filter_str, input_format, strlen(input_format)) == 0 &&
 	isspace(filter_str[strlen(input_format)]))
@@ -909,8 +912,11 @@ pr_ppd_missing_filters(int num_filters,          // I - Number of filter
     return NULL;
 
   buf[0] = '\0';
-  for (i = 0, filter_str = *filters; i < num_filters; i++, filter_str ++)
+  for (i = 0; i < num_filters; i++)
   {
+    // String of the "*cupsfilter:" or "*cupsfilter2:"
+    filter_str = filters[i];
+
     // The name of the filter executable is the last word
     filter_name = filter_str + strlen(filter_str) - 1;
     while (!isspace(*filter_name) && filter_name > filter_str)
