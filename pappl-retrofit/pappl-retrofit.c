@@ -4286,6 +4286,7 @@ pr_system_cb(int           num_options,	// I - Number of options
   pappl_loglevel_t	loglevel;	// Log level
   int			port = 0;	// Port number, if any
   char                  *ptr;
+  char                  buf[1024];
   pappl_soptions_t	soptions = PAPPL_SOPTIONS_MULTI_QUEUE |
                                    PAPPL_SOPTIONS_WEB_INTERFACE |
                                    PAPPL_SOPTIONS_WEB_LOG |
@@ -4389,6 +4390,20 @@ pr_system_cb(int           num_options,	// I - Number of options
   else if (!global_data->filter_dir[0])
     snprintf(global_data->filter_dir, sizeof(global_data->filter_dir),
 	     "/usr/lib/%s/filter", global_data->config->system_package_name);
+
+  // Set CUPS_SERVERBIN (only if not already set and if FILTER_DIR ends
+  // with "/filter"). This gives the best possible environment to the
+  // CUPS filters when they are called out of the Printer Application.
+  if (getenv("CUPS_SERVERBIN") == NULL && strlen(global_data->filter_dir) > 7)
+  {
+    strncpy(buf, global_data->filter_dir, sizeof(buf));
+    ptr = buf + strlen(buf) - 7;
+    if (strcmp(ptr, "/filter") == 0)
+    {
+      *ptr = '\0';
+      setenv("CUPS_SERVERBIN", buf, 1);
+    }
+  }
 
   // CUPS Backend dir
   if (global_data->config->components & PR_COPTIONS_CUPS_BACKENDS)
