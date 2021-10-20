@@ -3740,6 +3740,7 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
   ppd_info_t       *ppd;
   char             driver_info[1024];
   char             buf1[1024], buf2[1024];
+  char             *ptr;
   int              pre_normalized;
   pappl_pr_driver_t swap;
   pappl_system_t   *system = global_data->system;
@@ -3883,7 +3884,7 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  }
 	}
 	// Note: The last entry in the product list is the ModelName of the
-	// PPD not an actual Product entry. Therefore we ignore it
+	// PPD and not an actual Product entry. Therefore we ignore it
 	// (Hidden feature of ppdCollectionListPPDs())
         for (j = -1;
 	     j < (global_data->config->components &
@@ -3917,6 +3918,15 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 		!strstr(ppd->record.device_id, "MODEL:hp9") &&
 		!strstr(ppd->record.device_id, "MODEL:HP2"))
 	    {
+	      // To check whether the device ID is not something
+	      // weird, unsuitable as a display string, we save the
+	      // normalized NickName for comparison. Only if the first
+	      // word (cleaned manufacturer name or part of it) is the
+	      // same, we accept the data of the device ID as display
+	      // string.
+	      strncpy(buf1, buf2, sizeof(buf1));
+	      if ((ptr = strchr(buf1, ' ')) != NULL)
+		*ptr = '\0';
 	      // Convert device ID to make/model string, so that we can add
 	      // the language for building final index strings
 	      mfg_mdl = ieee1284NormalizeMakeAndModel(ppd->record.device_id,
@@ -3924,14 +3934,18 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 						      IEEE1284_NORMALIZE_HUMAN,
 						      NULL, buf2, sizeof(buf2),
 						      NULL, NULL, NULL);
-	      pre_normalized = 1;
+	      if (strncasecmp(mfg_mdl, buf1, strlen(buf1)) == 0)
+		pre_normalized = 1;
 	    }
-	    else if (ppd->record.products[0][0] &&
-		     ppd->record.products[1][0] &&
-		     ppd->record.products[2][0])
-	      mfg_mdl = ppd->record.products[0];
-	    else
-	      mfg_mdl = ppd->record.make_and_model;
+	    if (pre_normalized == 0)
+	    {
+	      if (ppd->record.products[0][0] &&
+		  ppd->record.products[1][0] &&
+		  ppd->record.products[2][0])
+		mfg_mdl = ppd->record.products[0];
+	      else
+		mfg_mdl = ppd->record.make_and_model;
+	    }
 	    if (ppd->record.device_id[0])
 	      dev_id = ppd->record.device_id;
 	  }
