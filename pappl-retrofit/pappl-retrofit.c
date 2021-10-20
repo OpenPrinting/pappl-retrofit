@@ -1936,6 +1936,12 @@ pr_driver_setup(
       {
 	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		 "  PPD: %s PWG: %s", pwg_map->ppd, pwg_map->pwg);
+	if (!pwg_map->pwg || !pwg_map->pwg[0])
+	{
+	  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		   "    -> Skipping source with undefined PWG name");
+	  continue;
+	}
 	for (k = 0; k < j; k++)
 	  if (strcmp(driver_data->source[k], pwg_map->pwg) == 0)
 	  {
@@ -1983,6 +1989,12 @@ pr_driver_setup(
       {
 	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		 "  PPD: %s PWG: %s", pwg_map->ppd, pwg_map->pwg);
+	if (!pwg_map->pwg || !pwg_map->pwg[0])
+	{
+	  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		   "    -> Skipping type with undefined PWG name");
+	  continue;
+	}
 	for (k = 0; k < j; k++)
 	  if (strcmp(driver_data->type[k], pwg_map->pwg) == 0)
 	  {
@@ -2091,6 +2103,12 @@ pr_driver_setup(
     {
       papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	       "  PPD: %s PWG: %s", pwg_size->map.ppd, pwg_size->map.pwg);
+      if (!pwg_size->map.pwg || !pwg_size->map.pwg[0])
+      {
+	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		 "    -> Skipping size with undefined PWG name");
+	continue;
+      }
       for (k = 0; k < j; k++)
 	if (strcmp(driver_data->media[k], pwg_size->map.pwg) == 0)
 	{
