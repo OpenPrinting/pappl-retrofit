@@ -495,7 +495,7 @@ static pr_stream_format_t pr_stream_pdf =
   {
     {
       ghostscript,
-      &((filter_out_format_t){OUTPUT_FORMAT_PDF}),
+      &((filter_out_format_t){OUTPUT_FORMAT_PDF_IMAGE}),
       "ghostscript"
     },
     {
