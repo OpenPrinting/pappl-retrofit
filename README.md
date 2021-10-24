@@ -102,7 +102,7 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
 
 - Drivers can be assigned to the discovered printers automatically or
   manually by selecting the driver (a PPD file) from the menu on the
-  "Add Printer" web interface page.The implementor of the Printer
+  "Add Printer" web interface page. The implementor of the Printer
   Application can use their own auto-assignment function. The library
   contains some functions for common operations, like finding the best
   PPD for a printer or checking which PDLs (Page Description
@@ -158,8 +158,9 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
 ## SNAP
 
 This is a library and not a Printer Application, so there will be no
-Snap for this, but the Printer Applications created with the help of
-this library will appear in the Snap Store.
+Snap for this, but Printer Applications created with the help of this
+library are available in the [Snap
+Store](https://snapcraft.io/search?q=OpenPrinting).
 
 The included example Printer Application is also not suitable to get
 snapped, as it simply points its search directories to the PPD,
@@ -170,14 +171,28 @@ the system's files and so this does not work (otherwise the CUPS Snap
 would support claasic printer drivers).
 
 Please have a look at the [PostScript Printer
-Application](https://github.com/OpenPrinting/ps-printer-app) and the
+Application](https://github.com/OpenPrinting/ps-printer-app), the
 [Ghostscript Printer
-Application](https://github.com/OpenPrinting/ghostscript-printer-app)
-for examples on how Snaps of Printer Applications are created. Both of
-these Printer Applications use this library, one is retro-fitting
-PostScript printer PPD files, the other
-[Ghostscript](http://www.ghostscript.com/) drivers with
-[Foomatic](https://github.com/OpenPrinting/foomatic-db) PPD files.
+Application](https://github.com/OpenPrinting/ghostscript-printer-app),
+the [HPLIP Printer
+Application](https://github.com/OpenPrinting/hplip-printer-app), and
+the [Gutenprint Printer
+Application](https://github.com/OpenPrinting/gutenprint-printer-app)
+for examples on how Snaps of Printer Applications are created. All
+these Printer Applications use this library, retro-fitting PostScript
+printer PPD files, [Ghostscript](http://www.ghostscript.com/) drivers
+with [Foomatic](https://github.com/OpenPrinting/foomatic-db) PPD files
+(and many other printer drivers), HPLIP, and Gutenprint. Practically
+every free software printer driver which is available as Debian
+package is now also available as a Printer Application Snap. They can
+be all installed from the [Snap
+Store](https://snapcraft.io/search?q=OpenPrinting).
+
+The HPLIP Printer Application is especially an example of how to add
+driver-specific functionality which is beyond the pappl-retrofit
+library and control this functionality through extra pages in the web
+interface. Here a feature for downloading HP's proprietary plugin is
+added.
 
 
 ## Installation
@@ -289,9 +304,8 @@ of the CUPS installed conventionally (not the CUPS Snap) on your
 system. So it makes (nearly) all of your installed printer drivers
 available in a Printer Application. The only drivers currently not
 getting available are the ones where the PPDs get auto-generated from
-`*.drv` files in the `/usr/share/cups/drv/` directory. Support for
-those will get added later. For the time being pre-build the PPD files
-from `*.drv` files using the `ppdc` utility of CUPS 2.3.x or older.
+`*.drv` files in the `/usr/share/cups/drv/` directory. For support for
+those files see DRIVER INFORMATION FILES below.
 
 So you can use this Printer Application to test the driver which you
 want to retro-fit, before you start to configure your Printer
@@ -314,16 +328,31 @@ on
 libpappl-retrofit](https://github.com/OpenPrinting/pappl-retrofit/issues)
 (we move it to cups-filters if it is actually there).
 
-Please also have a look at the [PostScript Printer
-Application](https://github.com/OpenPrinting/ps-printer-app) and the
+Please have a look at the [PostScript Printer
+Application](https://github.com/OpenPrinting/ps-printer-app), the
 [Ghostscript Printer
-Application](https://github.com/OpenPrinting/ghostscript-printer-app)
-for examples of Printer Applications already created with
-libpappl-retrofit. One is retro-fitting PostScript printer PPD files,
-the other [Ghostscript](http://www.ghostscript.com/) drivers with
-[Foomatic](https://github.com/OpenPrinting/foomatic-db) PPD files.
+Application](https://github.com/OpenPrinting/ghostscript-printer-app),
+the [HPLIP Printer
+Application](https://github.com/OpenPrinting/hplip-printer-app), and
+the [Gutenprint Printer
+Application](https://github.com/OpenPrinting/gutenprint-printer-app)
+for examples on how Snaps of Printer Applications are created. All
+these Printer Applications use this library, retro-fitting PostScript
+printer PPD files, [Ghostscript](http://www.ghostscript.com/) drivers
+with [Foomatic](https://github.com/OpenPrinting/foomatic-db) PPD files
+(and many other printer drivers), HPLIP, and Gutenprint. Practically
+every free software printer driver which is available as Debian
+package is now also available as a Printer Application Snap. They can
+be all installed from the [Snap
+Store](https://snapcraft.io/search?q=OpenPrinting).
 
-The test Printer Application searches for PPDs, PPD archives, and
+The HPLIP Printer Application is especially an example of how to add
+driver-specific functionality which is beyond the pappl-retrofit
+library and control this functionality through extra pages in the web
+interface. Here a feature for downloading HP's proprietary plugin is
+added.
+
+The Test Printer Application searches for PPDs, PPD archives, and
 PPD-generating executables on
 ```
 /usr/share/ppd/
@@ -375,6 +404,46 @@ Apple Raster, PWG Raster):
 ```
 TESTPAGE=/path/to/my/testpage/my_testpage.ps PPD_PATHS=/path/to/my/ppds:/my/second/place ./test-printer-app server
 ```
+
+
+## DRIVER INFORMATION FILES
+
+Many classic CUPS drivers provide their PPD files as driver
+information files (`*.drv`). These files are not supported by libppd
+and so also not by Printer Applications using libpappl-retrofit.
+
+To use such drivers without needing to pre-build the PPD files, for
+example if one simply lets a Printer Application use the CUPS drivers
+installed for the local CUPS, as the test-printer-app included with
+this library does in its standard installation, one can use the
+program `drv`, source code file `examples/drv.cxx`. It is derived
+ffrom `cups-driverd` which comes with CUPS.
+
+It is simply a dynamic PPD generator (what CUPS drivers put into
+`/usr/lib/cups/driver`) which goes through `/usr/share/cups/drv` and
+lists all PPD files made available by the `*.drv` files (`list`
+argument) and builds them on-demand (`cat` argument with URI of the
+desired PPD file). So making it available to the Printer Application
+allows the Printer Application to use the PPDs described by the
+`*.drv` files.
+
+It is not yet integrated in the build system of pappl-retrofit. For
+now you can compile it with
+
+```
+g++ -o drv drv.cxx $CUPS_SOURCE/ppdc/libcupsppdc.a -DCUPS_DATADIR='"/usr/share/cups"' -I $CUPS_SOURCE -lcups -lppd
+```
+
+and install it into `/usr/share/ppd`. Run the test-printer-app then
+and it shows also the printers/drivers from the `*.drv` files when
+adding a printer (and also considers them for auto-selection).
+
+Do not install it into `/usr/lib/cups/driver`, to avoid duplicate
+listings of printers by CUPS.
+
+Building this program needs the source code of CUPS 2.4.x or
+older. Needs cups-filters 2.x or newer.
+
 
 ## HISTORY
 
