@@ -38,6 +38,10 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
 - A classic CUPS printer driver consists of PPD files, CUPS filters, and
   sometimes also CUPS backends. All this sis supported by this library.
 
+- The PPD files can be provided in all forms which CUPS supports:
+  Individual files, compressed files, tar archives, driver information
+  files (`.drv`), executables which generate PPDs on-the-fly.
+
 - Even more complex filters and backends which use the side and back channel
   communication are supported.
 
@@ -270,19 +274,19 @@ preferred.
 
 `PPDFILE` in the command line above cannot only be a single PPD file
 but any number of single PPD files, `.tar.gz` files containing PPDs
-(in arbitrary directory structure) and PPD-generating executables
-which are usually put into `/usr/lib/cups/driver`. You can also create
-arbitrary sub-directory structures in
-`/var/snap/test-printer-app/current/ppd/` containing the mentioned types
-of files. Only make sure to not put any executables there which do
-anything else than listing and generating PPD files.
+(in arbitrary directory structure), driver information files (`.drv`),
+and PPD-generating executables which are usually put into
+`/usr/lib/cups/driver`. You can also create arbitrary sub-directory
+structures in `/var/snap/test-printer-app/current/ppd/` containing the
+mentioned types of files. Only make sure to not put any executables
+there which do anything else than listing and generating PPD files.
 
 Note that with the web interface you can only manage individual PPDs
 (uncompressed or compressed with `gzip`) in the
-`/var/snap/test-printer-app/current/ppd/` itself. Archives, executables,
-or sub-directories are not shown and appropriate uploads not
-accepted. This especially prevents adding executables without root
-rights.
+`/var/snap/test-printer-app/current/ppd/` itself. Archives, driver
+information files, executables, or sub-directories are not shown and
+appropriate uploads not accepted. This especially prevents adding
+executables without root rights.
 
 Any added PPD file must be for printers supported by the Printer
 Application (its included filters and backends). The "Add PPD files"
@@ -301,11 +305,10 @@ Use the `--debug` argument for verbose logging in your terminal window.
 
 The example/test printer application simply points to the directories
 of the CUPS installed conventionally (not the CUPS Snap) on your
-system. So it makes (nearly) all of your installed printer drivers
-available in a Printer Application. The only drivers currently not
-getting available are the ones where the PPDs get auto-generated from
-`*.drv` files in the `/usr/share/cups/drv/` directory. For support for
-those files see DRIVER INFORMATION FILES below.
+system. So it makes all of your installed printer drivers available in
+a Printer Application. Some drivers may not work in the different
+environment (for example if a filter or backend tries to communicate
+with the CUPS daemon), but such cases are rare.
 
 So you can use this Printer Application to test the driver which you
 want to retro-fit, before you start to configure your Printer
@@ -352,12 +355,14 @@ library and control this functionality through extra pages in the web
 interface. Here a feature for downloading HP's proprietary plugin is
 added.
 
-The Test Printer Application searches for PPDs, PPD archives, and
-PPD-generating executables on
+The Test Printer Application searches for PPDs, PPD archives, driver
+information files (`.drv`), and PPD-generating executables on
+
 ```
 /usr/share/ppd/
 /usr/share/cups/model/
 /usr/lib/cups/driver/
+/usr/share/cups/drv/
 /var/lib/test-printer-app/ppd/
 ```
 The last one is where the web interface drops user-uploaded PPD files.
@@ -404,45 +409,6 @@ Apple Raster, PWG Raster):
 ```
 TESTPAGE=/path/to/my/testpage/my_testpage.ps PPD_PATHS=/path/to/my/ppds:/my/second/place ./test-printer-app server
 ```
-
-
-## DRIVER INFORMATION FILES
-
-Many classic CUPS drivers provide their PPD files as driver
-information files (`*.drv`). These files are not supported by libppd
-and so also not by Printer Applications using libpappl-retrofit.
-
-To use such drivers without needing to pre-build the PPD files, for
-example if one simply lets a Printer Application use the CUPS drivers
-installed for the local CUPS, as the test-printer-app included with
-this library does in its standard installation, one can use the
-program `drv`, source code file `examples/drv.cxx`. It is derived
-ffrom `cups-driverd` which comes with CUPS.
-
-It is simply a dynamic PPD generator (what CUPS drivers put into
-`/usr/lib/cups/driver`) which goes through `/usr/share/cups/drv` and
-lists all PPD files made available by the `*.drv` files (`list`
-argument) and builds them on-demand (`cat` argument with URI of the
-desired PPD file). So making it available to the Printer Application
-allows the Printer Application to use the PPDs described by the
-`*.drv` files.
-
-It is not yet integrated in the build system of pappl-retrofit. For
-now you can compile it with
-
-```
-g++ -o drv drv.cxx $CUPS_SOURCE/ppdc/libcupsppdc.a -DCUPS_DATADIR='"/usr/share/cups"' -I $CUPS_SOURCE -lcups -lppd
-```
-
-and install it into `/usr/share/ppd`. Run the test-printer-app then
-and it shows also the printers/drivers from the `*.drv` files when
-adding a printer (and also considers them for auto-selection).
-
-Do not install it into `/usr/lib/cups/driver`, to avoid duplicate
-listings of printers by CUPS.
-
-Building this program needs the source code of CUPS 2.4.x or
-older. Needs cups-filters 2.x or newer.
 
 
 ## HISTORY
