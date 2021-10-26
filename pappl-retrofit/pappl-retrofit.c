@@ -4382,7 +4382,7 @@ pr_system_cb(int           num_options,	// I - Number of options
 	     "%s", val);
   else if (!global_data->ppd_dirs_list[0])
     snprintf(global_data->ppd_dirs_list, sizeof(global_data->ppd_dirs_list),
-	     "/usr/share/ppd:/usr/share/cups/model:/usr/lib/cups/driver:/var/lib/%s/ppd",
+	     "/usr/share/ppd:/usr/share/cups/model:/usr/lib/cups/driver:/usr/share/cups/drv:/var/lib/%s/ppd",
 	     global_data->config->system_package_name);
 
   // Dir for user-uploaded PPD files
