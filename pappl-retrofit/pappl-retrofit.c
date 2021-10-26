@@ -3970,6 +3970,14 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  else
 	    // Extra models in list of products
 	    mfg_mdl = ppd->record.products[j];
+	  // Remove parantheses from model name if it came from a Product
+	  // entry of the PPD
+	  if (mfg_mdl[0] == '(' && mfg_mdl[strlen(mfg_mdl) - 1] == ')')
+	  {
+	    memmove(mfg_mdl, mfg_mdl + 1, strlen(mfg_mdl) - 2);
+	    mfg_mdl[strlen(mfg_mdl) - 2] = '\0';
+	  }
+	  // New entry for PPD lookup table
 	  ppd_path = (pr_ppd_path_t *)calloc(1, sizeof(pr_ppd_path_t));
 	  // Base make/model/language string to generate the needed index
 	  // strings
