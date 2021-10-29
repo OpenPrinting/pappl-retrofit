@@ -46,6 +46,8 @@ typedef struct pr_print_filter_function_data_s
 {
   pappl_device_t *device;                      // Device
   char           *device_uri;                  // Printer device URI
+  pappl_job_t    *job;                         // Job
+  pr_printer_app_global_data_t *global_data;   // Global data
 } pr_print_filter_function_data_t;
 
 typedef struct pr_job_data_s		// Job data
@@ -94,6 +96,7 @@ extern void   pr_job_log(void *data, filter_loglevel_t level,
 			 const char *message, ...);
 extern void   pr_one_bit_dither_on_draft(pappl_job_t *job,
 					 pappl_pr_options_t *options);
+extern void   pr_clean_debug_copies(pr_printer_app_global_data_t *global_data);
 extern int    pr_print_filter_function(int inputfd, int outputfd,
 				       int inputseekable, filter_data_t *data,
 				       void *parameters);

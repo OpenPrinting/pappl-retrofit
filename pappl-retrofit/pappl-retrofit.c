@@ -4110,6 +4110,12 @@ pr_setup(pr_printer_app_global_data_t *global_data)  // I - Global data
 
 
   //
+  // Clean up debug copy files of jobs in spool directory
+  //
+
+  pr_clean_debug_copies(global_data);
+
+  //
   // Create PPD collection index data structure
   //
 

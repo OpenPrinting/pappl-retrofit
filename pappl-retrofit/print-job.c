@@ -1131,6 +1131,8 @@ pr_filter(
     calloc(1, sizeof(pr_print_filter_function_data_t));
   print_params->device = device;
   print_params->device_uri = job_data->device_uri;
+  print_params->job = job;
+  print_params->global_data = global_data;
   job_data->print->function = pr_print_filter_function;
   job_data->print->parameters = print_params;
   job_data->print->name = "Backend";
@@ -1331,6 +1333,59 @@ pr_one_bit_dither_on_draft(
 
 
 //
+// `pr_clean_debug_copies()' - Remove debug copies of jobs created by the
+//                             pr_print_filter_function() function more
+//                             than 24 hours ago. This avoids filling up the
+//                             disk should the user have switched to debug
+//                             logging for some reason and forgot to turn
+//                             back after solving his problem.
+//
+
+void
+pr_clean_debug_copies(pr_printer_app_global_data_t *global_data)
+{
+  cups_dir_t	*dir;			// Directory pointer
+  cups_dentry_t	*dent;			// Directory entry
+  char		filename[2048];		// Name of PPD or directory
+  time_t        outdated;               // Files older than this time
+                                        // get deleted
+
+
+  papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
+	   "Checking for old debug copy files in the spool directory %s",
+	   global_data->spool_dir);
+
+  // Open spool directory
+  if ((dir = cupsDirOpen(global_data->spool_dir)) == NULL)
+  {
+    papplLog(global_data->system, PAPPL_LOGLEVEL_ERROR,
+	     "Unable to open spool directory %s: %s",
+	     global_data->spool_dir, strerror(errno));
+    return;
+  }
+
+  // Files older than 24 hours are outdated and get deleted
+  outdated = time(NULL) - 24 * 60 * 60;
+
+  // Go through all files and remov ethe outdated debug copied
+  while ((dent = cupsDirRead(dir)) != NULL)
+  {
+    if (S_ISDIR(dent->fileinfo.st_mode) || dent->filename[0] == '.' ||
+	dent->fileinfo.st_mtime > outdated ||
+	strncmp(dent->filename, "debug-jobdata-", 14))
+      continue;
+    snprintf(filename, sizeof(filename), "%s/%s",
+	     global_data->spool_dir, dent->filename);
+    unlink(filename);
+    papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
+	     "Deleted old debug copy file %s", dent->filename);
+  }
+
+  cupsDirClose(dir);
+}
+
+
+//
 // 'pr_print_filter_function()' - Print file.
 //                                This function has the format of a filter
 //                                function of libcupsfilters, so we can chain
@@ -1345,6 +1400,15 @@ pr_one_bit_dither_on_draft(
 //                                This function does not do any filtering or
 //                                conversion, this has to be done by filters
 //                                applied to the data before.
+//                                If we run the Printer Application in
+//                                debug logging mode ("-o log-level=debug" or
+//                                switching on the logging page of the web
+//                                interface) from every job a copy of the
+//                                data actually sent to the printer gets saved
+//                                in a file (debug-copy-PRINTER-JOB.prn) in
+//                                the spool directory. These files are kept
+//                                for 24 hours (clean-up done with every new
+//                                job, independent of log level).
 //
 
 int                                           // O - Error status
@@ -1365,20 +1429,55 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
     (pr_print_filter_function_data_t *)parameters;
   pappl_device_t       *device = params->device; // PAPPL output device
   char                 *device_uri = params->device_uri;
+  pappl_job_t          *job = params->job;
+  pappl_printer_t      *printer;
+  pr_printer_app_global_data_t *global_data = params->global_data;
+  char                 filename[2048];        // Name for debug copy of the
+                                              // job
+  int                  debug_fd = -1;         // File descriptor for debug copy
 
 
   (void)inputseekable;
 
-  //int fd = open("/tmp/printout", O_CREAT | O_WRONLY, S_IRWXU);
+  // Remove debug copies of old jobs
+  pr_clean_debug_copies(global_data);
+
+  if (papplSystemGetLogLevel(global_data->system) == PAPPL_LOGLEVEL_DEBUG)
+  {
+    // We are in debug mode
+    // Debug copy file name (in spool directory)
+    printer = papplJobGetPrinter(job);
+    snprintf(filename, sizeof(filename), "%s/debug-jobdata-%s-%d.prn",
+	     global_data->spool_dir, papplPrinterGetName(printer),
+	     papplJobGetID(job));
+    if (log)
+      log(ld, FILTER_LOGLEVEL_DEBUG,
+	  "Backend: Creating debug copy of what goes to the printer: %s", filename);
+    // Open the file
+    debug_fd = open(filename, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
+  }
+
   while ((bytes = read(inputfd, buffer, sizeof(buffer))) > 0)
   {
-    //write(fd, buffer, (size_t)bytes);
+    if (debug_fd >= 0)
+      if (write(debug_fd, buffer, (size_t)bytes) != bytes)
+      {
+	if (log)
+	  log(ld, FILTER_LOGLEVEL_ERROR,
+	      "Backend: Debug copy: Unable to write %d bytes, stopping debug copy, continuing job output.",
+	      (int)bytes);
+	close(debug_fd);
+	debug_fd = -1;
+      }
+
     if (papplDeviceWrite(device, buffer, (size_t)bytes) < 0)
     {
       if (log)
 	log(ld, FILTER_LOGLEVEL_ERROR,
-	    "Output to device: Unable to send %d bytes to printer.",
+	    "Backend: Output to device: Unable to send %d bytes to printer.",
 	    (int)bytes);
+      if (debug_fd >= 0)
+	close(debug_fd);
       close(inputfd);
       close(outputfd);
       return (1);
@@ -1391,11 +1490,13 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
   {
     if (log)
       log(ld, FILTER_LOGLEVEL_DEBUG,
-	  "Output data stream ended, shutting down CUPS backend");
+	  "Backend: Output data stream ended, shutting down CUPS backend");
     pr_cups_dev_stop_backend(device);
   }
 
-  //close(fd);
+  if (debug_fd >= 0)
+    close(debug_fd);
+
   close(inputfd);
   close(outputfd);
   return (0);
@@ -1505,6 +1606,8 @@ pr_rpreparejob(
       calloc(1, sizeof(pr_print_filter_function_data_t));
     print_params->device = device;
     print_params->device_uri = job_data->device_uri;
+    print_params->job = job;
+    print_params->global_data = job_data->global_data;
     job_data->print =
       (filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
     job_data->print->function = pr_print_filter_function;
