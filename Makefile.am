@@ -88,6 +88,7 @@ test_printer_app_serverbin=$(libdir)/test-printer-app
 testpagedir = $(test_printer_app_resourcedir)
 
 testpagefiles = \
+	data/testpage.pdf \
 	data/testpage.ps
 
 testpage_DATA = $(testpagefiles)

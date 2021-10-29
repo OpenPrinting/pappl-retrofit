@@ -35,7 +35,8 @@
 
 // Test page
 
-#define TESTPAGE "testpage.ps"
+#define TESTPAGE "testpage.pdf"
+//#define TESTPAGE "testpage.ps"
 
 
 //

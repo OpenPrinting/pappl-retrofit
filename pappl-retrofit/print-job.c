@@ -896,6 +896,17 @@ pr_create_job_data(pappl_job_t *job,
   for (i = job_data->num_options, opt = job_data->options; i > 0; i --, opt ++)
     papplLogJob(job, PAPPL_LOGLEVEL_DEBUG, "  %s=%s", opt->name, opt->value);
 
+  // Set environment variables for filters
+  if ((val = papplPrinterGetName(printer)) != NULL && val[0])
+    setenv("PRINTER", val, 1);
+  else
+    unsetenv("PRINTER");
+  if ((val = papplPrinterGetLocation(printer, buf, sizeof(buf))) != NULL &&
+      buf[0])
+    setenv("PRINTER_LOCATION", val, 1);
+  else
+    unsetenv("PRINTER_LOCATION");
+
   // Clean up
   ippDelete(driver_attrs);
 
@@ -954,7 +965,7 @@ pr_filter(
   const char            *informat;
   const char		*filename;	// Input filename
   int			fd;		// Input file descriptor
-  pr_spooling_conversion_t *conversion; // Sppoling conversion to use
+  pr_spooling_conversion_t *conversion; // Spooling conversion to use
                                         // for pre-filtering
   char                  *filter_path = NULL; // Filter from PPD to use for
                                         // this job
@@ -965,6 +976,14 @@ pr_filter(
                                         // filter defined in the PPD
   pr_print_filter_function_data_t *print_params; // Paramaters for
                                         // pr_print_filter_function()
+  filter_filter_in_chain_t banner_filter = // bannertopdf() filter function
+  {                                     // in filter chain, mainly for PDF
+    bannertopdf,                        // test pages
+    NULL,
+    "bannertopdf"
+  };
+  int                   is_banner = 0;  // Do we have bannertopdf()
+                                        // instructions in our PDF input file
 
 
   //
@@ -1040,7 +1059,10 @@ pr_filter(
     papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 		"Using CUPS filter (printer driver): %s", filter_path);
 
+  //
   // Connect the job's filter_data to the backend
+  //
+
   if (strncmp(job_data->device_uri, "cups:", 5) == 0)
   {
     // Get the device data
@@ -1051,10 +1073,37 @@ pr_filter(
   }
 
   //
+  // Check whether the PDF input id a banner or test page
+  //
+
+  if (strcmp(informat, "application/pdf") == 0 ||
+      strcmp(informat, "application/vnd.cups-pdf") == 0)
+  {
+    FILE *fp;
+    char *line = NULL;
+    size_t len = 0;
+
+    fp = fdopen(fd, "r");
+    while (getline(&line, &len, fp) != -1)
+      if (strncmp(line, "%%#PDF-BANNER", 13) == 0 ||
+	  strncmp(line, "%%PDF-BANNER", 12) == 0)
+      {
+	papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+		    "Input PDF file is banner or test page file, calling bannertopdf to add printer and job information");
+	is_banner = 1;
+	break;
+      }
+    rewind(fp);
+    free(line);
+  }
+
+  //
   // Set up filter function chain
   //
 
   job_data->chain = cupsArrayNew(NULL, NULL);
+  if (is_banner)
+    cupsArrayAdd(job_data->chain, &banner_filter);
   for (i = 0; i < conversion->num_filters; i ++)
     cupsArrayAdd(job_data->chain, &(conversion->filters[i]));
   if (strlen(filter_path) > 1) // A null filter is a single char, '-'
@@ -1144,6 +1193,9 @@ pr_filter(
 
 void   pr_free_job_data(pr_job_data_t *job_data)
 {
+  unsetenv("PRINTER");
+  unsetenv("PRINTER_LOCATION");
+
   if (job_data->global_data->config->components & PR_COPTIONS_CUPS_BACKENDS)
     filterCloseBackAndSidePipes(job_data->filter_data);
 
@@ -1317,7 +1369,7 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
 
   (void)inputseekable;
 
-  //int fd = open("/tmp/printout", O_CREAT | O_WRONLY);
+  //int fd = open("/tmp/printout", O_CREAT | O_WRONLY, S_IRWXU);
   while ((bytes = read(inputfd, buffer, sizeof(buffer))) > 0)
   {
     //write(fd, buffer, (size_t)bytes);
