@@ -219,7 +219,7 @@ typedef struct pr_printer_app_config_s
   // and the PPDs for our printer Acme LaserStar 100 got the following
   // driver names
   //
-  //   "acme--laserstar-100--ljet4d-recommended-en"
+  //   "acme--laserstar-100--ljet-4-d-recommended-en"
   //   "acme--laserstar-100--pxlmono-en"
   //   "acme--laserstar-100--laserstar-en"
   //
@@ -258,7 +258,7 @@ typedef struct pr_printer_app_global_data_s
                                          // via FILTER_DIR environment
                                          // variable
   char              backend_dir[1024];   // Backend directory, customizable
-                                         // via BACKENF_DIR environment
+                                         // via BACKEND_DIR environment
                                          // variable
   char              testpage_dir[1024];  // Test page directory, customizable
                                          // via TESTPAGE_DIR environment
