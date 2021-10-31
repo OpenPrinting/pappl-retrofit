@@ -174,14 +174,14 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 	    strcasecmp(mfg, dmfg) == 0 &&
 	    strcasecmp(mdl, dmdl) == 0)
 	  // Match
-	  score += 2000;
+	  score += 16000;
 	cupsFreeOptions(num_ddid, ddid);
       }
 
       // Match normalized device ID with driver name
       if (score == 0 && strncmp(buf, drivers[i].name, strlen(buf)) == 0)
 	// Match
-	score += 1000;
+	score += 8000;
 
       // PPD must at least match make and model to get considered
       if (score == 0)
@@ -194,13 +194,13 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 
       // PPD matches user's/system's language?
       // To be added when PAPPL supports internationalization (TODO)
-      // score + 8000 for 2-char language
-      // score + 16000 for 5-char language/country
+      // score + 2 for 2-char language
+      // score + 4 for 5-char language/country
 
       // PPD is English language version?
       if (!strcmp(drivers[i].name + strlen(drivers[i].name) - 3, "-en") ||
 	  !strncmp(drivers[i].name + strlen(drivers[i].name) - 6, "-en-", 4))
-	score += 4000;
+	score += 1;
 
       // Match the regular expressions on the driver name
       if (compiled_re_list)
@@ -211,7 +211,7 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 	  if (!regexec(re, drivers[i].name, 0, NULL, 0))
 	  {
 	    // Regular expression matches
-	    score += (500 - j);
+	    score += (4000 - 10 * j);
 	    papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
 		     "Driver %s matched driver priority regular expression %d: \"%s\"",
 		     drivers[i].name, j + 1,
