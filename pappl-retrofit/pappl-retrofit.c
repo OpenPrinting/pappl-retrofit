@@ -3751,6 +3751,7 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
   int              i, j, k;
   char             *generic_ppd, *mfg_mdl, *dev_id;
   char             *end_model, *drv_name;
+  char             *ppd_model_name;
   pr_ppd_path_t    *ppd_path;
   int              num_options = 0;
   cups_option_t    *options = NULL;
@@ -3902,8 +3903,12 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  }
 	}
 	// Note: The last entry in the product list is the ModelName of the
-	// PPD and not an actual Product entry. Therefore we ignore it
-	// (Hidden feature of ppdCollectionListPPDs())
+	// PPD and not an actual Product entry. Therefore we ignore it as
+	// a product name entry (Hidden feature of ppdCollectionListPPDs())
+	for (j = 0; j < PPD_MAX_PROD; j ++)
+	  if (!ppd->record.products[j][0])
+	    break;
+	ppd_model_name = (j > 0 ? ppd->record.products[j - 1] : NULL);
         for (j = -1;
 	     j < (global_data->config->components &
 		  PR_COPTIONS_PPD_NO_EXTRA_PRODUCTS ? 0 : PPD_MAX_PROD - 1);
@@ -3958,9 +3963,14 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	    if (pre_normalized == 0)
 	    {
 	      if (ppd->record.products[0][0] &&
-		  ppd->record.products[1][0] &&
-		  ppd->record.products[2][0])
+		  ((ppd->record.products[1][0] &&
+		    ppd->record.products[2][0]) ||
+		   (!strncasecmp(ppd->record.products[0],
+				 ppd->record.make_and_model,
+				 strlen(ppd->record.products[0])))))
 		mfg_mdl = ppd->record.products[0];
+	      else if (ppd_model_name)
+		mfg_mdl = ppd_model_name;
 	      else
 		mfg_mdl = ppd->record.make_and_model;
 	    }
@@ -3976,6 +3986,16 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  {
 	    memmove(mfg_mdl, mfg_mdl + 1, strlen(mfg_mdl) - 2);
 	    mfg_mdl[strlen(mfg_mdl) - 2] = '\0';
+	  }
+	  // We preferably register device IDs actually found in the PPD files,
+	  // For PPDs without explicit device ID we try our best to fill the
+	  // model field with only the model name, without driver specification
+	  if (dev_id)
+	    drivers[i].device_id = strdup(dev_id);
+	  {
+	    snprintf(buf1, sizeof(buf1) - 1, "MFG:%s;MDL:%s;",
+		     ppd->record.make, mfg_mdl);
+	    drivers[i].device_id = strdup(buf1);
 	  }
 	  // New entry for PPD lookup table
 	  ppd_path = (pr_ppd_path_t *)calloc(1, sizeof(pr_ppd_path_t));
@@ -4009,10 +4029,6 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 						   IEEE1284_NORMALIZE_HUMAN,
 						   NULL, buf2, sizeof(buf2),
 						   NULL, NULL, NULL));
-	  // We only register device IDs actually found in the PPD files,
-	  // PPDs without explicit device ID get matched by the
-	  // ieee1284NormalizeMakeAndModel() function
-	  drivers[i].device_id = (dev_id ? strdup(dev_id) : strdup(""));
 	  // List sorting index with padded numbers (typos in example intended)
 	  // "LaserJet 3P" < "laserjet 4P" < "Laserjet3000P" < "LaserJet 4000P"
 	  drivers[i].extension =
