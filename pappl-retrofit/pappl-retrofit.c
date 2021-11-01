@@ -180,6 +180,7 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 
       // Match normalized device ID with driver name
       if (score == 0 && strncmp(buf, drivers[i].name, strlen(buf)) == 0 &&
+	  strlen(drivers[i].name) >= strlen(buf) + 2 &&
 	  drivers[i].name[strlen(buf)] == '-' &&
 	  drivers[i].name[strlen(buf) + 1] == '-')
 	// Match
