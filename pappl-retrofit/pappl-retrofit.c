@@ -126,6 +126,10 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
 				  buf, sizeof(buf),
 				  NULL, NULL, NULL);
 
+    papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
+	     "Device ID to match: %s", device_id);
+    papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
+	     "Normalized make and model to match against driver name: %s", buf);
     // Compile regular expressions to prioritize drivers
     if (global_data->config->driver_selection_regex_list)
     {
@@ -3912,6 +3916,24 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  if (!ppd->record.products[j][0])
 	    break;
 	ppd_model_name = (j > 0 ? ppd->record.products[j - 1] : NULL);
+	if (!driver_info[0])
+	{
+	  if ((ptr = strchr(ppd->record.make_and_model, ',')) != NULL ||
+	      (ptr = strchr(ppd->record.make_and_model, '(')) != NULL ||
+	      (ptr = strstr(ppd->record.make_and_model, " - ")) != NULL)
+	  {
+	    if (*ptr == ',') ptr ++;
+	    strncpy(driver_info, ptr, sizeof(driver_info) - 1);
+	  }
+	  else if (ppd_model_name &&
+		   strlen(ppd->record.make_and_model) >=
+		   strlen(ppd_model_name) &&
+		   !strncasecmp(ppd->record.make_and_model,
+				ppd_model_name, strlen(ppd_model_name)))
+	    strncpy(driver_info,
+		    ppd->record.make_and_model + strlen(ppd_model_name),
+		    sizeof(driver_info) - 1);
+	}
         for (j = -1;
 	     j < (global_data->config->components &
 		  PR_COPTIONS_PPD_NO_EXTRA_PRODUCTS ? 0 : PPD_MAX_PROD - 1);
@@ -4002,6 +4024,36 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  }
 	  // New entry for PPD lookup table
 	  ppd_path = (pr_ppd_path_t *)calloc(1, sizeof(pr_ppd_path_t));
+	  // If we have driver info, make sure the string starts with
+	  // ',', '(', or " - "
+	  if (driver_info[0])
+	  {
+	    ptr = driver_info;
+	    while (*ptr && *ptr != ',' && *ptr != '(' && strncmp(ptr, " - ", 3))
+	    {
+	      if (!isalnum(*ptr))
+		ptr ++;
+	      else
+		break;
+	    }
+	    if (!*ptr)
+	      driver_info[0] = '\0';
+	    else if (isalnum(*ptr))
+	    {
+	      memmove(driver_info + 2, ptr, strlen(ptr) + 1);
+	      driver_info[0] = ',';
+	      driver_info[1] = ' ';
+	    }
+	    else
+	    {
+	      memmove(driver_info, ptr, strlen(ptr) + 1);
+	      if (driver_info[0] == '(')
+	      {
+		memmove(driver_info + 1, driver_info, strlen(driver_info) + 1);
+		driver_info[0] = ' ';
+	      }
+	    }
+	  }
 	  // Base make/model/language string to generate the needed index
 	  // strings
 	  snprintf(buf1, sizeof(buf1) - 1, "%s%s%s (%s)",
