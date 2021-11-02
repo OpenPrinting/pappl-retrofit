@@ -4017,6 +4017,7 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	  // model field with only the model name, without driver specification
 	  if (dev_id)
 	    drivers[i].device_id = strdup(dev_id);
+	  else
 	  {
 	    snprintf(buf1, sizeof(buf1) - 1, "MFG:%s;MDL:%s;",
 		     ppd->record.make, mfg_mdl);
