@@ -4096,9 +4096,12 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 					NULL, buf2, sizeof(buf2),
 					NULL, NULL, NULL));
 	  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
-		   "File: %s; Printer (%d): %s; --> Entry %d: Driver %s; "
+		   "File: %s; Make: %s; NickName: %s; ModelName: %s; DevID: %s; Printer (%d): %s (%s); --> Entry %d: Driver %s; "
 		   "Description: %s; Device ID: %s; Sorting index: %s",
-		   ppd_path->ppd_path, j, buf1, i, drivers[i].name,
+		   ppd_path->ppd_path, ppd->record.make,
+		   ppd->record.make_and_model, ppd_model_name,
+		   ppd->record.device_id, j, buf1, driver_info, i,
+		   drivers[i].name,
 		   drivers[i].description, drivers[i].device_id,
 		   (char *)(drivers[i].extension));
 	  // Sort the new entry into the list via the extension
