@@ -1754,9 +1754,6 @@ pr_driver_setup(
 	   "Resolutions from presets (missing ones filled with defaults): Draft: %dx%ddpi, Normal: %dx%ddpi, High: %dx%ddpi",
 	   res[0][0], res[0][1], res[1][0], res[1][1], res[2][0], res[2][1]);
   papplLog(system, PAPPL_LOGLEVEL_DEBUG,
-	   "Default resolution: %dx%ddpi",
-	   driver_data->x_default, driver_data->y_default);
-  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	   "Resolution entries:");
   for (i = 0; i < driver_data->num_resolution; i ++)
   {
@@ -1764,6 +1761,18 @@ pr_driver_setup(
 	     "  %dx%ddpi",
 	     driver_data->x_resolution[i], driver_data->y_resolution[i]);
   }
+  for (i = 0; i < driver_data->num_resolution; i ++)
+    if (driver_data->x_resolution[i] == driver_data->x_default &&
+	driver_data->y_resolution[i] == driver_data->y_default)
+      break;
+  if (i == driver_data->num_resolution)
+  {
+    driver_data->x_default = res[1][0];
+    driver_data->y_default = res[1][1];
+  }
+  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+	   "Default resolution: %dx%ddpi",
+	   driver_data->x_default, driver_data->y_default);
 
   // Print speed in pages per minute (PPDs do not show different values for
   // Grayscale and Color)
