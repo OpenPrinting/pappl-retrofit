@@ -174,5 +174,12 @@ main(int  argc,				// I - Number of command-line arguments
                               // list matches, gets the priority.
   };
 
+  // If the "driverless" utility is under the CUPS backends or under
+  // the PPD-denerating executables, tell it to not browse the network
+  // for supported (driverless) printers but exit immediately, as this
+  // Printer Application is for using printers with installed CUPS
+  // drivers.
+  putenv("NO_DRIVERLESS_PPDS=1");
+
   return (pr_retrofit_printer_app(&printer_app_config, argc, argv));
 }
