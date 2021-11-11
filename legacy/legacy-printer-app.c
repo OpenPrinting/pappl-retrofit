@@ -2,7 +2,7 @@
 // PPD/Classic CUPS driver retro-fit Printer Application Library
 // (libpappl-retrofit) for the Printer Application Framework (PAPPL)
 //
-// Test Printer Application
+// Legacy Printer Application
 //
 // Copyright © 2020 by Till Kamppeter.
 // Copyright © 2020 by Michael R Sweet.
@@ -16,6 +16,7 @@
 //
 
 #include <pappl-retrofit/base.h>
+#include <config.h>
 
 
 //
@@ -24,8 +25,8 @@
 
 // Name and version
 
-#define SYSTEM_NAME "CUPS Driver Retro-Fit Test Printer Application"
-#define SYSTEM_PACKAGE_NAME "test-printer-app"
+#define SYSTEM_NAME "CUPS Driver Retro-Fit Printer Application"
+#define SYSTEM_PACKAGE_NAME "legacy-printer-app"
 #define SYSTEM_VERSION_STR "1.0"
 #define SYSTEM_VERSION_ARR_0 1
 #define SYSTEM_VERSION_ARR_1 0
@@ -40,14 +41,14 @@
 
 
 //
-// 'test_autoadd()' - Auto-add printers.
+// 'legacy_autoadd()' - Auto-add printers.
 //
 
 const char *			        // O - Driver name or `NULL` for none
-test_autoadd(const char *device_info,	// I - Device name (unused)
-	     const char *device_uri,	// I - Device URI (unused)
-	     const char *device_id,	// I - IEEE-1284 device ID
-	     void       *data)          // I - Global data
+legacy_autoadd(const char *device_info,	// I - Device name (unused)
+	       const char *device_uri,	// I - Device URI (unused)
+	       const char *device_id,	// I - IEEE-1284 device ID
+	       void       *data)        // I - Global data
 {
   pr_printer_app_global_data_t *global_data =
     (pr_printer_app_global_data_t *)data;
@@ -74,7 +75,7 @@ test_autoadd(const char *device_info,	// I - Device name (unused)
 
 
 //
-// 'main()' - Main entry for the test-printer-app.
+// 'main()' - Main entry for the legacy-printer-app.
 //
 
 int
@@ -136,9 +137,12 @@ main(int  argc,				// I - Number of command-line arguments
     SYSTEM_WEB_IF_FOOTER,     // Foother for web interface (in HTML)
     PR_COPTIONS_QUERY_PS_DEFAULTS | // pappl-retrofit special features to be
     PR_COPTIONS_WEB_ADD_PPDS |      // used
+#ifndef ENABLE_PAPPL_BACKENDS
+    PR_COPTIONS_NO_PAPPL_BACKENDS |
+#endif
     PR_COPTIONS_CUPS_BACKENDS |
     PR_COPTIONS_NO_GENERIC_DRIVER,
-    test_autoadd,             // Auto-add (driver assignment) callback
+    legacy_autoadd,           // Auto-add (driver assignment) callback
     pr_identify,              // Printer identify callback
     pr_testpage,              // Test page print callback
     pr_setup_add_ppd_files_page, // Set up "Add PPD Files" web interface page

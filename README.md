@@ -112,12 +112,15 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
   PPD for a printer or checking which PDLs (Page Description
   Languages) the printer supports.
 
-- An included test Printer Application allows to easily check whether
-  a CUPS driver works inside a Printer Application. Simply install the
-  driver normally (into the system's conventionally installed CUPS)
-  and the test Printer Application looks for the driver's files in the
-  usual CUPS directories. It also serves as example to create your own
-  driver-retro-fitting Printer Application.
+- Thw included Legacy Printer Application allows to easily check
+  whether a CUPS driver works inside a Printer Application. Simply
+  install the driver normally (into the system's conventionally
+  installed CUPS) and the Legacy Printer Application looks for the
+  driver's files in the usual CUPS directories. It can also be used to
+  make classically installed printer drivers available to the CUPS
+  Snap, especially proprietary legacy drivers which do not exist in a
+  Snap in the Snap Store. In addition it serves as example to create
+  your own driver-retro-fitting Printer Application.
 
 
 ### Remark
@@ -166,7 +169,7 @@ Snap for this, but Printer Applications created with the help of this
 library are available in the [Snap
 Store](https://snapcraft.io/search?q=OpenPrinting).
 
-The included example Printer Application is also not suitable to get
+The included Legacy Printer Application is also not suitable to get
 snapped, as it simply points its search directories to the PPD,
 filter, and backend locations of a conventionally (not the Snap)
 installed CUPS, to make all installed drivers available in a Printer
@@ -212,7 +215,7 @@ With this installed, you do the usual
 ```
 ./configure
 make
-sudo amke install
+sudo make install
 ```
 Note that if you are using a GIT snapshot you have to run
 ```
@@ -222,20 +225,23 @@ before the above-mentioned commands.
 
 Then have a look at
 ```
-examples/test-printer-app.c
+legacy/legacy-printer-app.c
 ```
 and
 ```
 pappl-retrofit/base.h
 ```
-to get a feeling how to create a Printer Application in your desired configuration.
+to get a feeling how to create a Printer Application in your desired
+configuration.
 
 
 ## Setting up
 
-If you have your Printer Application, start it as a server
+If you have your Printer Application, start it as a server, for
+example (using the name of our Legacy Printer Application in the
+examples):
 ```
-sudo test-printer-app server &
+sudo legacy-printer-app server &
 ```
 
 Enter the web interface
@@ -249,7 +255,7 @@ media and the option defaults.
 Then print PDF, PostScript, JPEG, Apple Raster, or PWG Raster files
 with
 ```
-test-printer-app FILE
+legacy-printer-app FILE
 ```
 or print with CUPS, CUPS (and also cups-browsed) discover and treat
 the printers set up with this Printer Application as driverless IPP
@@ -259,7 +265,7 @@ You can also add PPD files, either by
 using the "Add PPD files" button in the web interface or by manually
 copying PPD files:
 ```
-sudo cp PPDFILE /var/lib/test-printer-app/ppd/
+sudo cp PPDFILE /var/lib/legacy-printer-app/ppd/
 ```
 
 After manually copying (or removing) PPD files you need to restart the
@@ -277,13 +283,13 @@ but any number of single PPD files, `.tar.gz` files containing PPDs
 (in arbitrary directory structure), driver information files (`.drv`),
 and PPD-generating executables which are usually put into
 `/usr/lib/cups/driver`. You can also create arbitrary sub-directory
-structures in `/var/snap/test-printer-app/current/ppd/` containing the
+structures in `/var/lib/legacy-printer-app/ppd/` containing the
 mentioned types of files. Only make sure to not put any executables
 there which do anything else than listing and generating PPD files.
 
 Note that with the web interface you can only manage individual PPDs
 (uncompressed or compressed with `gzip`) in the
-`/var/snap/test-printer-app/current/ppd/` itself. Archives, driver
+`/var/lib/legacy-printer-app/ppd/` directory itself. Archives, driver
 information files, executables, or sub-directories are not shown and
 appropriate uploads not accepted. This especially prevents adding
 executables without root rights.
@@ -294,26 +300,45 @@ page shows warnings if unsuitable files get uploaded.
 
 See
 ```
-test-printer-app --help
+legacy-printer-app --help
 ```
 for more options.
 
 Use the `--debug` argument for verbose logging in your terminal window.
 
 
-## EXAMPLE/TEST PRINTER APPLICATION
+## LEGACY PRINTER APPLICATION
 
-The example/test printer application simply points to the directories
+The Legacy Printer Application simply points to the directories
 of the CUPS installed conventionally (not the CUPS Snap) on your
 system. So it makes all of your installed printer drivers available in
 a Printer Application. Some drivers may not work in the different
 environment (for example if a filter or backend tries to communicate
 with the CUPS daemon), but such cases are rare.
 
-So you can use this Printer Application to test the driver which you
-want to retro-fit, before you start to configure your Printer
+This especially makes the drivers available to the [CUPS
+Snap](https://github.com/OpenPrinting/cups-snap) ([Snap
+Store](https://snapcraft.io/cups)) which does not directly support
+classically installed printer drivers. So the CUPS Snap can be used as
+the system's standard printing environment keeping the classically
+installed printer drivers. This works but is generally not
+recommended, as most free software printer drivers are already
+available as Printer Applications ([Snap
+Store](https://snapcraft.io/search?q=OpenPrinting)), but there could
+be some drivers which are not yet converted, especially many
+proprietary legacy drivers from printer manufacturers. Here the Legacy
+Printer Application comes in handy.
+
+So the best way for a Linux distribution using the CUPS Snap as its
+printing system it is recommended not to install the standard drivers
+classically and use the appropriate Printer Application Snaps instead,
+but also install the Legacy Printer Application classically to catch
+any drivers for which we do not have a Printer Application.
+
+You can also use this Printer Application to test the driver which you
+want to retro-fit before you start to configure your Printer
 Application executable and package everything into a Snap. This
-library and the function of the
+library and the functions of the
 [cups-filters](https://github.com/OpenPrinting/cups-filters) used by
 it try to resemble the CUPS environment for the filters and backends
 as well as possible: Environment variables, command lines, even side
@@ -323,6 +348,13 @@ behaves correctly, whether the PPD options are represented well on the
 interface, and whether the printer reacts correctly to IPP attributes
 supplied with the job, especially `print-color-mode`, `print-quality`,
 and `print-content-optimize`.
+
+The Legacy Printer Application uses the (classically installed) CUPS
+backends for communication with the printer hardware by default and
+not the backends built into PAPPL, to get the best compatibility with
+the CUPS drivers. To make the PAPPL backends also available, the
+Legacy Printer Application has to be built with the
+`--enable-pappl-backends-for-legacy-printer-app` for `./configure`.
 
 If anything behaves wrongly and you cannot get it working by modifying
 the configuration of your Printer Application, your callbacks, regular
@@ -355,7 +387,7 @@ library and control this functionality through extra pages in the web
 interface. Here a feature for downloading HP's proprietary plugin is
 added.
 
-The Test Printer Application searches for PPDs, PPD archives, driver
+The Legacy Printer Application searches for PPDs, PPD archives, driver
 information files (`.drv`), and PPD-generating executables on
 
 ```
@@ -363,36 +395,36 @@ information files (`.drv`), and PPD-generating executables on
 /usr/share/cups/model/
 /usr/lib/cups/driver/
 /usr/share/cups/drv/
-/var/lib/test-printer-app/ppd/
+/var/lib/legacy-printer-app/ppd/
 ```
 The last one is where the web interface drops user-uploaded PPD files.
 
 It uses the following directories for its files:
 ```
-/var/lib/test-printer-app
-/var/spool/test-printer-app
-/usr/share/test-printer-app
-/usr/lib/test-printer-app
+/var/lib/legacy-printer-app
+/var/spool/legacy-printer-app
+/usr/share/legacy-printer-app
+/usr/lib/legacy-printer-app
 ```
 The last directory is linked to `/usr/lib/cups` so that the Printer Application
 sees the filters and backends of CUPS.
 
 The test page
 ```
-/usr/share/test-printer-app/testpage.ps
+/usr/share/legacy-printer-app/testpage.ps
 ```
 is the good old 21-year-old PostScript test page of CUPS, but you can easily
 use any other test page for your Printer Application.
 
 Configured print queues and job history is saved in
 ```
-/var/lib/test-printer-app/test-printer-app.state
+/var/lib/legacy-printer-app/legacy-printer-app.state
 ```
 
 You can set the `PPD_PATHS` environment variable to search other
 places instead:
 ```
-PPD_PATHS=/path/to/my/ppds:/my/second/place ./test-printer-app server
+PPD_PATHS=/path/to/my/ppds:/my/second/place ./legacy-printer-app server
 ```
 
 Simply put a colon-separated list of any amount of paths into the
@@ -402,12 +434,12 @@ page. Creating a wrapper script is recommended.
 For an alternative place for the test page use the TESTPAGE_DIR
 environment variable:
 ```
-TESTPAGE_DIR=`pwd` PPD_PATHS=/path/to/my/ppds:/my/second/place ./test-printer-app server
+TESTPAGE_DIR=`pwd` PPD_PATHS=/path/to/my/ppds:/my/second/place ./legacy-printer-app server
 ```
 or for your own creation of a test page (PostScript, PDF, PNG, JPEG,
 Apple Raster, PWG Raster):
 ```
-TESTPAGE=/path/to/my/testpage/my_testpage.ps PPD_PATHS=/path/to/my/ppds:/my/second/place ./test-printer-app server
+TESTPAGE=/path/to/my/testpage/my_testpage.ps PPD_PATHS=/path/to/my/ppds:/my/second/place ./legacy-printer-app server
 ```
 
 

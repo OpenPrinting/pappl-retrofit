@@ -52,20 +52,20 @@ libpappl_retrofit_la_LDFLAGS = \
 EXTRA_DIST += \
 	$(pkgpappl_retrofitinclude_DATA)
 
-# ===========================
-# Example Printer Application
-# ===========================
+# ==========================
+# Legacy Printer Application
+# ==========================
 bin_PROGRAMS = \
-	test-printer-app
+	legacy-printer-app
 
-test_printer_app_SOURCES = \
-	examples/test-printer-app.c
-test_printer_app_LDADD = \
+legacy_printer_app_SOURCES = \
+	legacy/legacy-printer-app.c
+legacy_printer_app_LDADD = \
 	$(CUPS_LIBS) \
 	$(CUPSFILTERS_LIBS) \
 	$(PPD_LIBS) \
 	libpappl-retrofit.la
-test_printer_app_CFLAGS = \
+legacy_printer_app_CFLAGS = \
 	$(CUPS_CFLAGS) \
 	$(CUPSFILTERS_CFLAGS) \
 	$(PPD_CFLAGS) \
@@ -75,17 +75,17 @@ test_printer_app_CFLAGS = \
 # Directories
 # ===========
 
-test_printer_app_statedir=$(localstatedir)/lib/test-printer-app
-test_printer_app_userppddir=$(test_printer_app_statedir)/ppd
-test_printer_app_spooldir=$(localstatedir)/spool/test-printer-app
-test_printer_app_resourcedir=$(datadir)/test-printer-app
-test_printer_app_serverbin=$(libdir)/test-printer-app
+legacy_printer_app_statedir=$(localstatedir)/lib/legacy-printer-app
+legacy_printer_app_userppddir=$(legacy_printer_app_statedir)/ppd
+legacy_printer_app_spooldir=$(localstatedir)/spool/legacy-printer-app
+legacy_printer_app_resourcedir=$(datadir)/legacy-printer-app
+legacy_printer_app_serverbin=$(libdir)/legacy-printer-app
 
 # ==========
 # Test pages
 # ==========
 
-testpagedir = $(test_printer_app_resourcedir)
+testpagedir = $(legacy_printer_app_resourcedir)
 
 testpagefiles = \
 	data/testpage.pdf \
@@ -101,29 +101,29 @@ distclean-local:
 	rm -rf *.cache *~ */*~
 
 install-data-hook:
-	$(INSTALL) -d -m 755 $(DESTDIR)$(test_printer_app_statedir)
-	$(INSTALL) -d -m 755 $(DESTDIR)$(test_printer_app_userppddir)
-	$(INSTALL) -d -m 755 $(DESTDIR)$(test_printer_app_spooldir)
-	$(INSTALL) -d -m 755 $(DESTDIR)$(test_printer_app_resourcedir)
+	$(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_statedir)
+	$(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_userppddir)
+	$(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_spooldir)
+	$(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_resourcedir)
 	if [ -d $(CUPS_SERVERBIN) ]; then \
-	  $(LN_S) -f $(CUPS_SERVERBIN) $(DESTDIR)$(test_printer_app_serverbin);\
+	  $(LN_S) -f $(CUPS_SERVERBIN) $(DESTDIR)$(legacy_printer_app_serverbin);\
 	else \
-	  $(INSTALL) -d -m 755 $(DESTDIR)$(test_printer_app_serverbin); \
-	  $(INSTALL) -d -m 755 $(DESTDIR)$(test_printer_app_serverbin)/filter; \
-	  $(INSTALL) -d -m 755 $(DESTDIR)$(test_printer_app_serverbin)/backend; \
+	  $(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_serverbin); \
+	  $(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_serverbin)/filter; \
+	  $(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_serverbin)/backend; \
 	fi
 
 uninstall-hook:
-	-rmdir $(DESTDIR)$(test_printer_app_userppddir)
-	-rmdir $(DESTDIR)$(test_printer_app_statedir)
-	-rmdir $(DESTDIR)$(test_printer_app_spooldir)
-	-rmdir $(DESTDIR)$(test_printer_app_resourcedir)
+	-rmdir $(DESTDIR)$(legacy_printer_app_userppddir)
+	-rmdir $(DESTDIR)$(legacy_printer_app_statedir)
+	-rmdir $(DESTDIR)$(legacy_printer_app_spooldir)
+	-rmdir $(DESTDIR)$(legacy_printer_app_resourcedir)
 	-if [ -d $(CUPS_SERVERBIN) ]; then \
-	  $(RM) $(DESTDIR)$(test_printer_app_serverbin);\
+	  $(RM) $(DESTDIR)$(legacy_printer_app_serverbin);\
 	else \
-	  rmdir $(DESTDIR)$(test_printer_app_serverbin);\
-	  rmdir $(DESTDIR)$(test_printer_app_serverbin)/filter;\
-	  rmdir $(DESTDIR)$(test_printer_app_serverbin)/backend;\
+	  rmdir $(DESTDIR)$(legacy_printer_app_serverbin);\
+	  rmdir $(DESTDIR)$(legacy_printer_app_serverbin)/filter;\
+	  rmdir $(DESTDIR)$(legacy_printer_app_serverbin)/backend;\
 	fi
 	-rmdir $(DESTDIR)$(includedir)/pappl-retrofit
 	-rmdir $(DESTDIR)$(docdir)

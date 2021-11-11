@@ -198,6 +198,18 @@ AC_ARG_WITH([shell],
 )
 AC_DEFINE_UNQUOTED([SHELL], "$with_shell", [Path for a modern shell])
 
+# ============================================
+# Enable PAPPL backends in legacy-printer-app?
+# ============================================
+AC_ARG_ENABLE([pappl-backends-for-legacy-printer-app],
+	[AS_HELP_STRING([--enable-pappl-backends-for-legacy-printer-app], [Enable PAPPL backends in legacy-printer-app (mainly for development).])],
+        [enable_pappl_backends_for_legacy_printer_app="$enableval"],
+        [enable_pappl_backends_for_legacy_printer_app=no]
+)
+AS_IF([test "x$enable_pappl_backends_for_legacy_printer_app" != "xno"], [
+    AC_DEFINE(ENABLE_PAPPL_BACKENDS, 1, [Build legacy-printer-app with PAPPL backend support])
+])
+
 # =====================
 # Prepare all .in files
 # =====================
@@ -217,5 +229,6 @@ Environment settings:
 	LDFLAGS:         ${LDFLAGS}
 Build configuration:
 	cups-config:     ${with_cups_config}
+	legacy-printer-app w/ PAPPL backends: ${enable_pappl_backends_for_legacy_printer_app}
 ==============================================================================
 ])
