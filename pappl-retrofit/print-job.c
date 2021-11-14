@@ -1565,70 +1565,54 @@ pr_rpreparejob(
   // The filter chain has no output, data is going directly to the device
   nullfd = open("/dev/null", O_RDWR);
 
-  // Create file descriptor/pipe to which the functions of libppd can send
-  // the data so that it gets passed on to the device
-  if (strlen(job_data->stream_filter) > 1 || // A null filter is a
-                                             // single char, '-' or '.',
-                                             // whereas an actual filter
-                                             // has a path starting with
-                                             // '/', so at least 2
-                                             // chars.
-      job_data->stream_format->num_filters)  // Do we have filter functions
-                                             // to generate the stream data
-                                             // format?
-  {
-    // Create filter chain of the filter function for creating the stream
-    // data format and/or the CUPS filter defined in the PPD file, and the
-    // print filter function
-    job_data->chain = cupsArrayNew(NULL, NULL);
-    for (i = 0; i < job_data->stream_format->num_filters; i ++)
-      cupsArrayAdd(job_data->chain, &(job_data->stream_format->filters[i]));
-    if (strlen(job_data->stream_filter) > 1)
-    {
-      papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
-		  "Using CUPS filter (printer driver): %s",
-		  job_data->stream_filter);
-      ppd_filter_params =
-	(filter_external_cups_t *)calloc(1, sizeof(filter_external_cups_t));
-      ppd_filter_params->filter = job_data->stream_filter;
-      job_data->ppd_filter =
-	(filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
-      job_data->ppd_filter->function = filterExternalCUPS;
-      job_data->ppd_filter->parameters = ppd_filter_params;
-      job_data->ppd_filter->name = strrchr(job_data->stream_filter, '/') + 1;
-      cupsArrayAdd(job_data->chain, job_data->ppd_filter);
-    } else
-      job_data->ppd_filter = NULL;
-    // Put filter function to send data to PAPPL's built-in backend at the end
-    // of the chain
-    print_params =
-      (pr_print_filter_function_data_t *)
-      calloc(1, sizeof(pr_print_filter_function_data_t));
-    print_params->device = device;
-    print_params->device_uri = job_data->device_uri;
-    print_params->job = job;
-    print_params->global_data = job_data->global_data;
-    job_data->print =
-      (filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
-    job_data->print->function = pr_print_filter_function;
-    job_data->print->parameters = print_params;
-    job_data->print->name = "Backend";
-    cupsArrayAdd(job_data->chain, job_data->print);
+  // Create file descriptor/pipe to which print data can be sent
 
-    job_data->device_fd = filterPOpen(filterChain, -1, nullfd,
+  // Create filter chain of the filter function for creating the stream
+  // data format and/or call the CUPS filter defined in the PPD file, and the
+  // print filter function
+  job_data->chain = cupsArrayNew(NULL, NULL);
+  for (i = 0; i < job_data->stream_format->num_filters; i ++)
+    cupsArrayAdd(job_data->chain, &(job_data->stream_format->filters[i]));
+  if (strlen(job_data->stream_filter) > 1) // A null filter is a
+                                           // single char, '-' or '.',
+                                           // whereas an actual filter
+                                           // has a path starting with
+                                           // '/', so at least 2
+                                           // chars.
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+		"Using CUPS filter (printer driver): %s",
+		job_data->stream_filter);
+    ppd_filter_params =
+      (filter_external_cups_t *)calloc(1, sizeof(filter_external_cups_t));
+    ppd_filter_params->filter = job_data->stream_filter;
+    job_data->ppd_filter =
+      (filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
+    job_data->ppd_filter->function = filterExternalCUPS;
+    job_data->ppd_filter->parameters = ppd_filter_params;
+    job_data->ppd_filter->name = strrchr(job_data->stream_filter, '/') + 1;
+    cupsArrayAdd(job_data->chain, job_data->ppd_filter);
+  } else
+    job_data->ppd_filter = NULL;
+  // Put filter function to send data to PAPPL's built-in backend at the end
+  // of the chain
+  print_params =
+    (pr_print_filter_function_data_t *)
+    calloc(1, sizeof(pr_print_filter_function_data_t));
+  print_params->device = device;
+  print_params->device_uri = job_data->device_uri;
+  print_params->job = job;
+  print_params->global_data = job_data->global_data;
+  job_data->print =
+    (filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
+  job_data->print->function = pr_print_filter_function;
+  job_data->print->parameters = print_params;
+  job_data->print->name = "Backend";
+  cupsArrayAdd(job_data->chain, job_data->print);
+  // Call the filter chain and get the file descriptor to feed in the data
+  job_data->device_fd = filterPOpen(filterChain, -1, nullfd,
 				      0, job_data->filter_data, job_data->chain,
 				      &(job_data->device_pid));
-  }
-  else
-  {
-    // No extra filter needed, make print filter function be called
-    // directly
-    papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
-		"Passing on data directly to printer");
-    job_data->device_fd = filterPOpen(pr_print_filter_function, -1, nullfd,
-				      0, job_data->filter_data, device,
-				      &(job_data->device_pid));
-  }
 
   if (job_data->device_fd < 0)
   {
