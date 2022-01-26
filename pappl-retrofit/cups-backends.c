@@ -173,7 +173,7 @@ pr_cups_sigchld_sigaction(int sig,		// I - Signal number (unused)
     if (backend_list[i].pid == info->si_pid)
     {
       papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
-	       "Backend '%s' triggered SIGCHLD\n", backend_list[i].name);
+	       "Backend '%s' triggered SIGCHLD", backend_list[i].name);
       backend_list[i].done = true;
       backend_list[i].status =
 	(info->si_status == SIGTERM ? 0 : info->si_status);
