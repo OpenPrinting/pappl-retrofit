@@ -74,7 +74,7 @@ pr_get_current_time(void)
 
 void
 pr_cups_devlog(void *data,
-	       filter_loglevel_t level,
+	       cf_loglevel_t level,
 	       const char *message,
 	       ...)
 {
@@ -89,20 +89,20 @@ pr_cups_devlog(void *data,
 
   switch(level)
   {
-    case FILTER_LOGLEVEL_CONTROL:
+    case CF_LOGLEVEL_CONTROL:
       buffer[sizeof(buffer) - 18] = '\0';
       memmove(buffer + 17, buffer, strlen(buffer) + 1);
       memcpy(buffer, "Control message: ", 17);
-      level = FILTER_LOGLEVEL_DEBUG;
+      level = CF_LOGLEVEL_DEBUG;
     default:
-    case FILTER_LOGLEVEL_UNSPEC:
-    case FILTER_LOGLEVEL_DEBUG:
-    case FILTER_LOGLEVEL_INFO:
-    case FILTER_LOGLEVEL_WARN:
+    case CF_LOGLEVEL_UNSPEC:
+    case CF_LOGLEVEL_DEBUG:
+    case CF_LOGLEVEL_INFO:
+    case CF_LOGLEVEL_WARN:
       papplLog(devlog_data->system, level, "%s", buffer);
       break;
-    case FILTER_LOGLEVEL_ERROR:
-    case FILTER_LOGLEVEL_FATAL:
+    case CF_LOGLEVEL_ERROR:
+    case CF_LOGLEVEL_FATAL:
       if (devlog_data->err_cb)
 	(*(devlog_data->err_cb))(buffer, devlog_data->err_data);
       else
@@ -127,18 +127,18 @@ pr_cups_compare_devices(pr_backend_device_t *d0,// I - First device
 
   // Sort devices by device-info, device-class, and device-uri...
   if ((diff =
-       strcasecmp(ieee1284NormalizeMakeAndModel(d0->device_info, NULL,
-						IEEE1284_NORMALIZE_COMPARE |
-						IEEE1284_NORMALIZE_LOWERCASE |
-						IEEE1284_NORMALIZE_SEPARATOR_SPACE |
-						IEEE1284_NORMALIZE_PAD_NUMBERS,
+       strcasecmp(cfIEEE1284NormalizeMakeModel(d0->device_info, NULL,
+						CF_IEEE1284_NORMALIZE_COMPARE |
+						CF_IEEE1284_NORMALIZE_LOWERCASE |
+						CF_IEEE1284_NORMALIZE_SEPARATOR_SPACE |
+						CF_IEEE1284_NORMALIZE_PAD_NUMBERS,
 						NULL, buf0, sizeof(buf0),
 						NULL, NULL, NULL),
-		  ieee1284NormalizeMakeAndModel(d1->device_info, NULL,
-						IEEE1284_NORMALIZE_COMPARE |
-						IEEE1284_NORMALIZE_LOWERCASE |
-						IEEE1284_NORMALIZE_SEPARATOR_SPACE |
-						IEEE1284_NORMALIZE_PAD_NUMBERS,
+		  cfIEEE1284NormalizeMakeModel(d1->device_info, NULL,
+						CF_IEEE1284_NORMALIZE_COMPARE |
+						CF_IEEE1284_NORMALIZE_LOWERCASE |
+						CF_IEEE1284_NORMALIZE_SEPARATOR_SPACE |
+						CF_IEEE1284_NORMALIZE_PAD_NUMBERS,
 						NULL, buf1, sizeof(buf1),
 						NULL, NULL, NULL))) != 0)
     return (diff);
@@ -193,7 +193,7 @@ pr_cups_sigchld_sigaction(int sig,		// I - Signal number (unused)
 //                       backends which require root are skipped when
 //                       running as normal user (A Printer Application
 //                       in a Snap runs as root). The backends are run
-//                       in the filterExternalCUPS() filter function,
+//                       in the cfFilterExternalCUPS() filter function,
 //                       so their environment is as close to CUPS as
 //                       possible. For the implementation I mostly
 //                       followed scheduler/cups-deviced.c from
@@ -214,8 +214,8 @@ pr_cups_devlist(pappl_device_cb_t cb,
   pr_printer_app_global_data_t *global_data =
     (pr_printer_app_global_data_t *)pr_cups_device_user_data;
   pr_cups_devlog_data_t devlog_data;
-  filter_data_t filter_data;
-  filter_external_cups_t backend_params;
+  cf_filter_data_t filter_data;
+  cf_filter_external_cups_t backend_params;
   char          buf[2048];
   bool          ret = false;
   int		num_backends = 0,
@@ -381,7 +381,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
       }
       backend = backends + num_backends;
 
-      // Prepare parameters of filterExternalCUPS() filter function call
+      // Prepare parameters of cfFilterExternalCUPS() filter function call
       // for running the CUPS backend in discovery mode (without arguments)
       memset(&backend_params, 0, sizeof(backend_params));
       backend_params.filter = strdup(buf);
@@ -399,7 +399,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
 	backends[num_backends + 1].name = NULL;
 
       // Launch the backend with pipe providing backend's stdout
-      if ((backend->pipe = filterPOpen(filterExternalCUPS,
+      if ((backend->pipe = cfFilterPOpen(cfFilterExternalCUPS,
 				       open("/dev/null", O_RDWR), -1,
 				       0, &filter_data, &backend_params,
 				       &(backend->pid))) == 0)
@@ -420,7 +420,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
 	pr_cups_devlog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
 		       "Unable to set output pipe of '%s' to non-blocking- %s\n",
 		       backend_params.filter, strerror(errno));
-	filterPClose(backend->pipe, backend->pid, &filter_data);
+	cfFilterPClose(backend->pipe, backend->pid, &filter_data);
 	continue;
       }
 
@@ -662,7 +662,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
       for (i = num_backends, backend = backends; i > 0; i --, backend ++)
 	if (backend->done && backend->pid)
 	{
-	  filterPClose(backend->pipe, backend->pid, &filter_data);
+	  cfFilterPClose(backend->pipe, backend->pid, &filter_data);
 	  pid             = backend->pid;
 	  name            = backend->name;
 	  status          = backend->status;
@@ -705,7 +705,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
 	}
       for (i = 0; i < num_backends; i ++)
 	if (backends[i].pid)
-	  filterPClose(backends[i].pipe, backends[i].pid, &filter_data);
+	  cfFilterPClose(backends[i].pipe, backends[i].pid, &filter_data);
     }
   }
 
@@ -785,7 +785,7 @@ pr_cups_dev_launch_backend(pappl_device_t *device)
   if (device_data->filter_data == NULL)
   {
     if ((device_data->filter_data =
-	 (filter_data_t *)calloc(1, sizeof(filter_data_t))) == NULL)
+	 (cf_filter_data_t *)calloc(1, sizeof(cf_filter_data_t))) == NULL)
     {
       papplDeviceError(device, "Ran out of memory allocating a device!");
       return (false);
@@ -797,7 +797,7 @@ pr_cups_dev_launch_backend(pappl_device_t *device)
     device_data->filter_data->logfunc = pr_cups_devlog;
     device_data->filter_data->logdata = &device_data->devlog_data;
     // Establish back/side channel pipes for CUPS backends
-    filterOpenBackAndSidePipes(device_data->filter_data);
+    cfFilterOpenBackAndSidePipes(device_data->filter_data);
     // This is our filter_data we must free it
     device_data->internal_filter_data = true;
   }
@@ -809,7 +809,7 @@ pr_cups_dev_launch_backend(pappl_device_t *device)
 	   device_data->global_data->backend_dir, device_data->device_uri + 5);
   *(strchr(buf, ':')) = '\0';
 
-  // Arguments amd parameters for the filterExternalCUPS() filter
+  // Arguments amd parameters for the cfFilterExternalCUPS() filter
   // function to run the CUPS backend in job execution mode. The backend
   // will be waiting for job data but also for commands from the side
   // channel. In addtion it can log status messages (control messages
@@ -826,7 +826,7 @@ pr_cups_dev_launch_backend(pappl_device_t *device)
 
   // Launch the backend with pipe providing backend's stdin
   if ((device_data->inputfd =
-       filterPOpen(filterExternalCUPS,
+       cfFilterPOpen(cfFilterExternalCUPS,
 		   -1, open("/dev/null", O_RDWR),
 		   0, device_data->filter_data, &device_data->backend_params,
 		   &device_data->backend_pid)) == 0)
@@ -871,7 +871,7 @@ pr_cups_dev_stop_backend(pappl_device_t *device)
   // Close the backend sub-process
   if (device_data->backend_pid)
   {
-    filterPClose(device_data->inputfd, device_data->backend_pid,
+    cfFilterPClose(device_data->inputfd, device_data->backend_pid,
 		 device_data->filter_data);
     device_data->backend_pid = 0;
   }
@@ -879,7 +879,7 @@ pr_cups_dev_stop_backend(pappl_device_t *device)
   // Clean up
   if (device_data->internal_filter_data)
   {
-    filterCloseBackAndSidePipes(device_data->filter_data);
+    cfFilterCloseBackAndSidePipes(device_data->filter_data);
     free(device_data->filter_data);
     device_data->filter_data = NULL;
   }

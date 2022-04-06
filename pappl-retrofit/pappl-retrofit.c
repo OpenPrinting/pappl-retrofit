@@ -121,8 +121,8 @@ pr_best_matching_ppd(const char *device_id,	// I - IEEE-1284 device ID
   if (mfg && mdl)
   {
     // Normalize device ID to format of driver name and match
-    ieee1284NormalizeMakeAndModel(device_id, NULL,
-				  IEEE1284_NORMALIZE_IPP, NULL,
+    cfIEEE1284NormalizeMakeModel(device_id, NULL,
+				  CF_IEEE1284_NORMALIZE_IPP, NULL,
 				  buf, sizeof(buf),
 				  NULL, NULL, NULL);
 
@@ -1288,7 +1288,7 @@ pr_driver_setup(
     }
 
     if ((ppd = ppdOpen2(ppdCollectionGetPPD(ppd_path->ppd_path, NULL,
-					    (filter_logfunc_t)papplLog,
+					    (cf_logfunc_t)papplLog,
 					    system))) == NULL)
     {
       ppd_status_t	err;		// Last error in file
@@ -1407,7 +1407,7 @@ pr_driver_setup(
       papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	       "CUPS filter to be applied defined in the PPD file");
       tempfp = ppdCollectionGetPPD(ppd_path->ppd_path, NULL,
-				   (filter_logfunc_t)papplLog,
+				   (cf_logfunc_t)papplLog,
 				   system);
       if ((tempfd = cupsTempFd(tempfile, sizeof(tempfile))) >= 0)
       {
@@ -1668,7 +1668,7 @@ pr_driver_setup(
   //
   // Higher resolutions we reduce by halving them until they are below
   // the limit. This way the input resolution and the device
-  // resolution stay multiples of 2 and so the pwgtoraster() filter
+  // resolution stay multiples of 2 and so the cfFilterPWGToRaster() filter
   // function of cups-filters is able to convert the resolution if
   // needed.
   while (res[0][0] >  360) res[0][0] /= 2;
@@ -3792,7 +3792,7 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 
   ppds = ppdCollectionListPPDs(ppd_collections, 0,
 			       num_options, options,
-			       (filter_logfunc_t)papplLog, system);
+			       (cf_logfunc_t)papplLog, system);
 
   //
   // Create driver list from the PPD list and submit it
@@ -3885,9 +3885,9 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	if (driver_re)
         {
 	  // Get driver info from *NickName entry
-	  ieee1284NormalizeMakeAndModel(ppd->record.make_and_model,
+	  cfIEEE1284NormalizeMakeModel(ppd->record.make_and_model,
 					NULL,
-					IEEE1284_NORMALIZE_HUMAN,
+					CF_IEEE1284_NORMALIZE_HUMAN,
 				        driver_re,
 					buf2, sizeof(buf2),
 					NULL, &end_model, &drv_name);
@@ -3990,9 +3990,9 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 		*ptr = '\0';
 	      // Convert device ID to make/model string, so that we can add
 	      // the language for building final index strings
-	      mfg_mdl = ieee1284NormalizeMakeAndModel(ppd->record.device_id,
+	      mfg_mdl = cfIEEE1284NormalizeMakeModel(ppd->record.device_id,
 						      NULL,
-						      IEEE1284_NORMALIZE_HUMAN,
+						      CF_IEEE1284_NORMALIZE_HUMAN,
 						      NULL, buf2, sizeof(buf2),
 						      NULL, NULL, NULL);
 	      if (strncasecmp(mfg_mdl, buf1, strlen(buf1)) == 0)
@@ -4081,8 +4081,8 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 		   ppd->record.languages[0]);
 	  // IPP-compatible string as driver name
 	  drivers[i].name =
-	    strdup(ieee1284NormalizeMakeAndModel(buf1, ppd->record.make,
-						 IEEE1284_NORMALIZE_IPP,
+	    strdup(cfIEEE1284NormalizeMakeModel(buf1, ppd->record.make,
+						 CF_IEEE1284_NORMALIZE_IPP,
 						 NULL, buf2, sizeof(buf2),
 						 NULL, NULL, NULL));
 	  ppd_path->driver_name = strdup(drivers[i].name);
@@ -4094,18 +4094,18 @@ pr_setup_driver_list(pr_printer_app_global_data_t *global_data)
 	    drivers[i].description = strdup(buf1);
 	  else
 	    drivers[i].description =
-	      strdup(ieee1284NormalizeMakeAndModel(buf1, ppd->record.make,
-						   IEEE1284_NORMALIZE_HUMAN,
+	      strdup(cfIEEE1284NormalizeMakeModel(buf1, ppd->record.make,
+						   CF_IEEE1284_NORMALIZE_HUMAN,
 						   NULL, buf2, sizeof(buf2),
 						   NULL, NULL, NULL));
 	  // List sorting index with padded numbers (typos in example intended)
 	  // "LaserJet 3P" < "laserjet 4P" < "Laserjet3000P" < "LaserJet 4000P"
 	  drivers[i].extension =
-	    strdup(ieee1284NormalizeMakeAndModel(buf1, ppd->record.make,
-					IEEE1284_NORMALIZE_COMPARE |
-					IEEE1284_NORMALIZE_LOWERCASE |
-					IEEE1284_NORMALIZE_SEPARATOR_SPACE |
-					IEEE1284_NORMALIZE_PAD_NUMBERS,
+	    strdup(cfIEEE1284NormalizeMakeModel(buf1, ppd->record.make,
+					CF_IEEE1284_NORMALIZE_COMPARE |
+					CF_IEEE1284_NORMALIZE_LOWERCASE |
+					CF_IEEE1284_NORMALIZE_SEPARATOR_SPACE |
+					CF_IEEE1284_NORMALIZE_PAD_NUMBERS,
 					NULL, buf2, sizeof(buf2),
 					NULL, NULL, NULL));
 	  papplLog(system, PAPPL_LOGLEVEL_DEBUG,

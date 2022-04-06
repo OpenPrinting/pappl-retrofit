@@ -50,7 +50,7 @@ typedef struct pr_spooling_conversion_s
   const char               *srctype;           // Input data type
   const char               *dsttype;           // Output data type
   int                      num_filters;        // Number of filters
-  filter_filter_in_chain_t filters[];          // List of filters with
+  cf_filter_filter_in_chain_t filters[];          // List of filters with
                                                // parameters
 } pr_spooling_conversion_t;
 
@@ -63,7 +63,7 @@ typedef struct pr_stream_format_s
   pappl_pr_rstartpage_cb_t rstartpage_cb;      // Start raster page callback
   pappl_pr_rwriteline_cb_t rwriteline_cb;      // Write raster line callback
   int                      num_filters;        // Number of filters
-  filter_filter_in_chain_t filters[];          // List of filters with
+  cf_filter_filter_in_chain_t filters[];          // List of filters with
                                                // parameters
 } pr_stream_format_t;
 
@@ -333,7 +333,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_pdf =
   1,
   {
     {
-      pdftopdf,
+      cfFilterPDFToPDF,
       "application/vnd.cups-pdf",
       "pdftopdf"
     }
@@ -347,12 +347,12 @@ static pr_spooling_conversion_t pr_convert_pdf_to_ps =
   2,
   {
     {
-      pdftopdf,
+      cfFilterPDFToPDF,
       "application/vnd.cups-postscript",
       "pdftopdf"
     },
     {
-      pdftops,
+      cfFilterPDFToPS,
       NULL,
       "pdftops"
     }
@@ -366,13 +366,13 @@ static pr_spooling_conversion_t pr_convert_pdf_to_raster =
   2,
   {
     {
-      pdftopdf,
+      cfFilterPDFToPDF,
       "application/vnd.cups-raster",
       "pdftopdf"
     },
     {
-      ghostscript,
-      &((filter_out_format_t){OUTPUT_FORMAT_CUPS_RASTER}),
+      cfFilterGhostscript,
+      &((cf_filter_out_format_t){CF_FILTER_OUT_FORMAT_CUPS_RASTER}),
       "ghostscript"
     }
   }
@@ -385,13 +385,13 @@ static pr_spooling_conversion_t pr_convert_pdf_to_raster_poppler =
   2,
   {
     {
-      pdftopdf,
+      cfFilterPDFToPDF,
       "application/vnd.cups-raster",
       "pdftopdf"
     },
     {
-      pdftoraster,
-      &((filter_out_format_t){OUTPUT_FORMAT_CUPS_RASTER}),
+      cfFilterPDFToRaster,
+      &((cf_filter_out_format_t){CF_FILTER_OUT_FORMAT_CUPS_RASTER}),
       "pdftoraster"
     }
   }
@@ -404,7 +404,7 @@ static pr_spooling_conversion_t pr_convert_ps_to_ps =
   1,
   {
     {
-      pstops,
+      cfFilterPSToPS,
       NULL,
       "pstops"
     }
@@ -418,12 +418,12 @@ static pr_spooling_conversion_t pr_convert_ps_to_pdf =
   2,
   {
     {
-      ghostscript,
-      &((filter_out_format_t){OUTPUT_FORMAT_PDF}),
+      cfFilterGhostscript,
+      &((cf_filter_out_format_t){CF_FILTER_OUT_FORMAT_PDF}),
       "ghostscript"
     },
     {
-      pdftopdf,
+      cfFilterPDFToPDF,
       "application/vnd.cups-pdf",
       "pdftopdf"
     }
@@ -437,13 +437,13 @@ static pr_spooling_conversion_t pr_convert_ps_to_raster =
   2,
   {
     {
-      pstops,
+      cfFilterPSToPS,
       NULL,
       "pstops"
     },
     {
-      ghostscript,
-      &((filter_out_format_t){OUTPUT_FORMAT_CUPS_RASTER}),
+      cfFilterGhostscript,
+      &((cf_filter_out_format_t){CF_FILTER_OUT_FORMAT_CUPS_RASTER}),
       "ghostscript"
     }
   }
@@ -465,7 +465,7 @@ static pr_stream_format_t pr_stream_cups_raster =
   1,
   {
     {
-      pwgtoraster,
+      cfFilterPWGToRaster,
       NULL,
       "pwgtoraster"
     }
@@ -494,12 +494,12 @@ static pr_stream_format_t pr_stream_pdf =
   2,
   {
     {
-      ghostscript,
-      &((filter_out_format_t){OUTPUT_FORMAT_PDF_IMAGE}),
+      cfFilterGhostscript,
+      &((cf_filter_out_format_t){CF_FILTER_OUT_FORMAT_PDF_IMAGE}),
       "ghostscript"
     },
     {
-      pdftopdf,
+      cfFilterPDFToPDF,
       "application/vnd.cups-pdf",
       "pdftopdf"
     }

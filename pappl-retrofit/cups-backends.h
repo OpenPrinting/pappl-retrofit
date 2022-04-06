@@ -90,9 +90,9 @@ typedef struct pr_cups_device_data_s
                                side_timeout; // Timeout side channel (sec)
   pr_printer_app_global_data_t *global_data; // Global data
   pr_cups_devlog_data_t        devlog_data;  // Data for log function
-  filter_data_t                *filter_data; // Common data for filter functions
-  filter_external_cups_t       backend_params;// Parameters for launching
-                                             // backend via filterExternalCUPS()
+  cf_filter_data_t                *filter_data; // Common data for filter functions
+  cf_filter_external_cups_t       backend_params;// Parameters for launching
+                                             // backend via cfFilterExternalCUPS()
   bool                         internal_filter_data; // Is filter_data
                                              // internal?
 } pr_cups_device_data_t;
@@ -115,7 +115,7 @@ extern void *pr_cups_device_user_data;
 extern bool   pr_dummy_device(const char *device_info, const char *device_uri,
 			      const char *device_id, void *data);
 extern double pr_get_current_time(void);
-extern void   pr_cups_devlog(void *data, filter_loglevel_t level,
+extern void   pr_cups_devlog(void *data, cf_loglevel_t level,
 			     const char *message, ...);
 extern int    pr_cups_compare_devices(pr_backend_device_t *d0,
 				      pr_backend_device_t *d1);

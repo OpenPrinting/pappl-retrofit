@@ -56,7 +56,7 @@ typedef struct pr_job_data_s		// Job data
   ppd_file_t            *ppd;           // PPD file loaded from collection
   char                  *temp_ppd_name; // File name of temporary copy of the
                                         // PPD file to be used by CUPS filters
-  filter_data_t         *filter_data;   // Common print job data for filter
+  cf_filter_data_t         *filter_data;   // Common print job data for filter
                                         // functions
   int		        num_options;    // Number of PPD print options
   cups_option_t	        *options;       // PPD print options
@@ -65,7 +65,7 @@ typedef struct pr_job_data_s		// Job data
   pr_stream_format_t    *stream_format; // Filter sequence for streaming
                                         // raster input
   cups_array_t          *chain;         // Filter function chain
-  filter_filter_in_chain_t *ppd_filter, // Filter from PPD file
+  cf_filter_filter_in_chain_t *ppd_filter, // Filter from PPD file
                         *print;         // Filter function call for printing
   int                   device_fd;      // File descriptor to pipe output
                                         // to the device
@@ -92,13 +92,13 @@ extern pr_job_data_t *pr_create_job_data(pappl_job_t *job,
 extern bool   pr_filter(pappl_job_t *job, pappl_device_t *device, void *data);
 extern void   pr_free_job_data(pr_job_data_t *job_data);
 extern int    pr_job_is_canceled(void *data);
-extern void   pr_job_log(void *data, filter_loglevel_t level,
+extern void   pr_job_log(void *data, cf_loglevel_t level,
 			 const char *message, ...);
 extern void   pr_one_bit_dither_on_draft(pappl_job_t *job,
 					 pappl_pr_options_t *options);
 extern void   pr_clean_debug_copies(pr_printer_app_global_data_t *global_data);
 extern int    pr_print_filter_function(int inputfd, int outputfd,
-				       int inputseekable, filter_data_t *data,
+				       int inputseekable, cf_filter_data_t *data,
 				       void *parameters);
 extern pr_job_data_t* pr_rpreparejob(pappl_job_t *job,
 				     pappl_pr_options_t *options,

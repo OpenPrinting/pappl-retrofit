@@ -402,7 +402,7 @@ pr_create_job_data(pappl_job_t *job,
   int                   num_cparams = 0;
   char                  paramstr[1024];
   time_t                t;
-  filter_data_t         *filter_data;
+  cf_filter_data_t         *filter_data;
   const char * const extra_attributes[] =
   {
    "job-uuid",
@@ -912,7 +912,7 @@ pr_create_job_data(pappl_job_t *job,
 
   // Prepare job data to be supplied to filter functions/CUPS filters
   // called during job execution
-  filter_data = (filter_data_t *)calloc(1, sizeof(filter_data_t));
+  filter_data = (cf_filter_data_t *)calloc(1, sizeof(cf_filter_data_t));
   job_data->filter_data = filter_data;
   filter_data->printer = strdup(papplPrinterGetName(printer));
   filter_data->job_id = papplJobGetID(job);
@@ -939,7 +939,7 @@ pr_create_job_data(pappl_job_t *job,
 
   // Establish back/side channel pipes for CUPS backends
   if (job_data->global_data->config->components & PR_COPTIONS_CUPS_BACKENDS)
-    filterOpenBackAndSidePipes(filter_data);
+    cfFilterOpenBackAndSidePipes(filter_data);
 
   return (job_data);
 }
@@ -972,17 +972,17 @@ pr_filter(
   int                   nullfd;         // File descriptor for /dev/null
   pappl_pr_options_t	*job_options;	// Job options
   bool			ret = false;	// Return value
-  filter_external_cups_t* ppd_filter_params = NULL; // Parameters for CUPS
+  cf_filter_external_cups_t* ppd_filter_params = NULL; // Parameters for CUPS
                                         // filter defined in the PPD
   pr_print_filter_function_data_t *print_params; // Paramaters for
                                         // pr_print_filter_function()
-  filter_filter_in_chain_t banner_filter = // bannertopdf() filter function
+  cf_filter_filter_in_chain_t banner_filter = // cfFilterBannerToPDF() filter function
   {                                     // in filter chain, mainly for PDF
-    bannertopdf,                        // test pages
+    cfFilterBannerToPDF,                        // test pages
     NULL,
     "bannertopdf"
   };
-  int                   is_banner = 0;  // Do we have bannertopdf()
+  int                   is_banner = 0;  // Do we have cfFilterBannerToPDF()
                                         // instructions in our PDF input file
 
 
@@ -1112,18 +1112,18 @@ pr_filter(
                                // least 2 chars.
   {
     ppd_filter_params =
-      (filter_external_cups_t *)calloc(1, sizeof(filter_external_cups_t));
+      (cf_filter_external_cups_t *)calloc(1, sizeof(cf_filter_external_cups_t));
     ppd_filter_params->filter = filter_path;
     job_data->ppd_filter =
-      (filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
-    job_data->ppd_filter->function = filterExternalCUPS;
+      (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
+    job_data->ppd_filter->function = cfFilterExternalCUPS;
     job_data->ppd_filter->parameters = ppd_filter_params;
     job_data->ppd_filter->name = strrchr(filter_path, '/') + 1;
     cupsArrayAdd(job_data->chain, job_data->ppd_filter);
   } else
     job_data->ppd_filter = NULL;
   job_data->print =
-    (filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
+    (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
   // Put filter function to send data to PAPPL's built-in backend at the end
   // of the chain
   print_params =
@@ -1147,7 +1147,7 @@ pr_filter(
   // The filter chain has no output, data is going to the device
   nullfd = open("/dev/null", O_RDWR);
 
-  if (filterChain(fd, nullfd, 1, job_data->filter_data, job_data->chain) == 0)
+  if (cfFilterChain(fd, nullfd, 1, job_data->filter_data, job_data->chain) == 0)
     ret = true;
 
   //
@@ -1199,7 +1199,7 @@ void   pr_free_job_data(pr_job_data_t *job_data)
   unsetenv("PRINTER_LOCATION");
 
   if (job_data->global_data->config->components & PR_COPTIONS_CUPS_BACKENDS)
-    filterCloseBackAndSidePipes(job_data->filter_data);
+    cfFilterCloseBackAndSidePipes(job_data->filter_data);
 
   free(job_data->filter_data->printer);
   free(job_data->filter_data->job_user);
@@ -1244,7 +1244,7 @@ pr_job_is_canceled(void *data)
 
 void
 pr_job_log(void *data,
-	   filter_loglevel_t level,
+	   cf_loglevel_t level,
 	   const char *message,
 	   ...)
 {
@@ -1258,7 +1258,7 @@ pr_job_log(void *data,
   vsnprintf(buf, sizeof(buf) - 1, message, arglist);
   fflush(stdout);
   va_end(arglist);
-  if (level == FILTER_LOGLEVEL_CONTROL)
+  if (level == CF_LOGLEVEL_CONTROL)
   {
     if (sscanf(buf, "PAGE: %d %d", &page, &copies) == 2)
     {
@@ -1390,7 +1390,7 @@ pr_clean_debug_copies(pr_printer_app_global_data_t *global_data)
 //                                This function has the format of a filter
 //                                function of libcupsfilters, so we can chain
 //                                it with other filter functions using the
-//                                special filter function filterChain() and
+//                                special filter function cfFilterChain() and
 //                                so we do not need to care with forking. As
 //                                we send off the data to the device instead
 //                                of filtering, it behaves more like a
@@ -1418,12 +1418,12 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
 			                      //     stream (unused)
 			 int inputseekable,   // I - Is input stream
 			                      //     seekable? (unused)
-			 filter_data_t *data, // I - Job and printer data
+			 cf_filter_data_t *data, // I - Job and printer data
 			 void *parameters)    // I - PAPPL output device
 {
   ssize_t	       bytes;	              // Bytes read/written
   char	               buffer[65536];         // Read/write buffer
-  filter_logfunc_t     log = data->logfunc;   // Log function
+  cf_logfunc_t     log = data->logfunc;   // Log function
   void                 *ld = data->logdata;   // log function data
   pr_print_filter_function_data_t *params =
     (pr_print_filter_function_data_t *)parameters;
@@ -1451,7 +1451,7 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
 	     global_data->spool_dir, papplPrinterGetName(printer),
 	     papplJobGetID(job));
     if (log)
-      log(ld, FILTER_LOGLEVEL_DEBUG,
+      log(ld, CF_LOGLEVEL_DEBUG,
 	  "Backend: Creating debug copy of what goes to the printer: %s", filename);
     // Open the file
     debug_fd = open(filename, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
@@ -1463,7 +1463,7 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
       if (write(debug_fd, buffer, (size_t)bytes) != bytes)
       {
 	if (log)
-	  log(ld, FILTER_LOGLEVEL_ERROR,
+	  log(ld, CF_LOGLEVEL_ERROR,
 	      "Backend: Debug copy: Unable to write %d bytes, stopping debug copy, continuing job output.",
 	      (int)bytes);
 	close(debug_fd);
@@ -1473,7 +1473,7 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
     if (papplDeviceWrite(device, buffer, (size_t)bytes) < 0)
     {
       if (log)
-	log(ld, FILTER_LOGLEVEL_ERROR,
+	log(ld, CF_LOGLEVEL_ERROR,
 	    "Backend: Output to device: Unable to send %d bytes to printer.",
 	    (int)bytes);
       if (debug_fd >= 0)
@@ -1489,7 +1489,7 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
   if (strncmp(device_uri, "cups:", 5) == 0)
   {
     if (log)
-      log(ld, FILTER_LOGLEVEL_DEBUG,
+      log(ld, CF_LOGLEVEL_DEBUG,
 	  "Backend: Output data stream ended, shutting down CUPS backend");
     pr_cups_dev_stop_backend(device);
   }
@@ -1523,9 +1523,9 @@ pr_rpreparejob(
   pr_cups_device_data_t  *device_data = NULL; // Device data of CUPS backend
                                      // device
   int                    nullfd;     // File descriptor pointing to /dev/null
-  filter_external_cups_t *ppd_filter_params = NULL;
+  cf_filter_external_cups_t *ppd_filter_params = NULL;
                                      // Parameters for call of PPD's
-                                     // CUPS filter via filterExternalCUPS()
+                                     // CUPS filter via cfFilterExternalCUPS()
   pr_print_filter_function_data_t *print_params; // Paramaters for
                                      // pr_print_filter_function()
 
@@ -1584,11 +1584,11 @@ pr_rpreparejob(
 		"Using CUPS filter (printer driver): %s",
 		job_data->stream_filter);
     ppd_filter_params =
-      (filter_external_cups_t *)calloc(1, sizeof(filter_external_cups_t));
+      (cf_filter_external_cups_t *)calloc(1, sizeof(cf_filter_external_cups_t));
     ppd_filter_params->filter = job_data->stream_filter;
     job_data->ppd_filter =
-      (filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
-    job_data->ppd_filter->function = filterExternalCUPS;
+      (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
+    job_data->ppd_filter->function = cfFilterExternalCUPS;
     job_data->ppd_filter->parameters = ppd_filter_params;
     job_data->ppd_filter->name = strrchr(job_data->stream_filter, '/') + 1;
     cupsArrayAdd(job_data->chain, job_data->ppd_filter);
@@ -1604,13 +1604,13 @@ pr_rpreparejob(
   print_params->job = job;
   print_params->global_data = job_data->global_data;
   job_data->print =
-    (filter_filter_in_chain_t *)calloc(1, sizeof(filter_filter_in_chain_t));
+    (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
   job_data->print->function = pr_print_filter_function;
   job_data->print->parameters = print_params;
   job_data->print->name = "Backend";
   cupsArrayAdd(job_data->chain, job_data->print);
   // Call the filter chain and get the file descriptor to feed in the data
-  job_data->device_fd = filterPOpen(filterChain, -1, nullfd,
+  job_data->device_fd = cfFilterPOpen(cfFilterChain, -1, nullfd,
 				      0, job_data->filter_data, job_data->chain,
 				      &(job_data->device_pid));
 
@@ -1649,7 +1649,7 @@ pr_rcleanupjob(pappl_job_t      *job,      // I - Job
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 	      "Shutting down filter chain");
   fclose(job_data->device_file);
-  filterPClose(job_data->device_fd, job_data->device_pid,
+  cfFilterPClose(job_data->device_fd, job_data->device_pid,
 	       job_data->filter_data);
 
   // Stop the backend and disconnect the job's filter_data to the backend
@@ -1746,7 +1746,7 @@ pr_pwg_rendpage(
 // 'pr_pwg_rstartjob()' - Start a raster-to-PWG-Raster job.
 //                        (Prepare job and initiate PWG Raster job output,
 //                        sending the 4-byte "Magic string", the
-//                        pwgtoraster() filter function will do all the
+//                        cfFilterPWGToRaster() filter function will do all the
 //                        dirty conversion work to get the CUPS Raster
 //                        needed by the driver/filter defined in PPD)
 //
@@ -1822,7 +1822,7 @@ pr_pwg_rstartpage(
 //
 // 'pr_pwg_rwriteline()' - Write a raster-to-PWG-Raster pixel line.
 //                         (Simply pass through the pixels as the
-//                         pwgtoraster() filter function does the
+//                         cfFilterPWGToRaster() filter function does the
 //                         needed conversion work)
 //
 
