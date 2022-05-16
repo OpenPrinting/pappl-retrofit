@@ -131,6 +131,8 @@ extern void   pr_setup_driver_list(pr_printer_app_global_data_t *global_data);
 extern void   pr_setup(pr_printer_app_global_data_t *global_data);
 extern void   pr_system_web_add_ppd(pappl_client_t *client, void *data);
 extern bool   pr_status(pappl_printer_t *printer);
+extern bool   pr_update_status(pappl_printer_t *printer,
+			       pappl_device_t *device);
 extern const char *pr_testpage(pappl_printer_t *printer, char *buffer,
 			       size_t bufsize);
 extern pappl_system_t *pr_system_cb(int num_options, cups_option_t *options,

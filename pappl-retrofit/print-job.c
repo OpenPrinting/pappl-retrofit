@@ -976,15 +976,22 @@ pr_filter(
                                         // filter defined in the PPD
   pr_print_filter_function_data_t *print_params; // Paramaters for
                                         // pr_print_filter_function()
-  cf_filter_filter_in_chain_t banner_filter = // cfFilterBannerToPDF() filter function
-  {                                     // in filter chain, mainly for PDF
-    cfFilterBannerToPDF,                        // test pages
+  cf_filter_filter_in_chain_t banner_filter = // cfFilterBannerToPDF() filter
+                                        // function in filter chain, mainly for
+  {                                     // PDF test pages
+    cfFilterBannerToPDF,
     NULL,
     "bannertopdf"
   };
   int                   is_banner = 0;  // Do we have cfFilterBannerToPDF()
                                         // instructions in our PDF input file
 
+
+  //
+  // Update status
+  //
+
+  pr_update_status(papplJobGetPrinter(job), device);
 
   //
   // Load the printer's assigned PPD file, and find out which PPD option
@@ -1171,6 +1178,12 @@ pr_filter(
     // Disconnect the filter_data
     device_data->filter_data = NULL;
   }
+
+  //
+  // Update status
+  //
+
+  pr_update_status(papplJobGetPrinter(job), device);
 
   //
   // Clean up
@@ -1530,6 +1543,9 @@ pr_rpreparejob(
                                      // pr_print_filter_function()
 
 
+  // Update status
+  pr_update_status(papplJobGetPrinter(job), device);
+
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 	      "Printing job in streaming mode");
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
@@ -1676,6 +1692,9 @@ pr_rcleanupjob(pappl_job_t      *job,      // I - Job
     free(job_data->ppd_filter->parameters);
   pr_free_job_data(job_data);
   papplJobSetData(job, NULL);
+
+  // Update status
+  pr_update_status(papplJobGetPrinter(job), device);
 }
 
 

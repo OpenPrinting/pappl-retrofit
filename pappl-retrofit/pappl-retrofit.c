@@ -1784,8 +1784,19 @@ pr_driver_setup(
   else
     driver_data->ppm_color = 0;
 
+  // Supplies check via SNMP works only on network printers, using
+  // PAPPL's own backends
+  if (device_uri)
+  {
+    if (strncmp(device_uri, "snmp:", 5) == 0 ||
+	strncmp(device_uri, "dnssd:", 6) == 0 ||
+	strncmp(device_uri, "socket:", 7) == 0)
+      driver_data->has_supplies = true;
+    else
+      driver_data->has_supplies = false;
+  }
+
   // Properties not supported by the PPD
-  driver_data->has_supplies = false;
   driver_data->input_face_up = false;
 
   // Pages face-up or face-down in output bin?
@@ -2485,7 +2496,7 @@ pr_driver_setup(
 
   // Clean up old option lists on update
   if (update)
-    for (i = 0; i < driver_data->num_vendor; i ++)
+    for (i = 0; i < driver_data->num_vendor && i < PAPPL_MAX_VENDOR; i ++)
     {
       free((char *)(driver_data->vendor[i]));
       if (extension->vendor_ppd_options[i])
@@ -4315,14 +4326,14 @@ pr_setup(pr_printer_app_global_data_t *global_data)  // I - Global data
 //
 
 bool                   // O - `true` on success, `false` on failure
-pr_status(
-    pappl_printer_t *printer) // I - Printer
+pr_status(pappl_printer_t *printer) // I - Printer
 {
-  pappl_system_t         *system;              // System
+  pappl_system_t        *system;                // System
   pappl_pr_driver_data_t driver_data;
-  pr_driver_extension_t  *extension;
+  pr_driver_extension_t *extension;
   pr_printer_app_global_data_t *global_data;
-
+  pappl_device_t	*device;		// Printer device
+  pappl_supply_t	supply[32];		// Printer supply information
 
   // Get system...
   system = papplPrinterGetSystem(printer);
@@ -4344,17 +4355,68 @@ pr_status(
       papplSystemSaveState(system, global_data->state_file);
   }
 
-  // Use commandtops CUPS filter code to check status here (ink levels, ...)
-  // (TODO)
-
-  // Do PostScript jobs for polling only once a minute or once every five
-  // minutes, therefore save time of last call in a static variable. and
-  // only poll again if last poll is older than given time.
-
-  // Needs ink level support in PAPPL
+  // Ink/Toner level support of PAPPL
   // (https://github.com/michaelrsweet/pappl/issues/83)
+  // Overtaken from the HP Printer Application hp-printer-app
+  // https://github.com/michaelrsweet/hp-printer-app/
+
+  if (papplPrinterGetSupplies(printer, 0, supply) > 0)
+  {
+    // Already have supplies, just return...
+    return (true);
+  }
+
+  papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
+		  "Checking device status...");
+
+  // First try to query the supply levels via SNMP...
+  if ((device = papplPrinterOpenDevice(printer)) != NULL)
+  {
+    bool success = pr_update_status(printer, device);
+
+    papplPrinterCloseDevice(printer);
+
+    if (!success)
+      papplLogPrinter(printer, PAPPL_LOGLEVEL_WARN,
+		      "Status check failed...");
+  }
 
   return (true);
+}
+
+
+//
+// 'pr_update_status()' - Update the supply levels and status.
+//
+
+bool				        // O - `true` on success,
+                                        //     `false` otherwise
+pr_update_status(
+    pappl_printer_t *printer,		// I - Printer
+    pappl_device_t  *device)		// I - Device
+{
+  int			num_supply;	// Number of supplies
+  pappl_supply_t	supply[32];	// Printer supply information
+  pappl_preason_t	reasons;	// Printer state reasons
+
+
+  // Add callback function call here, to use commandtops CUPS filter code
+  // to check status of PostScript Printers, hp-levels for HPLIP-supported
+  // HP printers, ...
+
+  papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
+		  "Updating device status...");
+
+  if ((num_supply =
+       papplDeviceGetSupplies(device,
+			      (int)(sizeof(supply) / sizeof(supply[0])),
+			      supply)) > 0)
+    papplPrinterSetSupplies(printer, num_supply, supply);
+
+  papplPrinterSetReasons(printer, papplDeviceGetStatus(device),
+			 PAPPL_PREASON_DEVICE_STATUS);
+
+  return (num_supply > 0);
 }
 
 
