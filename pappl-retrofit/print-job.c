@@ -988,12 +988,6 @@ pr_filter(
 
 
   //
-  // Update status
-  //
-
-  pr_update_status(papplJobGetPrinter(job), device);
-
-  //
   // Load the printer's assigned PPD file, and find out which PPD option
   // seetings correspond to our job options
   //
@@ -1146,6 +1140,12 @@ pr_filter(
   cupsArrayAdd(job_data->chain, job_data->print);
 
   //
+  // Update status
+  //
+
+  pr_update_status(papplJobGetPrinter(job), device);
+
+  //
   // Fire up the filter functions
   //
 
@@ -1156,6 +1156,12 @@ pr_filter(
 
   if (cfFilterChain(fd, nullfd, 1, job_data->filter_data, job_data->chain) == 0)
     ret = true;
+
+  //
+  // Update status
+  //
+
+  pr_update_status(papplJobGetPrinter(job), device);
 
   //
   // Stop the backend and disconnect the job's filter_data from the backend
@@ -1178,12 +1184,6 @@ pr_filter(
     // Disconnect the filter_data
     device_data->filter_data = NULL;
   }
-
-  //
-  // Update status
-  //
-
-  pr_update_status(papplJobGetPrinter(job), device);
 
   //
   // Clean up
@@ -1543,9 +1543,6 @@ pr_rpreparejob(
                                      // pr_print_filter_function()
 
 
-  // Update status
-  pr_update_status(papplJobGetPrinter(job), device);
-
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 	      "Printing job in streaming mode");
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
@@ -1625,6 +1622,10 @@ pr_rpreparejob(
   job_data->print->parameters = print_params;
   job_data->print->name = "Backend";
   cupsArrayAdd(job_data->chain, job_data->print);
+
+  // Update status
+  pr_update_status(papplJobGetPrinter(job), device);
+
   // Call the filter chain and get the file descriptor to feed in the data
   job_data->device_fd = cfFilterPOpen(cfFilterChain, -1, nullfd,
 				      0, job_data->filter_data, job_data->chain,
@@ -1668,6 +1669,9 @@ pr_rcleanupjob(pappl_job_t      *job,      // I - Job
   cfFilterPClose(job_data->device_fd, job_data->device_pid,
 	       job_data->filter_data);
 
+  // Update status
+  pr_update_status(papplJobGetPrinter(job), device);
+
   // Stop the backend and disconnect the job's filter_data to the backend
   if (strncmp(job_data->device_uri, "cups:", 5) == 0)
   {
@@ -1692,9 +1696,6 @@ pr_rcleanupjob(pappl_job_t      *job,      // I - Job
     free(job_data->ppd_filter->parameters);
   pr_free_job_data(job_data);
   papplJobSetData(job, NULL);
-
-  // Update status
-  pr_update_status(papplJobGetPrinter(job), device);
 }
 
 
