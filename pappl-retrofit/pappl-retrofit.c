@@ -1401,11 +1401,12 @@ pr_driver_setup(
     }
 
     // Create a physical copy of the PPD file in a temporary file so that
-    // the CUPS filter defined in the PPD file can read it.
-    if (!extension->filterless_ps)
+    // the CUPS filter defined in the PPD file or a CUPS backend can read it.
+    if (!extension->filterless_ps ||
+	(device_uri && strncmp(device_uri, "cups:", 5) == 0))
     {
       papplLog(system, PAPPL_LOGLEVEL_DEBUG,
-	       "CUPS filter to be applied defined in the PPD file");
+	       "CUPS filter to be applied defined in the PPD file or CUPS backend used");
       tempfp = ppdCollectionGetPPD(ppd_path->ppd_path, NULL,
 				   (cf_logfunc_t)papplLog,
 				   system);
