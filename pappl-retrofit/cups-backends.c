@@ -877,14 +877,17 @@ pr_cups_dev_stop_backend(pappl_device_t *device)
   }
 
   // Clean up
-  if (device_data->internal_filter_data)
+  if (device_data->internal_filter_data && device_data->filter_data)
   {
     cfFilterCloseBackAndSidePipes(device_data->filter_data);
     free(device_data->filter_data);
     device_data->filter_data = NULL;
   }
 
-  free((char *)(device_data->backend_params.filter));
+  if (device_data->backend_params.filter)
+    free((char *)(device_data->backend_params.filter));
+
+  device_data->backend_params.filter = NULL;
 }
 
 
@@ -964,7 +967,7 @@ pr_cups_devclose(pappl_device_t *device)
     papplDeviceError(device, "Device did not get opened!");
     return;
   }
-  
+
   // Close the backend sub-process
   pr_cups_dev_stop_backend(device);
 
