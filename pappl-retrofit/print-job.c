@@ -1498,15 +1498,6 @@ pr_print_filter_function(int inputfd,         // I - File descriptor input
   }
   papplDeviceFlush(device);
 
-  // Stop the CUPS backend if we are using one
-  if (strncmp(device_uri, "cups:", 5) == 0)
-  {
-    if (log)
-      log(ld, CF_LOGLEVEL_DEBUG,
-	  "Backend: Output data stream ended, shutting down CUPS backend");
-    pr_cups_dev_stop_backend(device);
-  }
-
   if (debug_fd >= 0)
     close(debug_fd);
 
