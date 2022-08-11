@@ -20,6 +20,7 @@
 
 #include <pappl/pappl.h>
 #include <cupsfilters/filter.h>
+#include <ppd/ppd-filter.h>
 
 
 //
@@ -333,7 +334,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_pdf =
   1,
   {
     {
-      cfFilterPDFToPDF,
+      ppdFilterPDFToPDF,
       "application/vnd.cups-pdf",
       "pdftopdf"
     }
@@ -352,7 +353,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_ps =
       "pdftopdf"
     },
     {
-      cfFilterPDFToPS,
+      ppdFilterPDFToPS,
       NULL,
       "pdftops"
     }
@@ -404,7 +405,7 @@ static pr_spooling_conversion_t pr_convert_ps_to_ps =
   1,
   {
     {
-      cfFilterPSToPS,
+      ppdFilterPSToPS,
       NULL,
       "pstops"
     }
@@ -423,7 +424,7 @@ static pr_spooling_conversion_t pr_convert_ps_to_pdf =
       "ghostscript"
     },
     {
-      cfFilterPDFToPDF,
+      ppdFilterPDFToPDF,
       "application/vnd.cups-pdf",
       "pdftopdf"
     }
@@ -437,7 +438,7 @@ static pr_spooling_conversion_t pr_convert_ps_to_raster =
   2,
   {
     {
-      cfFilterPSToPS,
+      ppdFilterPSToPS,
       NULL,
       "pstops"
     },
@@ -499,7 +500,7 @@ static pr_stream_format_t pr_stream_pdf =
       "ghostscript"
     },
     {
-      cfFilterPDFToPDF,
+      ppdFilterPDFToPDF,
       "application/vnd.cups-pdf",
       "pdftopdf"
     }

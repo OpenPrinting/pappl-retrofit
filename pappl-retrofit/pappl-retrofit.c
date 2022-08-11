@@ -1796,6 +1796,7 @@ pr_driver_setup(
     else
       driver_data->has_supplies = false;
   }
+  driver_data->has_supplies = false; // XXX TODO Supply check not working yet
 
   // Properties not supported by the PPD
   driver_data->input_face_up = false;
@@ -4361,6 +4362,8 @@ pr_status(pappl_printer_t *printer) // I - Printer
   // Overtaken from the HP Printer Application hp-printer-app
   // https://github.com/michaelrsweet/hp-printer-app/
 
+  return (true); // XXX TODO Supply level check not working yet
+  
   if (papplPrinterGetSupplies(printer, 0, supply) > 0)
   {
     // Already have supplies, just return...
@@ -4398,7 +4401,6 @@ pr_update_status(
 {
   int			num_supply;	// Number of supplies
   pappl_supply_t	supply[32];	// Printer supply information
-  pappl_preason_t	reasons;	// Printer state reasons
 
 
   // Add callback function call here, to use commandtops CUPS filter code

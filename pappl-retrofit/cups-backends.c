@@ -193,7 +193,7 @@ pr_cups_sigchld_sigaction(int sig,		// I - Signal number (unused)
 //                       backends which require root are skipped when
 //                       running as normal user (A Printer Application
 //                       in a Snap runs as root). The backends are run
-//                       in the cfFilterExternalCUPS() filter function,
+//                       in the ppdFilterExternalCUPS() filter function,
 //                       so their environment is as close to CUPS as
 //                       possible. For the implementation I mostly
 //                       followed scheduler/cups-deviced.c from
@@ -215,7 +215,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
     (pr_printer_app_global_data_t *)pr_cups_device_user_data;
   pr_cups_devlog_data_t devlog_data;
   cf_filter_data_t filter_data;
-  cf_filter_external_cups_t backend_params;
+  ppd_filter_external_cups_t backend_params;
   char          buf[2048];
   bool          ret = false;
   int		num_backends = 0,
@@ -371,7 +371,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
 	continue;
       }
 
-      // Do not run too many backends, only as much as we have space in our
+      // Do not run too many backends, only as many as we have space in our
       // backend array
       if (num_backends >= MAX_BACKENDS)
       {
@@ -381,7 +381,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
       }
       backend = backends + num_backends;
 
-      // Prepare parameters of cfFilterExternalCUPS() filter function call
+      // Prepare parameters of ppdFilterExternalCUPS() filter function call
       // for running the CUPS backend in discovery mode (without arguments)
       memset(&backend_params, 0, sizeof(backend_params));
       backend_params.filter = strdup(buf);
@@ -399,7 +399,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
 	backends[num_backends + 1].name = NULL;
 
       // Launch the backend with pipe providing backend's stdout
-      if ((backend->pipe = cfFilterPOpen(cfFilterExternalCUPS,
+      if ((backend->pipe = cfFilterPOpen(ppdFilterExternalCUPS,
 				       open("/dev/null", O_RDWR), -1,
 				       0, &filter_data, &backend_params,
 				       &(backend->pid))) == 0)
@@ -731,7 +731,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
 //                                  pr_cups_deopen() callback function
 //                                  to allow a delayed start of the
 //                                  CUPS backend, on the first access
-//                                  to the device at the lates.  This
+//                                  to the device at the latest. This
 //                                  way we can set up a job's filter
 //                                  chain after PAPPL has opened the
 //                                  device and before the backend gets
@@ -809,7 +809,7 @@ pr_cups_dev_launch_backend(pappl_device_t *device)
 	   device_data->global_data->backend_dir, device_data->device_uri + 5);
   *(strchr(buf, ':')) = '\0';
 
-  // Arguments amd parameters for the cfFilterExternalCUPS() filter
+  // Arguments amd parameters for the ppdFilterExternalCUPS() filter
   // function to run the CUPS backend in job execution mode. The backend
   // will be waiting for job data but also for commands from the side
   // channel. In addtion it can log status messages (control messages
@@ -826,7 +826,7 @@ pr_cups_dev_launch_backend(pappl_device_t *device)
 
   // Launch the backend with pipe providing backend's stdin
   if ((device_data->inputfd =
-       cfFilterPOpen(cfFilterExternalCUPS,
+       cfFilterPOpen(ppdFilterExternalCUPS,
 		   -1, open("/dev/null", O_RDWR),
 		   0, device_data->filter_data, &device_data->backend_params,
 		   &device_data->backend_pid)) == 0)

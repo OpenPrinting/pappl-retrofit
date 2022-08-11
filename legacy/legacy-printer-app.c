@@ -179,7 +179,7 @@ main(int  argc,				// I - Number of command-line arguments
   };
 
   // If the "driverless" utility is under the CUPS backends or under
-  // the PPD-denerating executables, tell it to not browse the network
+  // the PPD-generating executables, tell it to not browse the network
   // for supported (driverless) printers but exit immediately, as this
   // Printer Application is for using printers with installed CUPS
   // drivers.

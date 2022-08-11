@@ -58,8 +58,6 @@ typedef struct pr_job_data_s		// Job data
                                         // PPD file to be used by CUPS filters
   cf_filter_data_t         *filter_data;   // Common print job data for filter
                                         // functions
-  int		        num_options;    // Number of PPD print options
-  cups_option_t	        *options;       // PPD print options
   char                  *stream_filter; // CUPS Filter to use when printing
                                         // in streaming mode (Raster input)
   pr_stream_format_t    *stream_format; // Filter sequence for streaming
