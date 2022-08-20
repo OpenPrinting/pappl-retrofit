@@ -586,7 +586,7 @@ pr_identify(
   // (CMD) key of the device ID whether PostScript is supported by the
   // printer. We do this independently on how we actually print. So if
   // we have for example chosen a PCL driver but the printer also
-  // understands PostScript, we do this identifivation, too.
+  // understands PostScript, we do this identification, too.
   papplPrinterGetDriverData(printer, &driver_data);
   extension = (pr_driver_extension_t *)driver_data.extension;
   if (extension->filterless_ps ||
