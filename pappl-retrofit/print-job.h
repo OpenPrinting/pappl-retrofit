@@ -101,7 +101,7 @@ extern int    pr_print_filter_function(int inputfd, int outputfd,
 extern pr_job_data_t* pr_rpreparejob(pappl_job_t *job,
 				     pappl_pr_options_t *options,
 				     pappl_device_t *device,
-				     const char *dsttype);
+				     const char *starttype);
 extern void   pr_rcleanupjob(pappl_job_t *job, pappl_device_t *device);
 
 

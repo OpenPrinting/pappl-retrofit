@@ -946,10 +946,6 @@ pr_create_job_data(pappl_job_t *job,
   filter_data_ext->ppd = job_data->ppd;               /* PPD data */
   cfFilterDataAddExt(filter_data, PPD_FILTER_DATA_EXT, filter_data_ext);
 
-  // Convert PPD file data into printer IPP attributes and options,
-  // for the filter functions being able to use it
-  ppdFilterLoadPPD(filter_data);
-
   // Establish back/side channel pipes for CUPS backends
   if (job_data->global_data->config->components & PR_COPTIONS_CUPS_BACKENDS)
     cfFilterOpenBackAndSidePipes(filter_data);
@@ -1007,6 +1003,10 @@ pr_filter(
   //
 
   job_options = papplJobCreatePrintOptions(job, INT_MAX, 1);
+
+  papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+	      "Printing job in spooling mode");
+
   job_data = pr_create_job_data(job, job_options);
   filter_data_ext =
     (ppd_filter_data_ext_t *)cfFilterDataGetExt(job_data->filter_data,
@@ -1024,9 +1024,6 @@ pr_filter(
 		filename, strerror(errno));
     return (false);
   }
-
-  papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
-	      "Printing job in spooling mode");
 
   //
   // Get input file format
@@ -1065,6 +1062,14 @@ pr_filter(
     return (false);
   }
 
+  // Set input and output formats for the filter chain
+  job_data->filter_data->content_type = conversion->srctype;
+  job_data->filter_data->final_content_type = conversion->dsttype;
+
+  // Convert PPD file data into printer IPP attributes and options,
+  // for the filter functions being able to use it
+  ppdFilterLoadPPD(job_data->filter_data);
+
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 	      "Converting input file to format: %s", conversion->dsttype);
   if (filter_path[0] == '.')
@@ -1091,7 +1096,7 @@ pr_filter(
   }
 
   //
-  // Check whether the PDF input id a banner or test page
+  // Check whether the PDF input is a banner or test page
   //
 
   if (strcmp(informat, "application/pdf") == 0 ||
@@ -1109,6 +1114,7 @@ pr_filter(
 	papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 		    "Input PDF file is banner or test page file, calling bannertopdf to add printer and job information");
 	is_banner = 1;
+	job_data->filter_data->content_type = "application/vnd.cups-pdf-banner";
 	break;
       }
     rewind(fp);
@@ -1236,11 +1242,7 @@ void pr_free_job_data(pr_job_data_t *job_data)
     cfFilterCloseBackAndSidePipes(job_data->filter_data);
 
   if (filter_data_ext)
-  {
-    if (filter_data_ext->ppdfile)
-      free(filter_data_ext->ppdfile);
     free(filter_data_ext);
-  }
 
   free(job_data->filter_data->printer);
   free(job_data->filter_data->job_user);
@@ -1549,7 +1551,7 @@ pr_rpreparejob(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Job options
     pappl_device_t   *device,   // I - Device
-    const char *dsttype)        // I - Destination MIME type (for logging)
+    const char       *starttype)// I - MIME type to feed into the filters
 {
   int                i;
   pr_job_data_t          *job_data;  // PPD data for job
@@ -1566,10 +1568,14 @@ pr_rpreparejob(
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 	      "Printing job in streaming mode");
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
-	      "Converting raster input to format: %s", dsttype);
+	      "Converting raster input to format %s for further filtering",
+	      starttype);
 
   // Load PPD file and determine the PPD options equivalent to the job options
   job_data = pr_create_job_data(job, options);
+  papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+	      "Filtering data to get format %s to send off to the driver or device",
+	      job_data->stream_format->dsttype);
 
   // Do not generate copies in post-filtering, for PWG/Apple Raster input
   // the client has to generate copies, for images PAPPL generates them
@@ -1605,6 +1611,13 @@ pr_rpreparejob(
   job_data->chain = cupsArrayNew(NULL, NULL);
   for (i = 0; i < job_data->stream_format->num_filters; i ++)
     cupsArrayAdd(job_data->chain, &(job_data->stream_format->filters[i]));
+  // Set input and output formats for the filter chain
+  job_data->filter_data->content_type = starttype;
+  job_data->filter_data->final_content_type = job_data->stream_format->dsttype;
+  // Convert PPD file data into printer IPP attributes and options,
+  // for the filter functions being able to use it
+  ppdFilterLoadPPD(job_data->filter_data);
+  // Filter from PPD?
   if (strlen(job_data->stream_filter) > 1) // A null filter is a
                                            // single char, '-' or '.',
                                            // whereas an actual filter
@@ -1799,7 +1812,7 @@ pr_pwg_rstartjob(
   // Create the job data record and the pipe to the device, with PPD's CUPS
   // filter if needed
   job_data = pr_rpreparejob(job, options, device,
-			    "application/vnd.cups-raster");
+			    "image/pwg-raster");
 
   if (!job_data)
   {

@@ -335,7 +335,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_pdf =
   {
     {
       ppdFilterPDFToPDF,
-      "application/vnd.cups-pdf",
+      NULL,
       "pdftopdf"
     }
   }
@@ -349,7 +349,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_ps =
   {
     {
       cfFilterPDFToPDF,
-      "application/vnd.cups-postscript",
+      NULL,
       "pdftopdf"
     },
     {
@@ -368,7 +368,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_raster =
   {
     {
       cfFilterPDFToPDF,
-      "application/vnd.cups-raster",
+      NULL,
       "pdftopdf"
     },
     {
@@ -387,12 +387,12 @@ static pr_spooling_conversion_t pr_convert_pdf_to_raster_poppler =
   {
     {
       cfFilterPDFToPDF,
-      "application/vnd.cups-raster",
+      NULL,
       "pdftopdf"
     },
     {
       cfFilterPDFToRaster,
-      &((cf_filter_out_format_t){CF_FILTER_OUT_FORMAT_CUPS_RASTER}),
+      NULL,
       "pdftoraster"
     }
   }
@@ -425,7 +425,7 @@ static pr_spooling_conversion_t pr_convert_ps_to_pdf =
     },
     {
       ppdFilterPDFToPDF,
-      "application/vnd.cups-pdf",
+      NULL,
       "pdftopdf"
     }
   }
@@ -501,7 +501,7 @@ static pr_stream_format_t pr_stream_pdf =
     },
     {
       ppdFilterPDFToPDF,
-      "application/vnd.cups-pdf",
+      NULL,
       "pdftopdf"
     }
   }
