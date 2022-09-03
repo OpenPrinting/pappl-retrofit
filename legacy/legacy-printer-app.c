@@ -152,7 +152,7 @@ main(int  argc,				// I - Number of command-line arguments
                               // printing in spooling mode
     stream_formats,           // Arrray for stream formats to be generated
                               // when printing in streaming mode
-    "driverless, driverless-fax, dnssd, ipp, ipps, http, https",
+    "driverless, driverless-fax, ipp, ipps, http, https",
                               // CUPS backends to be ignored
     "", //"hp, gutenprint53+usb",
                               // CUPS backends to be used exclusively
