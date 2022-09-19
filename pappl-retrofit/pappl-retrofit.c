@@ -4409,6 +4409,8 @@ pr_update_status(
 
   papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
 		  "Updating device status...");
+  return (true); // XXX TODO Supply level check not working yet
+                 //          Causes 100% CPU after job with CUPS backends
 
   if ((num_supply =
        papplDeviceGetSupplies(device,
