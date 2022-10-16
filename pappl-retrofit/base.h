@@ -249,6 +249,9 @@ typedef struct pr_printer_app_global_data_s
                                            // devices, for access by SIGCHLD
                                            // handler
   // Directories for auxiliary files and components
+  char              state_dir[1024];     // State/config file directory,
+                                         // customizable via STATE_DIR
+                                         // environment variable
   char              ppd_dirs_list[1023]; // Environment variable PPD_DIRS
                                          // with the PPD directories
   char              user_ppd_dir[1024];  // Directory where PPDs

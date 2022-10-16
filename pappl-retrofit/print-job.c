@@ -716,9 +716,7 @@ pr_create_job_data(pappl_job_t *job,
 
   k = 0;
   for (i = 0;
-       i < (extension->installable_options ?
-	    driver_data.num_vendor - 1 :
-	    driver_data.num_vendor);
+       i < driver_data.num_vendor;
        i ++)
   {
     controlled_by_presets = (extension->vendor_ppd_options[i][0] == '/' ?

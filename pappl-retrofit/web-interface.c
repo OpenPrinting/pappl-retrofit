@@ -202,39 +202,24 @@ pr_printer_web_device_config(
 	status = "Installable accessory configuration polled from printer.";
 	polled_installables = true;
 
-	// Get current settings of the "Installable Options"
-	num_installables = 0;
-	installables = NULL;
-	if ((attr = ippFindAttribute(driver_attrs,
-				     "installable-options-default",
-				     IPP_TAG_ZERO)) != NULL)
-	{
-	  if (ippAttributeString(attr, buf, sizeof(buf)) > 0)
-	  {
-	    num_installables = cupsParseOptions(buf, 0, &installables);
-	    ppdMarkOptions(ppd, num_installables, installables);
-	  }
-	  ippDeleteAttribute(driver_attrs, attr);
-	}
-
-	// Join polled settings and mark them in the PPD
+	// Join polled settings with current settings and mark them in the PPD
 	for (i = num_options, opt = options; i > 0; i --, opt ++)
         {
 	  ppdMarkOption(ppd, opt->name, opt->value);
-	  num_installables = cupsAddOption(opt->name, opt->value,
-					   num_installables, &installables);
+	  extension->num_inst_options =
+	    cupsAddOption(opt->name, opt->value,
+			  extension->num_inst_options,
+			  &extension->inst_options);
         }
 
 	// Create new option string for saving in the state file
 	buf[0] = '\0';
-	for (i = num_installables, opt = installables; i > 0; i --, opt ++)
+	for (i = extension->num_inst_options, opt = extension->inst_options;
+	     i > 0; i --, opt ++)
 	  snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf) - 1,
 		   "%s=%s ", opt->name, opt->value);
         if (buf[0])
 	  buf[strlen(buf) - 1] = '\0';
-
-	// Clean up
-	cupsFreeOptions(num_installables, installables);
 
 	// Update the driver data to only show options and choices which make
 	// sense with the current installable accessory configuration
