@@ -982,7 +982,7 @@ pr_filter(
   int                   nullfd;         // File descriptor for /dev/null
   pappl_pr_options_t	*job_options;	// Job options
   bool			ret = false;	// Return value
-  ppd_filter_external_cups_t* ppd_filter_params = NULL; // Parameters for CUPS
+  cf_filter_external_t* ppd_filter_params = NULL; // Parameters for CUPS
                                         // filter defined in the PPD
   pr_print_filter_function_data_t *print_params; // Paramaters for
                                         // pr_print_filter_function()
@@ -1136,7 +1136,7 @@ pr_filter(
                                // least 2 chars.
   {
     ppd_filter_params =
-      (ppd_filter_external_cups_t *)calloc(1, sizeof(ppd_filter_external_cups_t));
+      (cf_filter_external_t *)calloc(1, sizeof(cf_filter_external_t));
     ppd_filter_params->filter = filter_path;
     job_data->ppd_filter =
       (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
@@ -1558,7 +1558,7 @@ pr_rpreparejob(
   pr_cups_device_data_t  *device_data = NULL; // Device data of CUPS backend
                                      // device
   int                    nullfd;     // File descriptor pointing to /dev/null
-  ppd_filter_external_cups_t *ppd_filter_params = NULL;
+  cf_filter_external_t *ppd_filter_params = NULL;
                                      // Parameters for call of PPD's
                                      // CUPS filter via ppdFilterExternalCUPS()
   pr_print_filter_function_data_t *print_params; // Paramaters for
@@ -1629,7 +1629,7 @@ pr_rpreparejob(
 		"Using CUPS filter (printer driver): %s",
 		job_data->stream_filter);
     ppd_filter_params =
-      (ppd_filter_external_cups_t *)calloc(1, sizeof(ppd_filter_external_cups_t));
+      (cf_filter_external_t *)calloc(1, sizeof(cf_filter_external_t));
     ppd_filter_params->filter = job_data->stream_filter;
     job_data->ppd_filter =
       (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));

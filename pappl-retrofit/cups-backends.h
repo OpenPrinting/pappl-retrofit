@@ -91,7 +91,7 @@ typedef struct pr_cups_device_data_s
   pr_printer_app_global_data_t *global_data; // Global data
   pr_cups_devlog_data_t        devlog_data;  // Data for log function
   cf_filter_data_t                *filter_data; // Common data for filter functions
-  ppd_filter_external_cups_t       backend_params;// Parameters for launching
+  cf_filter_external_t       backend_params;// Parameters for launching
                                              // backend via ppdFilterExternalCUPS()
   bool                         internal_filter_data; // Is filter_data
                                              // internal?

@@ -215,7 +215,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
     (pr_printer_app_global_data_t *)pr_cups_device_user_data;
   pr_cups_devlog_data_t devlog_data;
   cf_filter_data_t filter_data;
-  ppd_filter_external_cups_t backend_params;
+  cf_filter_external_t backend_params;
   char          buf[2048];
   bool          ret = false;
   int		num_backends = 0,
@@ -385,7 +385,7 @@ pr_cups_devlist(pappl_device_cb_t cb,
       // for running the CUPS backend in discovery mode (without arguments)
       memset(&backend_params, 0, sizeof(backend_params));
       backend_params.filter = strdup(buf);
-      backend_params.is_backend = 2; // Run backend in discovery mode, w/o args
+      backend_params.exec_mode = 2; // Run backend in discovery mode, w/o args
 
       // Fill in the backend information...
       backend->name   = strdup(dent->filename);
@@ -816,9 +816,10 @@ pr_cups_dev_launch_backend(pappl_device_t *device)
   // staring with "STATE:")
   memset(&device_data->backend_params, 0, sizeof(device_data->backend_params));
   device_data->backend_params.filter = strdup(buf);
-  device_data->backend_params.is_backend = 1; // Run backend in job execution
-                                              // mode
-  device_data->backend_params.device_uri = device_data->device_uri + 5;
+  device_data->backend_params.exec_mode = 1; // Run backend in job execution
+                                             // mode
+  cfFilterAddEnvVar("DEVICE_URI", device_data->device_uri + 5,
+		    &device_data->backend_params.envp);
 
   // Return the filter ends of the pipes
   device_data->backfd = device_data->filter_data->back_pipe[0];
@@ -860,6 +861,7 @@ pr_cups_dev_stop_backend(pappl_device_t *device)
 {
   pr_cups_device_data_t *device_data =
     (pr_cups_device_data_t *)papplDeviceGetData(device);
+  int i;
 
 
   if (!device_data)
@@ -886,8 +888,15 @@ pr_cups_dev_stop_backend(pappl_device_t *device)
 
   if (device_data->backend_params.filter)
     free((char *)(device_data->backend_params.filter));
-
   device_data->backend_params.filter = NULL;
+
+  if (device_data->backend_params.envp)
+  {
+    for (i = 0; device_data->backend_params.envp[i]; i ++)
+      free(device_data->backend_params.envp[i]);
+    free(device_data->backend_params.envp);
+    device_data->backend_params.envp = NULL;
+  }
 }
 
 
