@@ -3619,8 +3619,11 @@ pr_printer_update_for_installable_options(
 		  "Updating printer's driver data and attributes to the installable accessories settings.");
   buf2[0] = '\0';
   if (instoptstr)
+  {
     papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
 		    "New installable accessories settings: %s", instoptstr);
+    extension->updated = false;
+  }
   else if (!extension->inst_options)
   {
     /* No installable accessory configuration present in driver data. Check
@@ -3638,6 +3641,7 @@ pr_printer_update_for_installable_options(
 			buf1, strerror(errno));
       close(fd);
       instoptstr = buf2;
+      extension->updated = false;
       papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
 		      "Previous installable accessories settings loaded from %s: %s",
 		      buf1, buf2);
@@ -3648,10 +3652,9 @@ pr_printer_update_for_installable_options(
 		      buf1, strerror(errno));
   }
 
-  // If we have new installable options settings update them in driver_data
+  // Save new installable accessories configuration to file
   if (instoptstr && instoptstr != buf2)
   {
-    // Save new installable accessories configuration to file
     if ((fd = papplPrinterOpenFile(printer, buf1, sizeof(buf1),
 				   extension->global_data->state_dir,
 				   "inst-opt", "conf", "w")) > 0)
@@ -3672,7 +3675,8 @@ pr_printer_update_for_installable_options(
 
   }
 
-  if (instoptstr)
+  // If we have new installable options settings update them in driver_data
+  if (!extension->updated)
   {
     // Update the installable accessory settings in the driver data
     if (extension->inst_options)
