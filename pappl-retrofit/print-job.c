@@ -374,7 +374,7 @@ pr_job_data_t *
 pr_create_job_data(pappl_job_t *job,
 		   pappl_pr_options_t *job_options)
 {
-  int                   i, j, k, count, intval;
+  int                   i, j, k, count, intval = 0;
   pr_driver_extension_t *extension;
   pr_job_data_t         *job_data;      // PPD data for job
   ppd_cache_t           *pc;
@@ -1549,7 +1549,7 @@ pr_rpreparejob(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Job options
     pappl_device_t   *device,   // I - Device
-    const char       *starttype)// I - MIME type to feed into the filters
+    char             *starttype)// I - MIME type to feed into the filters
 {
   int                i;
   pr_job_data_t          *job_data;  // PPD data for job

@@ -1122,7 +1122,7 @@ pr_system_web_add_ppd(
 			  snprintf(strbuf + strlen(strbuf),
 				   sizeof(strbuf) - strlen(strbuf) - 1,
 				   " %s,",
-				   option->text ? option->text :
+				   option->text[0] ? option->text :
 				   option->keyword);
 			} else if (!strcasecmp(option->keyword, "PageSize"))
 			  pagesize_option_ok = true;

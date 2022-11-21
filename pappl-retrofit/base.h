@@ -48,23 +48,23 @@ typedef enum pr_devid_regex_mode_e           // Modes to match a regular
 
 typedef struct pr_spooling_conversion_s
 {
-  const char               *srctype;           // Input data type
-  const char               *dsttype;           // Output data type
+  char                     *srctype;           // Input data type
+  char                     *dsttype;           // Output data type
   int                      num_filters;        // Number of filters
-  cf_filter_filter_in_chain_t filters[];          // List of filters with
+  cf_filter_filter_in_chain_t filters[];       // List of filters with
                                                // parameters
 } pr_spooling_conversion_t;
 
 typedef struct pr_stream_format_s
 {
-  const char               *dsttype;           // Output data type
+  char                     *dsttype;           // Output data type
   pappl_pr_rendjob_cb_t    rendjob_cb;         // End raster job callback
   pappl_pr_rendpage_cb_t   rendpage_cb;        // End raster page callback
   pappl_pr_rstartjob_cb_t  rstartjob_cb;       // Start raster job callback
   pappl_pr_rstartpage_cb_t rstartpage_cb;      // Start raster page callback
   pappl_pr_rwriteline_cb_t rwriteline_cb;      // Write raster line callback
   int                      num_filters;        // Number of filters
-  cf_filter_filter_in_chain_t filters[];          // List of filters with
+  cf_filter_filter_in_chain_t filters[];       // List of filters with
                                                // parameters
 } pr_stream_format_t;
 
