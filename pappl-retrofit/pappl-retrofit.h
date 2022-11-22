@@ -92,6 +92,62 @@ typedef struct pr_driver_extension_s	// Driver data extension
   pr_printer_app_global_data_t *global_data; // Global data
 } pr_driver_extension_t;
 
+// Properties of CUPS backends running in discovery mode to find supported
+// devices
+typedef struct pr_backend_s
+{
+  char		*name;			// Name of backend
+  int		pid,			// Process ID
+                status;			// Exit status
+  int		pipe;			// Pipe from backend stdout
+  int		count;			// Number of devices found
+  char          buf[4096];              // Buffer to hold backend output
+  size_t        bytes;                  // Bytes in the buffer
+  bool          done;                   // Sub-process finished?
+} pr_backend_t;
+
+// Global variables for this Printer Application.
+// Note that the Printer Application can only run one system at the same time
+// Items adjustable by command line options and environment variables and also
+// values obtained at run time
+struct pr_printer_app_global_data_s
+{
+  pr_printer_app_config_t *config;
+  pappl_system_t          *system;
+  int                     num_drivers;     // Number of drivers (from the PPDs)
+  pappl_pr_driver_t       *drivers;        // Driver index (for menu and
+                                           // auto-add)
+  cups_array_t            *ppd_paths,      // List of the paths to each PPD
+                          *ppd_collections;// List of all directories providing
+                                           // PPD files
+  pr_backend_t            *backend_list;   // Pointer to list of CUPS backends
+                                           // running in discovery mode to find
+                                           // devices, for access by SIGCHLD
+                                           // handler
+  // Directories for auxiliary files and components
+  char              state_dir[1024];     // State/config file directory,
+                                         // customizable via STATE_DIR
+                                         // environment variable
+  char              ppd_dirs_list[1023]; // Environment variable PPD_DIRS
+                                         // with the PPD directories
+  char              user_ppd_dir[1024];  // Directory where PPDs
+                                         // added by the user are held
+  char              spool_dir[1024];     // Spool directory, customizable via
+                                         // SPOOL_DIR environment variable
+  char              filter_dir[1024];    // Filter directory, customizable
+                                         // via FILTER_DIR environment
+                                         // variable
+  char              backend_dir[1024];   // Backend directory, customizable
+                                         // via BACKEND_DIR environment
+                                         // variable
+  char              testpage_dir[1024];  // Test page directory, customizable
+                                         // via TESTPAGE_DIR environment
+                                         // variable
+  // State file
+  char              state_file[1024];    // State file, customizable via
+                                         // STATE_FILE environment variable
+};
+
 
 //
 // Functions...

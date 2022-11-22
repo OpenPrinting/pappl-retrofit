@@ -36,6 +36,12 @@ extern "C" {
 // Types...
 //
 
+// Global variables for this Printer Application.
+// Note that the Printer Application can only run one system at the same time
+// Items adjustable by command line options and environment variables and also
+// values obtained at run time
+typedef struct pr_printer_app_global_data_s pr_printer_app_global_data_t;
+
 typedef enum pr_devid_regex_mode_e           // Modes to match a regular
                                              // expression to the value of
                                              // a field in the device ID
@@ -67,20 +73,6 @@ typedef struct pr_stream_format_s
   cf_filter_filter_in_chain_t filters[];       // List of filters with
                                                // parameters
 } pr_stream_format_t;
-
-// Properties of CUPS backends running in discovery mode to find supported
-// devices
-typedef struct pr_backend_s
-{
-  char		*name;			// Name of backend
-  int		pid,			// Process ID
-                status;			// Exit status
-  int		pipe;			// Pipe from backend stdout
-  int		count;			// Number of devices found
-  char          buf[4096];              // Buffer to hold backend output
-  size_t        bytes;                  // Bytes in the buffer
-  bool          done;                   // Sub-process finished?
-} pr_backend_t;
 
 // Options for components of the retro-fit Printer Application framework to
 // be used
@@ -230,53 +222,12 @@ typedef struct pr_printer_app_config_s
   cups_array_t      *driver_selection_regex_list;
 } pr_printer_app_config_t;
 
-// Global variables for this Printer Application.
-// Note that the Printer Application can only run one system at the same time
-// Items adjustable by command line options and environment variables and also
-// values obtained at run time
-typedef struct pr_printer_app_global_data_s
-{
-  pr_printer_app_config_t *config;
-  pappl_system_t          *system;
-  int                     num_drivers;     // Number of drivers (from the PPDs)
-  pappl_pr_driver_t       *drivers;        // Driver index (for menu and
-                                           // auto-add)
-  cups_array_t            *ppd_paths,      // List of the paths to each PPD
-                          *ppd_collections;// List of all directories providing
-                                           // PPD files
-  pr_backend_t            *backend_list;   // Pointer to list of CUPS backends
-                                           // running in discovery mode to find
-                                           // devices, for access by SIGCHLD
-                                           // handler
-  // Directories for auxiliary files and components
-  char              state_dir[1024];     // State/config file directory,
-                                         // customizable via STATE_DIR
-                                         // environment variable
-  char              ppd_dirs_list[1023]; // Environment variable PPD_DIRS
-                                         // with the PPD directories
-  char              user_ppd_dir[1024];  // Directory where PPDs
-                                         // added by the user are held
-  char              spool_dir[1024];     // Spool directory, customizable via
-                                         // SPOOL_DIR environment variable
-  char              filter_dir[1024];    // Filter directory, customizable
-                                         // via FILTER_DIR environment
-                                         // variable
-  char              backend_dir[1024];   // Backend directory, customizable
-                                         // via BACKEND_DIR environment
-                                         // variable
-  char              testpage_dir[1024];  // Test page directory, customizable
-                                         // via TESTPAGE_DIR environment
-                                         // variable
-  // State file
-  char              state_file[1024];    // State file, customizable via
-                                         // STATE_FILE environment variable
-} pr_printer_app_global_data_t;
-
 
 //
 // Functions...
 //
 
+extern pappl_system_t *pr_get_system(pr_printer_app_global_data_t *global_data);
 extern int pr_retrofit_printer_app(pr_printer_app_config_t *printer_app_config,
 				   int argc, char *argv[]);
 extern const char *pr_best_matching_ppd(const char *device_id,

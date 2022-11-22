@@ -23,11 +23,24 @@
 
 
 //
+// 'pr_get_system() - Accessor function for the "system" entry in the
+//                    in the opaque pr_printer_app_global_data_t struvture
+//
+
+pappl_system_t *                         // O - System
+pr_get_system(pr_printer_app_global_data_t *global_data)
+                                         // I - Global data
+{
+  return (global_data->system);
+}
+
+
+//
 // 'pr_retrofit_printer_app()' - Run the driver-retro-fitting printer
 //                               application with a given configuration
 //
 
-int
+int                                      // O - Exit status of Printer App
 pr_retrofit_printer_app(pr_printer_app_config_t *printer_app_config,
 			int  argc,	 // I - Number of command-line arguments
 			char *argv[])    // I - Command-line arguments
