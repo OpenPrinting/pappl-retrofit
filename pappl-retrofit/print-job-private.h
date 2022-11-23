@@ -18,7 +18,7 @@
 // Include necessary headers...
 //
 
-#include <pappl-retrofit/base.h>
+#include <pappl-retrofit/pappl-retrofit.h>
 #include <pappl/pappl.h>
 #include <ppd/ppd.h>
 #include <cupsfilters/log.h>

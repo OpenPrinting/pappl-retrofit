@@ -22,7 +22,7 @@
 #  define _GNU_SOURCE
 #endif
 
-#include <pappl-retrofit/base.h>
+#include <pappl-retrofit/pappl-retrofit.h>
 #include <pappl-retrofit/print-job-private.h>
 #include <pappl-retrofit/cups-backends-private.h>
 #include <pappl-retrofit/web-interface-private.h>

@@ -16,7 +16,7 @@
 //
 
 #include <pappl-retrofit/cups-backends-private.h>
-#include <pappl-retrofit/base.h>
+#include <pappl-retrofit/pappl-retrofit.h>
 #include <cupsfilters/ieee1284.h>
 #include <cups/dir.h>
 #include <poll.h>

@@ -19,21 +19,21 @@ EXTRA_DIST = \
 # ==========================
 # CUPS Driver legacy support library
 # ==========================
-pkgpappl_retrofitincludedir = $(includedir)/pappl-retrofit
+pkgpappl_retrofitincludedir = $(includedir)
 pkgpappl_retrofitinclude_DATA = \
-	pappl-retrofit/pappl-retrofit.h \
-	pappl-retrofit/base.h \
-	pappl-retrofit/print-job.h \
-	pappl-retrofit/cups-backends.h \
-	pappl-retrofit/web-interface.h
+	pappl-retrofit/pappl-retrofit.h
 
 lib_LTLIBRARIES = libpappl-retrofit.la
 
 libpappl_retrofit_la_SOURCES = \
 	pappl-retrofit/pappl-retrofit.c \
+	pappl-retrofit/pappl-retrofit-private.h \
 	pappl-retrofit/print-job.c \
+	pappl-retrofit/print-job-private.h \
 	pappl-retrofit/cups-backends.c \
-	pappl-retrofit/web-interface.c
+	pappl-retrofit/cups-backends-private.h \
+	pappl-retrofit/web-interface.c \
+	pappl-retrofit/web-interface-private.h
 	$(pkgpappl_retrofitinclude_DATA)
 libpappl_retrofit_la_LIBADD = \
 	$(CUPS_LIBS) \

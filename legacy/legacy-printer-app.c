@@ -15,7 +15,7 @@
 // Include necessary headers...
 //
 
-#include <pappl-retrofit/base.h>
+#include <pappl-retrofit/pappl-retrofit.h>
 #include <config.h>
 
 
