@@ -91,17 +91,17 @@ extern bool   _prFilter(pappl_job_t *job, pappl_device_t *device, void *data);
 extern void   _prFreeJobData(pr_job_data_t *job_data);
 extern int    _prJobIsCanceled(void *data);
 extern void   _prJobLog(void *data, cf_loglevel_t level,
-			 const char *message, ...);
+			const char *message, ...);
 extern void   _prOneBitDitherOnDraft(pappl_job_t *job,
-					 pappl_pr_options_t *options);
+				     pappl_pr_options_t *options);
 extern void   _prCleanDebugCopies(pr_printer_app_global_data_t *global_data);
 extern int    _prPrintFilterFunction(int inputfd, int outputfd,
-				       int inputseekable, cf_filter_data_t *data,
-				       void *parameters);
+				     int inputseekable, cf_filter_data_t *data,
+				     void *parameters);
 extern pr_job_data_t* _prRasterPrepareJob(pappl_job_t *job,
-				     pappl_pr_options_t *options,
-				     pappl_device_t *device,
-				     char *starttype);
+					  pappl_pr_options_t *options,
+					  pappl_device_t *device,
+					  char *starttype);
 extern void   _prRasterCleanUpJob(pappl_job_t *job, pappl_device_t *device);
 
 

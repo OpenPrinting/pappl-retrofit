@@ -33,17 +33,18 @@ void *_PRCUPSDeviceUserData;
 
 
 //
-// Callback function to make papplDeviceList() initialize PAPPL's standard
-// themes but not actually list anything
+// '_prDummyDevice()' - Callback function to make papplDeviceList()
+//                      initialize PAPPL's standard themes but not
+//                      actually list anything
 //
 
 bool
 _prDummyDevice(const char *device_info,
-		const char *device_uri,
-		const char *device_id,
-		void *data)
+	       const char *device_uri,
+	       const char *device_id,
+	       void *data)
 {
-  return true;
+  return (true);
 }
 
 
@@ -51,7 +52,7 @@ _prDummyDevice(const char *device_info,
 // '_prGetCurrentTime()' - Get the current time as a double value in seconds
 //
 
-double				/* O - Time in seconds */
+double					/* O - Time in seconds */
 _prGetCurrentTime(void)
 {
   struct timeval	curtime;	/* Current time */
@@ -64,19 +65,19 @@ _prGetCurrentTime(void)
 
 
 //
-// '_prCUPSDevLog()' - Logging function for _prCUPSDevList(), logs
-//                      on the system for everything which is not an
-//                      error and on the device for errors (here only
-//                      errors are supported, only when a device error
-//                      callback is provided). Control messages are
-//                      considered as debug messages.
+// '_prCUPSDevLog()' - Logging function for _prCUPSDevList(), logs on
+//                     the system for everything which is not an error
+//                     and on the device for errors (here only errors
+//                     are supported, only when a device error
+//                     callback is provided). Control messages are
+//                     considered as debug messages.
 //
 
 void
 _prCUPSDevLog(void *data,
-	       cf_loglevel_t level,
-	       const char *message,
-	       ...)
+	      cf_loglevel_t level,
+	      const char *message,
+	      ...)
 {
   va_list       ap;                     // Pointer to additional args
   char          buffer[8192];           // Formatted message
@@ -90,36 +91,37 @@ _prCUPSDevLog(void *data,
   switch(level)
   {
     case CF_LOGLEVEL_CONTROL:
-      buffer[sizeof(buffer) - 18] = '\0';
-      memmove(buffer + 17, buffer, strlen(buffer) + 1);
-      memcpy(buffer, "Control message: ", 17);
-      level = CF_LOGLEVEL_DEBUG;
+        buffer[sizeof(buffer) - 18] = '\0';
+	memmove(buffer + 17, buffer, strlen(buffer) + 1);
+	memcpy(buffer, "Control message: ", 17);
+	level = CF_LOGLEVEL_DEBUG;
     default:
     case CF_LOGLEVEL_UNSPEC:
     case CF_LOGLEVEL_DEBUG:
     case CF_LOGLEVEL_INFO:
     case CF_LOGLEVEL_WARN:
-      papplLog(devlog_data->system, level, "%s", buffer);
-      break;
+        papplLog(devlog_data->system, level, "%s", buffer);
+	break;
     case CF_LOGLEVEL_ERROR:
     case CF_LOGLEVEL_FATAL:
-      if (devlog_data->err_cb)
-	(*(devlog_data->err_cb))(buffer, devlog_data->err_data);
-      else
-	papplLog(devlog_data->system, level, "%s", buffer);
-      break;
+        if (devlog_data->err_cb)
+	  (*(devlog_data->err_cb))(buffer, devlog_data->err_data);
+	else
+	  papplLog(devlog_data->system, level, "%s", buffer);
+	break;
   }
 }
 
 
 //
-// '_prCUPSCompareDevices()' - Compare device names to eliminate duplicates
-//                               with the help of a sorted CUPS array
+// '_prCUPSCompareDevices()' - Compare device names to eliminate
+//                             duplicates with the help of a sorted
+//                             CUPS array
 //
 
-int				        // O - Result of comparison
+int				              // O - Result of comparison
 _prCUPSCompareDevices(pr_backend_device_t *d0,// I - First device
-			pr_backend_device_t *d1)// I - Second device
+		      pr_backend_device_t *d1)// I - Second device
 {
   char          buf0[1024], buf1[1024]; // Buffers for normalizing strings
   int		diff;			// Difference between strings
@@ -128,19 +130,19 @@ _prCUPSCompareDevices(pr_backend_device_t *d0,// I - First device
   // Sort devices by device-info, device-class, and device-uri...
   if ((diff =
        strcasecmp(cfIEEE1284NormalizeMakeModel(d0->device_info, NULL,
-						CF_IEEE1284_NORMALIZE_COMPARE |
-						CF_IEEE1284_NORMALIZE_LOWERCASE |
-						CF_IEEE1284_NORMALIZE_SEPARATOR_SPACE |
-						CF_IEEE1284_NORMALIZE_PAD_NUMBERS,
-						NULL, buf0, sizeof(buf0),
-						NULL, NULL, NULL),
+					 CF_IEEE1284_NORMALIZE_COMPARE |
+					 CF_IEEE1284_NORMALIZE_LOWERCASE |
+					 CF_IEEE1284_NORMALIZE_SEPARATOR_SPACE |
+					 CF_IEEE1284_NORMALIZE_PAD_NUMBERS,
+					 NULL, buf0, sizeof(buf0),
+					 NULL, NULL, NULL),
 		  cfIEEE1284NormalizeMakeModel(d1->device_info, NULL,
-						CF_IEEE1284_NORMALIZE_COMPARE |
-						CF_IEEE1284_NORMALIZE_LOWERCASE |
-						CF_IEEE1284_NORMALIZE_SEPARATOR_SPACE |
-						CF_IEEE1284_NORMALIZE_PAD_NUMBERS,
-						NULL, buf1, sizeof(buf1),
-						NULL, NULL, NULL))) != 0)
+					 CF_IEEE1284_NORMALIZE_COMPARE |
+					 CF_IEEE1284_NORMALIZE_LOWERCASE |
+					 CF_IEEE1284_NORMALIZE_SEPARATOR_SPACE |
+					 CF_IEEE1284_NORMALIZE_PAD_NUMBERS,
+					 NULL, buf1, sizeof(buf1),
+					 NULL, NULL, NULL))) != 0)
     return (diff);
   else if ((diff = strcasecmp(d0->device_class, d1->device_class)) != 0)
     return (diff);
@@ -151,13 +153,13 @@ _prCUPSCompareDevices(pr_backend_device_t *d0,// I - First device
 
 //
 // '_prCUPSSigchldSigAction()' - Handle 'child' signals from finished
-//                                 CUPS backend processes
+//                               CUPS backend processes
 //
 
 void
 _prCUPSSigchldSigAction(int sig,		// I - Signal number (unused)
-			  siginfo_t *info,	// I - Signal info
-			  void *ucontext)	// I - Context info (unused)
+			siginfo_t *info,	// I - Signal info
+			void *ucontext)		// I - Context info (unused)
 {
   int i;
   pr_printer_app_global_data_t *global_data =
@@ -183,33 +185,32 @@ _prCUPSSigchldSigAction(int sig,		// I - Signal number (unused)
 
 //
 // '_prCUPSDevList()' - List all devices which get discovered by the
-//                       CUPS backends in our specified CUPS backend
-//                       directory, taking into account include and
-//                       exclude lists.  Resulting CUPS device URIs
-//                       are prepended by "cups:" as this is the
-//                       device list callback function of our custom
-//                       "cups" scheme. The backends are always run as
-//                       the same user as the Printer Application, so
-//                       backends which require root are skipped when
-//                       running as normal user (A Printer Application
-//                       in a Snap runs as root). The backends are run
-//                       in the ppdFilterExternalCUPS() filter function,
-//                       so their environment is as close to CUPS as
-//                       possible. For the implementation I mostly
-//                       followed scheduler/cups-deviced.c from
-//                       CUPS. It is rather complex, but this is to
-//                       make the backends run in parallel, as
-//                       especially the network backends take some
-//                       time for their discovery run. Only this way
-//                       we can keep the response time always
-//                       reasonable.
+//                      CUPS backends in our specified CUPS backend
+//                      directory, taking into account include and
+//                      exclude lists.  Resulting CUPS device URIs are
+//                      prepended by "cups:" as this is the device
+//                      list callback function of our custom "cups"
+//                      scheme. The backends are always run as the
+//                      same user as the Printer Application, so
+//                      backends which require root are skipped when
+//                      running as normal user (A Printer Application
+//                      in a Snap runs as root). The backends are run
+//                      in the ppdFilterExternalCUPS() filter
+//                      function, so their environment is as close to
+//                      CUPS as possible. For the implementation I
+//                      mostly followed scheduler/cups-deviced.c from
+//                      CUPS. It is rather complex, but this is to
+//                      make the backends run in parallel, as
+//                      especially the network backends take some time
+//                      for their discovery run. Only this way we can
+//                      keep the response time always reasonable.
 //
 
 bool
 _prCUPSDevList(pappl_device_cb_t cb,
-		void *data,
-		pappl_deverror_cb_t err_cb,
-		void *err_data)
+	       void *data,
+	       pappl_deverror_cb_t err_cb,
+	       void *err_data)
 {
   pr_printer_app_global_data_t *global_data =
     (pr_printer_app_global_data_t *)_PRCUPSDeviceUserData;
@@ -278,14 +279,14 @@ _prCUPSDevList(pappl_device_cb_t cb,
   sigaction(SIGCHLD, &action, &old_action);
 
   _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-		 "Backend directory: %s; Ignoring backends: %s; Using only backends: %s",
-		 global_data->backend_dir,
-		 (global_data->config->backends_ignore &&
-		  global_data->config->backends_ignore[0] ?
-		  global_data->config->backends_ignore : "(none)"),
-		 (global_data->config->backends_only &&
-		  global_data->config->backends_only[0] ?
-		  global_data->config->backends_only : "(all)"));
+		"Backend directory: %s; Ignoring backends: %s; Using only backends: %s",
+		global_data->backend_dir,
+		(global_data->config->backends_ignore &&
+		 global_data->config->backends_ignore[0] ?
+		 global_data->config->backends_ignore : "(none)"),
+		(global_data->config->backends_only &&
+		 global_data->config->backends_only[0] ?
+		 global_data->config->backends_only : "(all)"));
 
   // Open the backend directory and start the selected backends in
   // discovery mode (without arguments)
@@ -293,8 +294,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
   if ((dir = cupsDirOpen(global_data->backend_dir)) == NULL)
   {
     _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-		   "Unable to open backend directory '%s': %s",
-		   global_data->backend_dir, strerror(errno));
+		  "Unable to open backend directory '%s': %s",
+		  global_data->backend_dir, strerror(errno));
   }
   else 
   {
@@ -321,8 +322,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	   (S_IROTH | S_IXOTH)))
       {
 	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-		       "Backend '%s' not executable, skipping",
-		       dent->filename);
+		      "Backend '%s' not executable, skipping",
+		      dent->filename);
 	continue;
       }
 
@@ -336,8 +337,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	                                         //    others
       {
       	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_WARN,
-		       "Backend '%s' has unsafe permissions/ownership to be run as root, skipping",
-		       dent->filename);
+		      "Backend '%s' has unsafe permissions/ownership to be run as root, skipping",
+		      dent->filename);
 	continue;
       }
 
@@ -351,8 +352,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	  !isalnum(ptr1[strlen(dent->filename)]))
       {
 	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-		       "Backend '%s' not considered as it is on the exclude list",
-		       dent->filename);
+		      "Backend '%s' not considered as it is on the exclude list",
+		      dent->filename);
 	continue;
       }
 
@@ -366,8 +367,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	    !isalnum(ptr1[strlen(dent->filename)])))
       {
 	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-		       "Backend '%s' not considered as it is not on the include list",
-		       dent->filename);
+		      "Backend '%s' not considered as it is not on the include list",
+		      dent->filename);
 	continue;
       }
 
@@ -376,7 +377,7 @@ _prCUPSDevList(pappl_device_cb_t cb,
       if (num_backends >= MAX_BACKENDS)
       {
 	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_WARN,
-		       "Too many backends (%d)!\n", num_backends);
+		      "Too many backends (%d)!\n", num_backends);
 	break;
       }
       backend = backends + num_backends;
@@ -400,13 +401,13 @@ _prCUPSDevList(pappl_device_cb_t cb,
 
       // Launch the backend with pipe providing backend's stdout
       if ((backend->pipe = cfFilterPOpen(ppdFilterExternalCUPS,
-				       open("/dev/null", O_RDWR), -1,
-				       0, &filter_data, &backend_params,
-				       &(backend->pid))) == 0)
+					 open("/dev/null", O_RDWR), -1,
+					 0, &filter_data, &backend_params,
+					 &(backend->pid))) == 0)
       {
 	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-		       "Unable to execute '%s' - %s\n",
-		       backend_params.filter, strerror(errno));
+		      "Unable to execute '%s' - %s\n",
+		      backend_params.filter, strerror(errno));
 	continue;
       }
 
@@ -418,15 +419,15 @@ _prCUPSDevList(pappl_device_cb_t cb,
 		fcntl(backend->pipe, F_GETFD) | O_NONBLOCK))
       {
 	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-		       "Unable to set output pipe of '%s' to non-blocking- %s\n",
-		       backend_params.filter, strerror(errno));
+		      "Unable to set output pipe of '%s' to non-blocking- %s\n",
+		      backend_params.filter, strerror(errno));
 	cfFilterPClose(backend->pipe, backend->pid, &filter_data);
 	continue;
       }
 
       _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-		     "Started backend %s (PID %d)",
-		     backend_params.filter, backend->pid);
+		    "Started backend %s (PID %d)",
+		    backend_params.filter, backend->pid);
       
       backend_fds[num_backends].fd     = backend->pipe;
       backend_fds[num_backends].events = POLLIN;
@@ -501,8 +502,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
 		if (!strchr(uri, ':'))
 		{
 		  _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-				 "Non-device output line from '%s': %s",
-				 backends[i].name, line);
+				"Non-device output line from '%s': %s",
+				backends[i].name, line);
 		  goto nextline;
 		}
 
@@ -570,7 +571,7 @@ _prCUPSDevList(pappl_device_cb_t cb,
 		if ((device = calloc(1, sizeof(pr_backend_device_t))) == NULL)
 		{
 		  _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-				 "Ran out of memory allocating a device!");
+				"Ran out of memory allocating a device!");
 		  goto nextline;
 		}
 
@@ -587,9 +588,9 @@ _prCUPSDevList(pappl_device_cb_t cb,
 		{
 		  free(device);
 		  _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-				 "Duplicate device from backend '%s' skipped: %s (URI: %s Device ID: %s)",
-				 backends[i].name, info, device->device_uri,
-				 device_id);
+				"Duplicate device from backend '%s' skipped: %s (URI: %s Device ID: %s)",
+				backends[i].name, info, device->device_uri,
+				device_id);
 		}
 		else
 		{
@@ -610,9 +611,9 @@ _prCUPSDevList(pappl_device_cb_t cb,
 		  ret = (*cb)(buf, device->device_uri, device_id, data);
 		  backends[i].count ++;
 		  _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-				 "Device from backend '%s' added to list of available devices: %s (URI: %s Device ID: %s)",
-				 backends[i].name, buf,
-				 device->device_uri, device_id);
+				"Device from backend '%s' added to list of available devices: %s (URI: %s Device ID: %s)",
+				backends[i].name, buf,
+				device->device_uri, device_id);
 		  if (ret)
 		    // Callback returned "true", stop process here
 		    goto stop_process;
@@ -624,8 +625,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
 		// Bad format; strip trailing newline and write an
 		// error message.
 		_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-			       "Bad line from '%s': %s",
-			       backends[i].name, line);
+			      "Bad line from '%s': %s",
+			      backends[i].name, line);
 
 	      nextline:
 		// Move rest of the buffer content to the beginning of
@@ -644,14 +645,14 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	      // An error occured (not simply no further bytes due to the
 	      // backend to take time to find the next device)
 	      _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-			     "Read error from backend '%s' - %s",
-			     backends[i].name, strerror(errno));
+			    "Read error from backend '%s' - %s",
+			    backends[i].name, strerror(errno));
 	      close(backends[i].pipe);
 	      backends[i].pipe = 0;
 	      kill(backends[i].pid, SIGTERM);
 	      _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-			     "PID %d (%s) killed after read error!",
-			     backends[i].pid, backends[i].name);
+			    "PID %d (%s) killed after read error!",
+			    backends[i].pid, backends[i].name);
 	    }
 	  }
       }
@@ -670,21 +671,21 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	  {
 	    if (WIFEXITED(status))
 	      _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-			     "PID %d (%s) stopped with status %d!",
-			     pid, name, WEXITSTATUS(status));
+			    "PID %d (%s) stopped with status %d!",
+			    pid, name, WEXITSTATUS(status));
 	    else
 	      _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
-			     "PID %d (%s) crashed on signal %d!",
-			     pid, name, WTERMSIG(status));
+			    "PID %d (%s) crashed on signal %d!",
+			    pid, name, WTERMSIG(status));
 	  }
 	  else
 	    _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-			   "PID %d (%s) exited with no errors.",
-			   pid, name);
+			  "PID %d (%s) exited with no errors.",
+			  pid, name);
 	  if (backend->count)
 	    _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-			   "Found %d devices using the '%s' backend",
-			   backend->count, name);
+			  "Found %d devices using the '%s' backend",
+			  backend->count, name);
 	  backend->pid    = 0;
 	  backend->pipe   = 0;
 	  active_backends --;
@@ -700,8 +701,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	{
 	  kill(backends[i].pid, SIGTERM);
 	  _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
-			 "PID %d (%s) killed after timeout!",
-			 backends[i].pid, backends[i].name);
+			"PID %d (%s) killed after timeout!",
+			backends[i].pid, backends[i].name);
 	}
       for (i = 0; i < num_backends; i ++)
 	if (backends[i].pid)
@@ -724,26 +725,24 @@ _prCUPSDevList(pappl_device_cb_t cb,
 
 
 //
-// '_prCUPSDevLaunchBackend()' - This function starts the CUPS
-//                                  backend for a PAPPL device using
-//                                  the "cups" scheme. This function
-//                                  is separate from the
-//                                  pr_cups_deopen() callback function
-//                                  to allow a delayed start of the
-//                                  CUPS backend, on the first access
-//                                  to the device at the latest. This
-//                                  way we can set up a job's filter
-//                                  chain after PAPPL has opened the
-//                                  device and before the backend gets
-//                                  launched on sending the first job
-//                                  data, we can supply the filter
-//                                  chain's filter_data to the backend
-//                                  and the backend gets started based
-//                                  on this, making sure that it gets
-//                                  all PPD options and has the same
-//                                  side and back channel pipes as the
-//                                  filters (so that the filters can
-//                                  communicate with the backend).
+// '_prCUPSDevLaunchBackend()' - This function starts the CUPS backend
+//                               for a PAPPL device using the "cups"
+//                               scheme. This function is separate
+//                               from the pr_cups_deopen() callback
+//                               function to allow a delayed start of
+//                               the CUPS backend, on the first access
+//                               to the device at the latest. This way
+//                               we can set up a job's filter chain
+//                               after PAPPL has opened the device and
+//                               before the backend gets launched on
+//                               sending the first job data, we can
+//                               supply the filter chain's filter_data
+//                               to the backend and the backend gets
+//                               started based on this, making sure
+//                               that it gets all PPD options and has
+//                               the same side and back channel pipes
+//                               as the filters (so that the filters
+//                               can communicate with the backend).
 //
 
 bool
@@ -828,9 +827,9 @@ _prCUPSDevLaunchBackend(pappl_device_t *device)
   // Launch the backend with pipe providing backend's stdin
   if ((device_data->inputfd =
        cfFilterPOpen(ppdFilterExternalCUPS,
-		   -1, open("/dev/null", O_RDWR),
-		   0, device_data->filter_data, &device_data->backend_params,
-		   &device_data->backend_pid)) == 0)
+		     -1, open("/dev/null", O_RDWR),
+		     0, device_data->filter_data, &device_data->backend_params,
+		     &device_data->backend_pid)) == 0)
   {
     papplDeviceError(device,
 		     "Unable to execute '%s' - %s\n",
@@ -845,15 +844,13 @@ _prCUPSDevLaunchBackend(pappl_device_t *device)
 
 //
 // '_prCUPSDevStopBackend()' - This function stops a CUPS backend
-//                                started in
-//                                _prCUPSDevLaunchBackend() and
-//                                closes the pipes. Being separate
-//                                from _prCUPSDevClose() it can get
-//                                called manually earlier if needed,
-//                                for example if it shares the
-//                                filter_data with a filter chain, it
-//                                can eb called before freeing the
-//                                filter_data.
+//                             started in _prCUPSDevLaunchBackend()
+//                             and closes the pipes. Being separate
+//                             from _prCUPSDevClose() it can get
+//                             called manually earlier if needed, for
+//                             example if it shares the filter_data
+//                             with a filter chain, it can eb called
+//                             before freeing the filter_data.
 //
 
 void
@@ -902,26 +899,26 @@ _prCUPSDevStopBackend(pappl_device_t *device)
 
 //
 // '_prCUPSDevOpen()' - Open device connection for devices under the
-//                       "cups" scheme (based on CUPS backends). This
-//                       function does not yet start the CUPS
-//                       backend. It only prepares for it getting
-//                       started on the first access. This way we can
-//                       still set the filter_data externally,
-//                       especially to the filter_data of the filter
-//                       chain of a job. If the first access is by the
-//                       CUPS library functions for the side channel
-//                       (and not by a PAPPL "papplDevice...()" API
-//                       function), _prCUPSDevLaunchBackend() has
-//                       to be called manually.
-//                       device_data->filter_data == NULL
-//                       means that the backend is not started yet.
+//                      "cups" scheme (based on CUPS backends). This
+//                      function does not yet start the CUPS
+//                      backend. It only prepares for it getting
+//                      started on the first access. This way we can
+//                      still set the filter_data externally,
+//                      especially to the filter_data of the filter
+//                      chain of a job. If the first access is by the
+//                      CUPS library functions for the side channel
+//                      (and not by a PAPPL "papplDevice...()" API
+//                      function), _prCUPSDevLaunchBackend() has to be
+//                      called manually.  device_data->filter_data ==
+//                      NULL means that the backend is not started
+//                      yet.
 //
 
 
 bool
 _prCUPSDevOpen(pappl_device_t *device,
-		const char *device_uri,
-		const char *name)
+	       const char *device_uri,
+	       const char *name)
 {
   pr_cups_device_data_t *device_data;
 
@@ -955,13 +952,13 @@ _prCUPSDevOpen(pappl_device_t *device,
 
 
 //
-// '_prCUPSDevClose()' - Close device connection for devices under
-//                        the "cups" scheme (based on CUPS
-//                        backends). This function stops a CUPS
-//                        backend started in _prCUPSDevOpen() and
-//                        closes the pipes, but it supports also to
-//                        manually stop the backend earlier, by simply
-//                        calling _prCUPSDevStopBackend() before.
+// '_prCUPSDevClose()' - Close device connection for devices under the
+//                       "cups" scheme (based on CUPS backends). This
+//                       function stops a CUPS backend started in
+//                       _prCUPSDevOpen() and closes the pipes, but it
+//                       supports also to manually stop the backend
+//                       earlier, by simply calling
+//                       _prCUPSDevStopBackend() before.
 //
 
 void
@@ -988,17 +985,17 @@ _prCUPSDevClose(pappl_device_t *device)
 
 
 //
-// '_prCUPSDevRead()' - Read data from devices under the "cups"
-//                       scheme (based on CUPS backends). Dummy
-//                       function. We do not read directly from these
-//                       devices in these Printer Applications, and
-//                       filters use the channel of the CUPS backends.
+// '_prCUPSDevRead()' - Read data from devices under the "cups" scheme
+//                      (based on CUPS backends). Dummy function. We
+//                      do not read directly from these devices in
+//                      these Printer Applications, and filters use
+//                      the channel of the CUPS backends.
 //
 
 ssize_t
 _prCUPSDevRead(pappl_device_t *device,
-		void *buffer,
-		size_t bytes)
+	       void *buffer,
+	       size_t bytes)
 {
   pr_cups_device_data_t *device_data =
     (pr_cups_device_data_t *)papplDeviceGetData(device);
@@ -1026,19 +1023,18 @@ _prCUPSDevRead(pappl_device_t *device,
 
 //
 // '_prCUPSDevWrite()' - Write data (print) on devices under the
-//                        "cups" scheme (based on CUPS
-//                        backends). Dummy function. We run the CUPS
-//                        backend already as part of the filter chain,
-//                        so that the filter functions and the CUPS
-//                        backend use the same filter_data structure
-//                        and so back channel and side channel will
-//                        work.
+//                       "cups" scheme (based on CUPS backends). Dummy
+//                       function. We run the CUPS backend already as
+//                       part of the filter chain, so that the filter
+//                       functions and the CUPS backend use the same
+//                       filter_data structure and so back channel and
+//                       side channel will work.
 //
 
 ssize_t
 _prCUPSDevWrite(pappl_device_t *device,
-		 const void *buffer,
-		 size_t bytes)
+		const void *buffer,
+		size_t bytes)
 {
   pr_cups_device_data_t *device_data =
     (pr_cups_device_data_t *)papplDeviceGetData(device);
@@ -1061,13 +1057,13 @@ _prCUPSDevWrite(pappl_device_t *device,
 
 //
 // '_prCUPSDevStatus()' - Get status information from devices under
-//                         the "cups" scheme (based on CUPS
-//                         backends). We query the backend for the
-//                         printer status using the side channel. Not
-//                         all backends support this. If the backend
-//                         does not support it, we do not have access
-//                         to the status. We will always give an "OK"
-//                         result then.
+//                        the "cups" scheme (based on CUPS
+//                        backends). We query the backend for the
+//                        printer status using the side channel. Not
+//                        all backends support this. If the backend
+//                        does not support it, we do not have access
+//                        to the status. We will always give an "OK"
+//                        result then.
 //
 
 pappl_preason_t
@@ -1133,21 +1129,21 @@ _prCUPSDevStatus(pappl_device_t *device)
 
 //
 // '_prCUPSDevID()' - Get the IEEE-1284 device ID from devices under
-//                     the "cups" scheme (based on CUPS backends). We
-//                     query the backend for the device ID using the
-//                     side channel, which makes the backend polling
-//                     the ID from the printer (so no cached ID of the
-//                     print queue). Not all backends support this. If
-//                     the backend does not support it, we do not have
-//                     access to the printer ID (at least not
-//                     separately, outside of discovery mode). We will
-//                     return NULL (not accessible) then.
+//                    the "cups" scheme (based on CUPS backends). We
+//                    query the backend for the device ID using the
+//                    side channel, which makes the backend polling
+//                    the ID from the printer (so no cached ID of the
+//                    print queue). Not all backends support this. If
+//                    the backend does not support it, we do not have
+//                    access to the printer ID (at least not
+//                    separately, outside of discovery mode). We will
+//                    return NULL (not accessible) then.
 //
 
 char *
 _prCUPSDevID(pappl_device_t *device,
-	      char *buffer,
-	      size_t bufsize)
+	     char *buffer,
+	     size_t bufsize)
 {
   cups_sc_status_t sc_status;
   int datalen;

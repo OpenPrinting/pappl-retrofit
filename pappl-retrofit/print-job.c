@@ -126,19 +126,19 @@ _prASCII85(FILE                *outputfp,
 
 
 //
-// '_prGetFileContentType()' - Tries to find out what type of
-//                                content the input of the given job
-//                                is, by the data format and in case
-//                                of PDF by the information about
-//                                which application had created it in
-//                                the metadata. Content types are the
-//                                ones of the print-content-optimize
-//                                IPP attribute: Photo, Text,
-//                                Graphics, Text and Graphics.
+// '_prGetFileContentType()' - Tries to find out what type of content
+//                             the input of the given job is, by the
+//                             data format and in case of PDF by the
+//                             information about which application had
+//                             created it in the metadata. Content
+//                             types are the ones of the
+//                             print-content-optimize IPP attribute:
+//                             Photo, Text, Graphics, Text and
+//                             Graphics.
 //
-//                                Needs one of the external utilities
-//                                "pdfinfo" (from Poppler or XPDF) or
-//                                "exiftool".
+//                             Needs one of the external utilities
+//                             "pdfinfo" (from Poppler or XPDF) or
+//                             "exiftool".
 //
 
 pappl_content_t
@@ -452,28 +452,20 @@ _prCreateJobData(pappl_job_t *job,
   {
     snprintf(buf, sizeof(buf), "%d-%d",
 	     job_options->first_page, job_options->last_page);
-    num_options = cupsAddOption("page-ranges", buf,
-					  num_options,
-					  &(options));
+    num_options = cupsAddOption("page-ranges", buf, num_options, &(options));
   }
 
   // Finishings
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG, "Adding options for finishings");
   if (job_options->finishings & PAPPL_FINISHINGS_PUNCH)
-    num_options = ppdCacheGetFinishingOptions(pc, NULL,
-							IPP_FINISHINGS_PUNCH,
-							num_options,
-							&(options));
+    num_options = ppdCacheGetFinishingOptions(pc, NULL, IPP_FINISHINGS_PUNCH,
+					      num_options, &(options));
   if (job_options->finishings & PAPPL_FINISHINGS_STAPLE)
-    num_options = ppdCacheGetFinishingOptions(pc, NULL,
-							IPP_FINISHINGS_STAPLE,
-							num_options,
-							&(options));
+    num_options = ppdCacheGetFinishingOptions(pc, NULL, IPP_FINISHINGS_STAPLE,
+					      num_options, &(options));
   if (job_options->finishings & PAPPL_FINISHINGS_TRIM)
-    num_options = ppdCacheGetFinishingOptions(pc, NULL,
-							IPP_FINISHINGS_TRIM,
-							num_options,
-							&(options));
+    num_options = ppdCacheGetFinishingOptions(pc, NULL, IPP_FINISHINGS_TRIM,
+					      num_options, &(options));
 
   // PageSize/media/media-size/media-size-name
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG, "Adding option: PageSize");
@@ -515,16 +507,14 @@ _prCreateJobData(pappl_job_t *job,
 					job_options->media.source)) !=
       NULL)
     num_options = cupsAddOption(pc->source_option, choicestr,
-					  num_options,
-					  &(options));
+				num_options, &(options));
 
   // MediaType/media-type
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG, "Adding option: MediaType");
   if ((choicestr = ppdCacheGetMediaType(pc, NULL,
 					job_options->media.type)) != NULL)
     num_options = cupsAddOption("MediaType", choicestr,
-					  num_options,
-					  &(options));
+				num_options, &(options));
 
   // orientation-requested (filter option)
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
@@ -534,8 +524,7 @@ _prCreateJobData(pappl_job_t *job,
   {
     snprintf(buf, sizeof(buf), "%d", job_options->orientation_requested);
     num_options = cupsAddOption("orientation-requested", buf,
-					  num_options,
-					  &(options));
+				num_options, &(options));
   }
 
   // OutputBin/output-bin
@@ -548,8 +537,7 @@ _prCreateJobData(pappl_job_t *job,
 	choicestr = pwg_map->ppd;
     if (choicestr != NULL)
       num_options = cupsAddOption("OutputBin", choicestr,
-					    num_options,
-					    &(options));
+				  num_options, &(options));
   }
 
   // Presets, selected by color/bw and print quality
@@ -582,8 +570,7 @@ _prCreateJobData(pappl_job_t *job,
       papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 		  "  Adding option: %s=%s", presets[i].name, presets[i].value);
       num_options = cupsAddOption(presets[i].name, presets[i].value,
-					    num_options,
-					    &(options));
+				  num_options, &(options));
     }
   }
 
@@ -601,22 +588,22 @@ _prCreateJobData(pappl_job_t *job,
 
   switch (job_options->print_content_optimize)
   {
-  default:
-  case PAPPL_CONTENT_AUTO:
-    pco = 0;
-    break;
-  case PAPPL_CONTENT_PHOTO:
-    pco = 1;
-    break;
-  case PAPPL_CONTENT_GRAPHIC:
-    pco = 2;
-    break;
-  case PAPPL_CONTENT_TEXT:
-    pco = 3;
-    break;
-  case PAPPL_CONTENT_TEXT_AND_GRAPHIC:
-    pco = 4;
-    break;
+    default:
+    case PAPPL_CONTENT_AUTO:
+        pco = 0;
+	break;
+    case PAPPL_CONTENT_PHOTO:
+        pco = 1;
+	break;
+    case PAPPL_CONTENT_GRAPHIC:
+        pco = 2;
+	break;
+    case PAPPL_CONTENT_TEXT:
+        pco = 3;
+	break;
+    case PAPPL_CONTENT_TEXT_AND_GRAPHIC:
+        pco = 4;
+	break;
   }
   num_presets = pc->num_optimize_presets[pco];
   presets     = pc->optimize_presets[pco];
@@ -638,10 +625,10 @@ _prCreateJobData(pappl_job_t *job,
 			options) == NULL)
       {
 	papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
-		    "  Adding option: %s=%s", presets[i].name, presets[i].value);
+		    "  Adding option: %s=%s",
+		    presets[i].name, presets[i].value);
 	num_options = cupsAddOption(presets[i].name, presets[i].value,
-					      num_options,
-					      &(options));
+				    num_options, &(options));
       }
       else
 	papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
@@ -656,8 +643,7 @@ _prCreateJobData(pappl_job_t *job,
     if (cupsGetOption("ColorModel", num_options,
 		      options) == NULL)
       num_options = cupsAddOption("ColorModel", "Gray",
-					    num_options,
-					    &(options));
+				  num_options, &(options));
   }
 
   // print-scaling (filter option)
@@ -666,24 +652,19 @@ _prCreateJobData(pappl_job_t *job,
   {
     if (job_options->print_scaling & PAPPL_SCALING_AUTO)
       num_options = cupsAddOption("print-scaling", "auto",
-					    num_options,
-					    &(options));
+				  num_options, &(options));
     if (job_options->print_scaling & PAPPL_SCALING_AUTO_FIT)
       num_options = cupsAddOption("print-scaling", "auto-fit",
-					    num_options,
-					    &(options));
+				  num_options, &(options));
     if (job_options->print_scaling & PAPPL_SCALING_FILL)
       num_options = cupsAddOption("print-scaling", "fill",
-					    num_options,
-					    &(options));
+				  num_options, &(options));
     if (job_options->print_scaling & PAPPL_SCALING_FIT)
       num_options = cupsAddOption("print-scaling", "fit",
-					    num_options,
-					    &(options));
+				  num_options, &(options));
     if (job_options->print_scaling & PAPPL_SCALING_NONE)
       num_options = cupsAddOption("print-scaling", "none",
-					    num_options,
-					    &(options));
+				  num_options, &(options));
   }
 
   // Duplex/sides
@@ -692,22 +673,16 @@ _prCreateJobData(pappl_job_t *job,
   {
     if (job_options->sides & PAPPL_SIDES_ONE_SIDED &&
 	pc->sides_1sided)
-      num_options = cupsAddOption(pc->sides_option,
-					    pc->sides_1sided,
-					    num_options,
-					    &(options));
+      num_options = cupsAddOption(pc->sides_option, pc->sides_1sided,
+				  num_options, &(options));
     else if (job_options->sides & PAPPL_SIDES_TWO_SIDED_LONG_EDGE &&
 	     pc->sides_2sided_long)
-      num_options = cupsAddOption(pc->sides_option,
-					    pc->sides_2sided_long,
-					    num_options,
-					    &(options));
+      num_options = cupsAddOption(pc->sides_option, pc->sides_2sided_long,
+				  num_options, &(options));
     else if (job_options->sides & PAPPL_SIDES_TWO_SIDED_SHORT_EDGE &&
 	     pc->sides_2sided_short)
-      num_options = cupsAddOption(pc->sides_option,
-					    pc->sides_2sided_short,
-					    num_options,
-					    &(options));
+      num_options = cupsAddOption(pc->sides_option, pc->sides_2sided_short,
+				  num_options, &(options));
   }
 
   //
@@ -721,7 +696,8 @@ _prCreateJobData(pappl_job_t *job,
   {
     controlled_by_presets = (extension->vendor_ppd_options[i][0] == '/' ?
 			     1 : 0);
-    if ((param = strchr(extension->vendor_ppd_options[i], ':')) == NULL) {
+    if ((param = strchr(extension->vendor_ppd_options[i], ':')) == NULL)
+    {
       papplLogJob(job, PAPPL_LOGLEVEL_DEBUG, "Adding option: %s",
 		  extension->vendor_ppd_options[i] + controlled_by_presets);
       coption = NULL;
@@ -854,9 +830,7 @@ _prCreateJobData(pappl_job_t *job,
       choicestr = "False";
     else if (strstr(val, "collate"))
       choicestr = "True";
-    num_options = cupsAddOption("Collate", choicestr,
-					  num_options,
-					  &(options));
+    num_options = cupsAddOption("Collate", choicestr, num_options, &(options));
   }
 
   // Reset marked options in the PPD to defaults, to put options we do not
@@ -873,23 +847,20 @@ _prCreateJobData(pappl_job_t *job,
     if ((attr = papplJobGetAttribute(job, extra_attributes[i])) != NULL &&
 	(val = ippGetString(attr, 0, NULL)) != NULL)
       num_options = cupsAddOption(extra_attributes[i], val,
-					    num_options,
-					    &(options));
+				  num_options, &(options));
 
   // Add options with time of creation and time of processing of the job
   if ((t = papplJobGetTimeCreated(job)) > 0)
   {
     snprintf(buf, sizeof(buf) - 1, "%ld", t);
     num_options = cupsAddOption("time-at-creation", buf,
-					  num_options,
-					  &(options));
+				num_options, &(options));
   }
   if ((t = papplJobGetTimeProcessed(job)) > 0)
   {
     snprintf(buf, sizeof(buf) - 1, "%ld", t);
     num_options = cupsAddOption("time-at-processing", buf,
-					  num_options,
-					  &(options));
+				num_options, &(options));
   }
 
   // Log the option settings which will get used
@@ -930,18 +901,18 @@ _prCreateJobData(pappl_job_t *job,
   filter_data->side_pipe[0] = -1;
   filter_data->side_pipe[1] = -1;
   filter_data->logfunc = _prJobLog; // Job log function catching page counts
-                                     // ("PAGE: XX YY" messages)
+                                    // ("PAGE: XX YY" messages)
   filter_data->logdata = job;
   filter_data->iscanceledfunc = _prJobIsCanceled; // Function to indicate
-                                                    // whether the job got
-                                                    // canceled
+                                                  // whether the job got
+                                                  // canceled
   filter_data->iscanceleddata = job;
 
   // Attach PPD file data as "libppd" filter data extension
   filter_data_ext =
     (ppd_filter_data_ext_t *)calloc(1, sizeof(ppd_filter_data_ext_t));
-  filter_data_ext->ppdfile = job_data->temp_ppd_name; /* PPD file name */
-  filter_data_ext->ppd = job_data->ppd;               /* PPD data */
+  filter_data_ext->ppdfile = job_data->temp_ppd_name; // PPD file name
+  filter_data_ext->ppd = job_data->ppd;               // PPD data
   cfFilterDataAddExt(filter_data, PPD_FILTER_DATA_EXT, filter_data_ext);
 
   // Establish back/side channel pipes for CUPS backends
@@ -1047,8 +1018,8 @@ _prFilter(
       continue;
     if ((filter_path =
 	 _prPPDFindCUPSFilter(conversion->dsttype,
-				 ppd->num_filters, ppd->filters,
-				 global_data->filter_dir)) != NULL)
+			      ppd->num_filters, ppd->filters,
+			      global_data->filter_dir)) != NULL)
       break;
   }
 
@@ -1137,7 +1108,8 @@ _prFilter(
       (cf_filter_external_t *)calloc(1, sizeof(cf_filter_external_t));
     ppd_filter_params->filter = filter_path;
     job_data->ppd_filter =
-      (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
+      (cf_filter_filter_in_chain_t *)calloc(1,
+			                sizeof(cf_filter_filter_in_chain_t));
     job_data->ppd_filter->function = ppdFilterExternalCUPS;
     job_data->ppd_filter->parameters = ppd_filter_params;
     job_data->ppd_filter->name = strrchr(filter_path, '/') + 1;
@@ -1145,7 +1117,8 @@ _prFilter(
   } else
     job_data->ppd_filter = NULL;
   job_data->print =
-    (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
+    (cf_filter_filter_in_chain_t *)calloc(1,
+					  sizeof(cf_filter_filter_in_chain_t));
   // Put filter function to send data to PAPPL's built-in backend at the end
   // of the chain
   print_params =
@@ -1265,8 +1238,8 @@ void _prFreeJobData(pr_job_data_t *job_data)
 
 //
 // '_prJobIsCanceled()' - Return 1 if the job is canceled, which is
-//                          the case when papplJobIsCanceled() returns
-//                          true.
+//                        the case when papplJobIsCanceled() returns
+//                        true.
 //
 
 int
@@ -1281,15 +1254,15 @@ _prJobIsCanceled(void *data)
 
 //
 // '_prJobLog()' - Job log function which calls
-//                  papplJobSetImpressionsCompleted() on page logs of
-//                  filter functions
+//                 papplJobSetImpressionsCompleted() on page logs of
+//                 filter functions
 //
 
 void
 _prJobLog(void *data,
-	   cf_loglevel_t level,
-	   const char *message,
-	   ...)
+	  cf_loglevel_t level,
+	  const char *message,
+	  ...)
 {
   va_list arglist;
   pappl_job_t *job = (pappl_job_t *)data;
@@ -1320,9 +1293,9 @@ _prJobLog(void *data,
 
 //
 // '_prOneBitDitherOnDraft()' - If an image job is printed in
-//                                  grayscale in draft mode switch to
-//                                  1-bit dithering mode to get
-//                                  printing as fast as possible
+//                              grayscale in draft mode switch to
+//                              1-bit dithering mode to get printing
+//                              as fast as possible
 //
 
 void
@@ -1376,12 +1349,13 @@ _prOneBitDitherOnDraft(
 
 
 //
-// `_prCleanDebugCopies()' - Remove debug copies of jobs created by the
-//                             _prPrintFilterFunction() function more
-//                             than 24 hours ago. This avoids filling up the
-//                             disk should the user have switched to debug
-//                             logging for some reason and forgot to turn
-//                             back after solving his problem.
+// `_prCleanDebugCopies()' - Remove debug copies of jobs created by
+//                           the _prPrintFilterFunction() function
+//                           more than 24 hours ago. This avoids
+//                           filling up the disk should the user have
+//                           switched to debug logging for some reason
+//                           and forgot to turn back after solving his
+//                           problem.
 //
 
 void
@@ -1430,43 +1404,47 @@ _prCleanDebugCopies(pr_printer_app_global_data_t *global_data)
 
 //
 // '_prPrintFilterFunction()' - Print file.
-//                                This function has the format of a filter
-//                                function of libcupsfilters, so we can chain
-//                                it with other filter functions using the
-//                                special filter function cfFilterChain() and
-//                                so we do not need to care with forking. As
-//                                we send off the data to the device instead
-//                                of filtering, it behaves more like a
-//                                backend than a filter, and sends nothing
-//                                to its output FD. Therefore it must always
-//                                be in the end of a chain.
-//                                This function does not do any filtering or
-//                                conversion, this has to be done by filters
-//                                applied to the data before.
-//                                If we run the Printer Application in
-//                                debug logging mode ("-o log-level=debug" or
-//                                switching on the logging page of the web
-//                                interface) from every job a copy of the
-//                                data actually sent to the printer gets saved
-//                                in a file (debug-copy-PRINTER-JOB.prn) in
-//                                the spool directory. These files are kept
-//                                for 24 hours (clean-up done with every new
-//                                job, independent of log level).
+//
+//                              This function has the format of a
+//                              filter function of libcupsfilters, so
+//                              we can chain it with other filter
+//                              functions using the special filter
+//                              function cfFilterChain() and so we do
+//                              not need to care with forking. As we
+//                              send off the data to the device
+//                              instead of filtering, it behaves more
+//                              like a backend than a filter, and
+//                              sends nothing to its output
+//                              FD. Therefore it must always be in the
+//                              end of a chain.  This function does
+//                              not do any filtering or conversion,
+//                              this has to be done by filters applied
+//                              to the data before.  If we run the
+//                              Printer Application in debug logging
+//                              mode ("-o log-level=debug" or
+//                              switching on the logging page of the
+//                              web interface) from every job a copy
+//                              of the data actually sent to the
+//                              printer gets saved in a file
+//                              (debug-copy-PRINTER-JOB.prn) in the
+//                              spool directory. These files are kept
+//                              for 24 hours (clean-up done with every
+//                              new job, independent of log level).
 //
 
 int                                           // O - Error status
-_prPrintFilterFunction(int inputfd,         // I - File descriptor input 
+_prPrintFilterFunction(int inputfd,           // I - File descriptor input 
 			                      //     stream
-			 int outputfd,        // I - File descriptor output
+		       int outputfd,          // I - File descriptor output
 			                      //     stream (unused)
-			 int inputseekable,   // I - Is input stream
+		       int inputseekable,     // I - Is input stream
 			                      //     seekable? (unused)
-			 cf_filter_data_t *data, // I - Job and printer data
-			 void *parameters)    // I - PAPPL output device
+		       cf_filter_data_t *data,// I - Job and printer data
+		       void *parameters)      // I - PAPPL output device
 {
   ssize_t	       bytes;	              // Bytes read/written
   char	               buffer[65536];         // Read/write buffer
-  cf_logfunc_t     log = data->logfunc;   // Log function
+  cf_logfunc_t         log = data->logfunc;   // Log function
   void                 *ld = data->logdata;   // log function data
   pr_print_filter_function_data_t *params =
     (pr_print_filter_function_data_t *)parameters;
@@ -1494,7 +1472,8 @@ _prPrintFilterFunction(int inputfd,         // I - File descriptor input
 	     papplJobGetID(job));
     if (log)
       log(ld, CF_LOGLEVEL_DEBUG,
-	  "Backend: Creating debug copy of what goes to the printer: %s", filename);
+	  "Backend: Creating debug copy of what goes to the printer: %s",
+	  filename);
     // Open the file
     debug_fd = open(filename, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
   }
@@ -1537,26 +1516,28 @@ _prPrintFilterFunction(int inputfd,         // I - File descriptor input
 
 
 //
-// '_prRasterPrepareJob()' - Create job data record to carry through all the raster
-//                      printing callbacks from the PPD and job attributes.
-//                      Also create the output pipe to the device, if needed
-//                      passing the data through a CUPS filter defined in
-//                      the "*cupsFilter(2): ..." lines of the PPD file
+// '_prRasterPrepareJob()' - Create job data record to carry through
+//                           all the raster printing callbacks from
+//                           the PPD and job attributes.  Also create
+//                           the output pipe to the device, if needed
+//                           passing the data through a CUPS filter
+//                           defined in the "*cupsFilter(2): ..."
+//                           lines of the PPD file
 //
 
-pr_job_data_t*           // O - Job data, NULL on failure
+pr_job_data_t*                  // O - Job data, NULL on failure
 _prRasterPrepareJob(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Job options
     pappl_device_t   *device,   // I - Device
     char             *starttype)// I - MIME type to feed into the filters
 {
-  int                i;
+  int                    i;
   pr_job_data_t          *job_data;  // PPD data for job
   pr_cups_device_data_t  *device_data = NULL; // Device data of CUPS backend
                                      // device
   int                    nullfd;     // File descriptor pointing to /dev/null
-  cf_filter_external_t *ppd_filter_params = NULL;
+  cf_filter_external_t   *ppd_filter_params = NULL;
                                      // Parameters for call of PPD's
                                      // CUPS filter via ppdFilterExternalCUPS()
   pr_print_filter_function_data_t *print_params; // Paramaters for
@@ -1630,7 +1611,8 @@ _prRasterPrepareJob(
       (cf_filter_external_t *)calloc(1, sizeof(cf_filter_external_t));
     ppd_filter_params->filter = job_data->stream_filter;
     job_data->ppd_filter =
-      (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
+      (cf_filter_filter_in_chain_t *)calloc(1,
+					  sizeof(cf_filter_filter_in_chain_t));
     job_data->ppd_filter->function = ppdFilterExternalCUPS;
     job_data->ppd_filter->parameters = ppd_filter_params;
     job_data->ppd_filter->name = strrchr(job_data->stream_filter, '/') + 1;
@@ -1647,7 +1629,8 @@ _prRasterPrepareJob(
   print_params->job = job;
   print_params->global_data = job_data->global_data;
   job_data->print =
-    (cf_filter_filter_in_chain_t *)calloc(1, sizeof(cf_filter_filter_in_chain_t));
+    (cf_filter_filter_in_chain_t *)calloc(1,
+					  sizeof(cf_filter_filter_in_chain_t));
   job_data->print->function = _prPrintFilterFunction;
   job_data->print->parameters = print_params;
   job_data->print->name = "Backend";
@@ -1683,11 +1666,11 @@ _prRasterPrepareJob(
 
 void
 _prRasterCleanUpJob(pappl_job_t      *job,      // I - Job
-	       pappl_device_t   *device)   // I - Device
+		    pappl_device_t   *device)   // I - Device
 {
   pr_job_data_t *job_data = (pr_job_data_t *)papplJobGetData(job);
-  pr_cups_device_data_t  *device_data = NULL; // Device data of CUPS backend
-                                     // device
+  pr_cups_device_data_t *device_data = NULL; // Device data of CUPS backend
+                                             // device
 
 
   // Stop the filter chain
@@ -1733,12 +1716,12 @@ _prRasterCleanUpJob(pappl_job_t      *job,      // I - Job
 //
 
 //
-// 'prPWGRasterEndJob()' - End a raster-to-PWG-Raster job.
-//                      (Only close the streams and free allocated
-//                      memory, no further data to be sent)
+// 'prPWGRasterEndJob()' - End a raster-to-PWG-Raster job. (Only close
+//                         the streams and free allocated memory, no
+//                         further data to be sent)
 //
 
-bool                     // O - `true` on success, `false` on failure
+bool                            // O - `true` on success, `false` on failure
 prPWGRasterEndJob(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Options
@@ -1766,12 +1749,12 @@ prPWGRasterEndJob(
 
 
 //
-// 'prPWGRasterEndPage()' - End a raster-to-PWG-Raster page.
-//                       (Nothing needed to be send to finish the page,
-//                       only flush the buffer to get the page ejected)
+// 'prPWGRasterEndPage()' - End a raster-to-PWG-Raster page. (Nothing
+//                          needed to be send to finish the page, only
+//                          flush the buffer to get the page ejected)
 //
 
-bool                     // O - `true` on success, `false` on failure
+bool                            // O - `true` on success, `false` on failure
 prPWGRasterEndPage(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Job options
@@ -1791,26 +1774,26 @@ prPWGRasterEndPage(
 
 //
 // 'prPWGRasterStartJob()' - Start a raster-to-PWG-Raster job.
-//                        (Prepare job and initiate PWG Raster job output,
-//                        sending the 4-byte "Magic string", the
-//                        cfFilterPWGToRaster() filter function will do all the
-//                        dirty conversion work to get the CUPS Raster
-//                        needed by the driver/filter defined in PPD)
+//                           (Prepare job and initiate PWG Raster job
+//                           output, sending the 4-byte "Magic
+//                           string", the cfFilterPWGToRaster() filter
+//                           function will do all the dirty conversion
+//                           work to get the CUPS Raster needed by the
+//                           driver/filter defined in PPD)
 //
 
-bool                     // O - `true` on success, `false` on failure
+bool                            // O - `true` on success, `false` on failure
 prPWGRasterStartJob(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Job options
     pappl_device_t   *device)   // I - Device
 {
-  pr_job_data_t      *job_data;      // PPD data for job
+  pr_job_data_t      *job_data; // PPD data for job
   cups_raster_t      *raster;
 
   // Create the job data record and the pipe to the device, with PPD's CUPS
   // filter if needed
-  job_data = _prRasterPrepareJob(job, options, device,
-			    "image/pwg-raster");
+  job_data = _prRasterPrepareJob(job, options, device, "image/pwg-raster");
 
   if (!job_data)
   {
@@ -1835,19 +1818,19 @@ prPWGRasterStartJob(
 
 //
 // 'prPWGRasterStartPage()' - Start a raster-to-PWG-Raster page.
-//                         (Send a PWG Raster header, in our case
-//                         options->header)
+//                            (Send a PWG Raster header, in our case
+//                            options->header)
 //
 
-bool                      // O - `true` on success, `false` on failure
+bool                              // O - `true` on success, `false` on failure
 prPWGRasterStartPage(
     pappl_job_t       *job,       // I - Job
     pappl_pr_options_t  *options, // I - Job options
     pappl_device_t    *device,    // I - Device
     unsigned          page)       // I - Page number
 {
-  pr_job_data_t      *job_data;      // PPD data for job
-  cups_raster_t      *raster;        // PWG Raster output stream
+  pr_job_data_t      *job_data;   // PPD data for job
+  cups_raster_t      *raster;     // PWG Raster output stream
 
   (void)device;
   
@@ -1868,21 +1851,21 @@ prPWGRasterStartPage(
 
 //
 // 'prPWGRasterWriteLine()' - Write a raster-to-PWG-Raster pixel line.
-//                         (Simply pass through the pixels as the
-//                         cfFilterPWGToRaster() filter function does the
-//                         needed conversion work)
+//                            (Simply pass through the pixels as the
+//                            cfFilterPWGToRaster() filter function
+//                            does the needed conversion work)
 //
 
-bool				// O - `true` on success, `false` on failure
+bool				  // O - `true` on success, `false` on failure
 prPWGRasterWriteLine(
-    pappl_job_t         *job,		// I - Job
-    pappl_pr_options_t  *options,	// I - Job options
-    pappl_device_t      *device,	// I - Device
-    unsigned            y,		// I - Line number
-    const unsigned char *pixels)	// I - Line
+    pappl_job_t         *job,	  // I - Job
+    pappl_pr_options_t  *options, // I - Job options
+    pappl_device_t      *device,  // I - Device
+    unsigned            y,	  // I - Line number
+    const unsigned char *pixels)  // I - Line
 {
-  pr_job_data_t      *job_data;      // PPD data for job
-  cups_raster_t      *raster;        // PWG Raster output stream
+  pr_job_data_t      *job_data;   // PPD data for job
+  cups_raster_t      *raster;     // PWG Raster output stream
 
   (void)device;
   
@@ -1912,7 +1895,7 @@ prPWGRasterWriteLine(
 // 'prPSRasterEndJob()' - End a raster-to-PostScript job.
 //
 
-bool                     // O - `true` on success, `false` on failure
+bool                            // O - `true` on success, `false` on failure
 prPSRasterEndJob(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Options
@@ -1953,14 +1936,14 @@ prPSRasterEndJob(
 // 'prPSRasterEndPage()' - End a raster-to-PostScript page.
 //
 
-bool                     // O - `true` on success, `false` on failure
+bool                            // O - `true` on success, `false` on failure
 prPSRasterEndPage(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Job options
     pappl_device_t   *device,   // I - Device
     unsigned         page)      // I - Page number
 {
-  pr_job_data_t         *job_data;      // PPD data for job
+  pr_job_data_t      *job_data; // PPD data for job
   FILE *devout;
   unsigned char *pixels;
 
@@ -2001,22 +1984,22 @@ prPSRasterEndPage(
 // 'prPSRasterStartJob()' - Start a raster-to-PostScript job.
 //
 
-bool                     // O - `true` on success, `false` on failure
+bool                            // O - `true` on success, `false` on failure
 prPSRasterStartJob(
     pappl_job_t      *job,      // I - Job
     pappl_pr_options_t *options,// I - Job options
     pappl_device_t   *device)   // I - Device
 {
-  pr_job_data_t      *job_data;      // PPD data for job
-  const char	     *job_name;      // Job name for header of PostScript file
-  FILE               *devout;        // Output file pointer (pipe to device)
+  pr_job_data_t      *job_data; // PPD data for job
+  const char	     *job_name; // Job name for header of PostScript file
+  FILE               *devout;   // Output file pointer (pipe to device)
   pr_printer_app_global_data_t *global_data;
 
 
   // Create the job data record and the pipe to the device, with PPD's CUPS
   // filter if needed
   job_data = _prRasterPrepareJob(job, options, device,
-			    "application/vnd.cups-postscript");
+				 "application/vnd.cups-postscript");
 
   if (!job_data)
     return (false);
@@ -2093,15 +2076,15 @@ prPSRasterStartJob(
 // 'prPSRasterStartPage()' - Start a raster-to-PostScript page.
 //
 
-bool                       // O - `true` on success, `false` on failure
+bool                              // O - `true` on success, `false` on failure
 prPSRasterStartPage(
     pappl_job_t       *job,       // I - Job
     pappl_pr_options_t  *options, // I - Job options
     pappl_device_t    *device,    // I - Device
     unsigned          page)       // I - Page number
 {
-  pr_job_data_t          *job_data;      // PPD data for job
-  FILE *devout;
+  pr_job_data_t       *job_data;  // PPD data for job
+  FILE                *devout;
 
 
   job_data = (pr_job_data_t *)papplJobGetData(job);
@@ -2122,22 +2105,22 @@ prPSRasterStartPage(
 
   switch (options->header.cupsColorSpace)
   {
-  case CUPS_CSPACE_RGB:
-  case CUPS_CSPACE_SRGB:
-  case CUPS_CSPACE_ADOBERGB:
-    fprintf(devout, "/DeviceRGB setcolorspace\n");
-    break;
+    case CUPS_CSPACE_RGB:
+    case CUPS_CSPACE_SRGB:
+    case CUPS_CSPACE_ADOBERGB:
+        fprintf(devout, "/DeviceRGB setcolorspace\n");
+	break;
 
-  case CUPS_CSPACE_CMYK:
-    fprintf(devout, "/DeviceCMYK setcolorspace\n");
-    break;
+    case CUPS_CSPACE_CMYK:
+        fprintf(devout, "/DeviceCMYK setcolorspace\n");
+	break;
 
-  default:
-  case CUPS_CSPACE_K:
-  case CUPS_CSPACE_W:
-  case CUPS_CSPACE_SW:
-    fprintf(devout, "/DeviceGray setcolorspace\n");
-    break;
+    default:
+    case CUPS_CSPACE_K:
+    case CUPS_CSPACE_W:
+    case CUPS_CSPACE_SW:
+        fprintf(devout, "/DeviceGray setcolorspace\n");
+	break;
   }
 
   fprintf(devout, "%d %d scale\n",
@@ -2152,25 +2135,25 @@ prPSRasterStartPage(
 
   switch (options->header.cupsColorSpace)
   {
-  case CUPS_CSPACE_RGB:
-  case CUPS_CSPACE_SRGB:
-  case CUPS_CSPACE_ADOBERGB:
-    fprintf(devout, "/Decode [0 1 0 1 0 1]\n");
-    break;
+    case CUPS_CSPACE_RGB:
+    case CUPS_CSPACE_SRGB:
+    case CUPS_CSPACE_ADOBERGB:
+        fprintf(devout, "/Decode [0 1 0 1 0 1]\n");
+	break;
 
-  case CUPS_CSPACE_CMYK:
-    fprintf(devout, "/Decode [0 1 0 1 0 1 0 1]\n");
-    break;
+    case CUPS_CSPACE_CMYK:
+        fprintf(devout, "/Decode [0 1 0 1 0 1 0 1]\n");
+	break;
 
-  case CUPS_CSPACE_SW:
-    fprintf(devout, "/Decode [0 1]\n");
-    break;
+    case CUPS_CSPACE_SW:
+        fprintf(devout, "/Decode [0 1]\n");
+	break;
 
-  default:
-  case CUPS_CSPACE_K:
-  case CUPS_CSPACE_W:
-    fprintf(devout, "/Decode [1 0]\n");
-    break;
+    default:
+    case CUPS_CSPACE_K:
+    case CUPS_CSPACE_W:
+        fprintf(devout, "/Decode [1 0]\n");
+	break;
   }
 
   fprintf(devout, "/DataSource currentfile /ASCII85Decode filter\n");
@@ -2188,15 +2171,15 @@ prPSRasterStartPage(
 // 'prPSRasterWriteLine()' - Write a raster-to-PostScript pixel line.
 //
 
-bool				// O - `true` on success, `false` on failure
+bool				    // O - `true` on success, `false` on failure
 prPSRasterWriteLine(
-    pappl_job_t         *job,		// I - Job
-    pappl_pr_options_t  *options,	// I - Job options
-    pappl_device_t      *device,	// I - Device
-    unsigned            y,		// I - Line number
-    const unsigned char *pixels)	// I - Line
+    pappl_job_t         *job,	    // I - Job
+    pappl_pr_options_t  *options,   // I - Job options
+    pappl_device_t      *device,    // I - Device
+    unsigned            y,	    // I - Line number
+    const unsigned char *pixels)    // I - Line
 {
-  pr_job_data_t         *job_data;      // PPD data for job
+  pr_job_data_t         *job_data;  // PPD data for job
   FILE *devout;
 
   job_data = (pr_job_data_t *)papplJobGetData(job);

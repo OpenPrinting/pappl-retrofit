@@ -229,52 +229,54 @@ typedef struct pr_printer_app_config_s
 
 extern pappl_system_t *prGetSystem(pr_printer_app_global_data_t *global_data);
 extern int prRetroFitPrinterApp(pr_printer_app_config_t *printer_app_config,
-				   int argc, char *argv[]);
+				int argc, char *argv[]);
 extern const char *prBestMatchingPPD(const char *device_id,
-					pr_printer_app_global_data_t
-					*global_data);
+				     pr_printer_app_global_data_t
+				     *global_data);
 extern int  prRegExMatchDevIDField(const char *device_id,
-				       const char *key,
-				       const char *value_regex,
-				       pr_devid_regex_mode_t mode);
+				   const char *key,
+				   const char *value_regex,
+				   pr_devid_regex_mode_t mode);
 extern bool prSupportsPostScript(const char *device_id);
 extern bool prSupportsPDF(const char *device_id);
 extern bool prSupportsPCL5(const char *device_id);
 extern bool prSupportsPCL5c(const char *device_id);
 extern bool prSupportsPCLXL(const char *device_id);
 extern const char *prAutoAdd(const char *device_info, const char *device_uri,
-			      const char *device_id, void *data);
+			     const char *device_id, void *data);
 extern void prPSIdentify(pappl_printer_t *printer, pappl_device_t *device);
 extern void prIdentify(pappl_printer_t *printer,
-			pappl_identify_actions_t actions,
-			const char *message);
+		       pappl_identify_actions_t actions,
+		       const char *message);
 extern const char *prTestPage(pappl_printer_t *printer, char *buffer,
-			       size_t bufsize);
+			      size_t bufsize);
 extern bool   prPWGRasterEndJob(pappl_job_t *job, pappl_pr_options_t *options,
-			      pappl_device_t *device);
-extern bool   prPWGRasterEndPage(pappl_job_t *job, pappl_pr_options_t *options,
-			       pappl_device_t *device, unsigned page);
-extern bool   prPWGRasterStartJob(pappl_job_t *job, pappl_pr_options_t *options,
 				pappl_device_t *device);
-extern bool   prPWGRasterStartPage(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPWGRasterEndPage(pappl_job_t *job, pappl_pr_options_t *options,
 				 pappl_device_t *device, unsigned page);
-extern bool   prPWGRasterWriteLine(pappl_job_t *job, pappl_pr_options_t *options,
-				 pappl_device_t *device, unsigned y,
-				 const unsigned char *pixels);
+extern bool   prPWGRasterStartJob(pappl_job_t *job, pappl_pr_options_t *options,
+				  pappl_device_t *device);
+extern bool   prPWGRasterStartPage(pappl_job_t *job,
+				   pappl_pr_options_t *options,
+				   pappl_device_t *device, unsigned page);
+extern bool   prPWGRasterWriteLine(pappl_job_t *job,
+				   pappl_pr_options_t *options,
+				   pappl_device_t *device, unsigned y,
+				   const unsigned char *pixels);
 extern bool   prPSRasterEndJob(pappl_job_t *job, pappl_pr_options_t *options,
-			    pappl_device_t *device);
+			       pappl_device_t *device);
 extern bool   prPSRasterEndPage(pappl_job_t *job, pappl_pr_options_t *options,
-			     pappl_device_t *device, unsigned page);
+				pappl_device_t *device, unsigned page);
 extern bool   prPSRasterStartJob(pappl_job_t *job, pappl_pr_options_t *options,
-			      pappl_device_t *device);
+				 pappl_device_t *device);
 extern bool   prPSRasterStartPage(pappl_job_t *job, pappl_pr_options_t *options,
-			       pappl_device_t *device, unsigned page);
+				  pappl_device_t *device, unsigned page);
 extern bool   prPSRasterWriteLine(pappl_job_t *job, pappl_pr_options_t *options,
-			       pappl_device_t *device, unsigned y,
-			       const unsigned char *pixels);
+				  pappl_device_t *device, unsigned y,
+				  const unsigned char *pixels);
 extern void   prSetupAddPPDFilesPage(void *data);
 extern void   prSetupDeviceSettingsPage(pappl_printer_t *printer,
-					    void *data);
+					void *data);
 
 
 //

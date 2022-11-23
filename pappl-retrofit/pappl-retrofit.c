@@ -23,8 +23,8 @@
 
 
 //
-// 'prGetSystem() - Accessor function for the "system" entry in the
-//                    in the opaque pr_printer_app_global_data_t struvture
+// 'prGetSystem() - Accessor function for the "system" entry in the in
+//                  the opaque pr_printer_app_global_data_t struvture
 //
 
 pappl_system_t *                         // O - System
@@ -37,13 +37,13 @@ prGetSystem(pr_printer_app_global_data_t *global_data)
 
 //
 // 'prRetroFitPrinterApp()' - Run the driver-retro-fitting printer
-//                               application with a given configuration
+//                            application with a given configuration
 //
 
 int                                      // O - Exit status of Printer App
 prRetroFitPrinterApp(pr_printer_app_config_t *printer_app_config,
-			int  argc,	 // I - Number of command-line arguments
-			char *argv[])    // I - Command-line arguments
+		     int  argc,	         // I - Number of command-line arguments
+		     char *argv[])       // I - Command-line arguments
 {
   int ret;
 
@@ -63,9 +63,9 @@ prRetroFitPrinterApp(pr_printer_app_config_t *printer_app_config,
 		      NULL,            // Setup callback for selected driver
 		      NULL,            // Sub-command name
 		      NULL,            // Callback for sub-command
-		      _prSystemCB,    // System creation callback
+		      _prSystemCB,     // System creation callback
 		      NULL,            // Usage info output callback
-		      &global_data);    // Global data
+		      &global_data);   // Global data
 
   // Clean up
   cupsArrayDelete(global_data.config->spooling_conversions);
@@ -78,27 +78,26 @@ prRetroFitPrinterApp(pr_printer_app_config_t *printer_app_config,
 
 
 //
-// 'prBestMatchingPPD()' - Find the PPD which best matches the
-//                            given device ID. Highest weight has
-//                            matching make and model against the make
-//                            and model of the PPD's device ID. After
-//                            that we normalize the device ID to IPP
-//                            name format and match against the driver
-//                            name, which is the PPD's make, model,
-//                            and language in IPP name
-//                            format. User-added PPDs always have
-//                            priority. If for the given device ID
-//                            there are several matching PPDs which
-//                            differ only by their UI language,
-//                            English is currently preferred. When
-//                            PAPPL gets internationalization later,
-//                            we eill also support auto-selecting PPDs
-//                            in the user's language.
+// 'prBestMatchingPPD()' - Find the PPD which best matches the given
+//                         device ID. Highest weight has matching make
+//                         and model against the make and model of the
+//                         PPD's device ID. After that we normalize
+//                         the device ID to IPP name format and match
+//                         against the driver name, which is the PPD's
+//                         make, model, and language in IPP name
+//                         format. User-added PPDs always have
+//                         priority. If for the given device ID there
+//                         are several matching PPDs which differ only
+//                         by their UI language, English is currently
+//                         preferred. When PAPPL gets
+//                         internationalization later, we eill also
+//                         support auto-selecting PPDs in the user's
+//                         language.
 //
 
 const char *			// O - Driver name or `NULL` for none
 prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
-		     pr_printer_app_global_data_t *global_data)
+		  pr_printer_app_global_data_t *global_data)
 {
   int           i, j;
   const char	*ret = NULL;		// Return value
@@ -135,9 +134,9 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
   {
     // Normalize device ID to format of driver name and match
     cfIEEE1284NormalizeMakeModel(device_id, NULL,
-				  CF_IEEE1284_NORMALIZE_IPP, NULL,
-				  buf, sizeof(buf),
-				  NULL, NULL, NULL);
+				 CF_IEEE1284_NORMALIZE_IPP, NULL,
+				 buf, sizeof(buf),
+				 NULL, NULL, NULL);
 
     papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
 	     "Device ID to match: %s", device_id);
@@ -276,35 +275,33 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
 
 
 //
-// 'prRegExMatchDevIDField()' - This function receives a device
-//                                  ID, the name of one of the device
-//                                  ID's fields, a regular expression
-//                                  (POSIX-extended,
-//                                  case-insensitive), and a mode bit.
-//                                  The regular expression is matched
-//                                  against the value of the selected
-//                                  field, depending on the mode bit
-//                                  against the whole value string or
-//                                  against each of the
-//                                  comma-separated items. Return
-//                                  value is -4 if one of the input
-//                                  strings is NULL or empty, -3 on an
-//                                  invalid regular expression, -2 on
-//                                  an invalid device ID, -1 on the
-//                                  requested field not in the device
-//                                  ID, 0 on no match, and the number
-//                                  of matching items otherwise.
+// 'prRegExMatchDevIDField()' - This function receives a device ID,
+//                              the name of one of the device ID's
+//                              fields, a regular expression
+//                              (POSIX-extended, case-insensitive),
+//                              and a mode bit. The regular expression
+//                              is matched against the value of the
+//                              selected field, depending on the mode
+//                              bit against the whole value string or
+//                              against each of the comma-separated
+//                              items. Return value is -4 if one of
+//                              the input strings is NULL or empty, -3
+//                              on an invalid regular expression, -2
+//                              on an invalid device ID, -1 on the
+//                              requested field not in the device ID,
+//                              0 on no match, and the number of
+//                              matching items otherwise.
 //
 
-int                                        // O - >  0: Match(es) found
+int                                               // O - >  0: Match(es) found
                                                   //     =  0: No match
                                                   //     = -1: Field not found
                                                   //     < -1: Error
-prRegExMatchDevIDField(const char *device_id, // I - Device ID to search in
-			   const char *key,       // I - Name of the field to
+prRegExMatchDevIDField(const char *device_id,     // I - Device ID to search in
+		       const char *key,           // I - Name of the field to
 			                          // I - match the regexp on
-			   const char *value_regex, // I - Regular expression
-			   pr_devid_regex_mode_t mode) // I - Matching mode
+		       const char *value_regex,   // I - Regular expression
+		       pr_devid_regex_mode_t mode)// I - Matching mode
 {
   int	        ret = 0;		// Return value
   int		num_did;		// Number of device ID key/value pairs
@@ -381,7 +378,7 @@ prRegExMatchDevIDField(const char *device_id, // I - Device ID to search in
 
 //
 // 'prSupportsPostScript()' - Check by the device ID whether a printer
-//                              supports PostScript
+//                            supports PostScript
 //
 
 bool
@@ -389,15 +386,15 @@ prSupportsPostScript(const char *device_id)
 {
   const char *regexp = "^(POSTSCRIPT|BRSCRIPT|PS$|PS2$|PS3$)";
   return(prRegExMatchDevIDField(device_id, "CMD",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
 	 prRegExMatchDevIDField(device_id, "COMMAND SET",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
 }
 
 
 //
 // 'prSupportsPDF()' - Check by the device ID whether a printer
-//                       supports PDF
+//                     supports PDF
 //
 
 bool
@@ -405,15 +402,15 @@ prSupportsPDF(const char *device_id)
 {
   const char *regexp = "^(PDF)";
   return(prRegExMatchDevIDField(device_id, "CMD",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
 	 prRegExMatchDevIDField(device_id, "COMMAND SET",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
 }
 
 
 //
 // 'prSupportsPCL5()' - Check by the device ID whether a printer
-//                        supports PCL 5(c/e)
+//                      supports PCL 5(c/e)
 //
 
 bool
@@ -421,15 +418,15 @@ prSupportsPCL5(const char *device_id)
 {
   const char *regexp = "^(PCL([ -]?5([ -]?[ce])?)?)$";
   return(prRegExMatchDevIDField(device_id, "CMD",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
 	 prRegExMatchDevIDField(device_id, "COMMAND SET",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
 }
 
 
 //
 // 'prSupportsPCL5c()' - Check by the device ID whether a printer
-//                         supports PCL 5c (color)
+//                       supports PCL 5c (color)
 //
 
 bool
@@ -437,15 +434,15 @@ prSupportsPCL5c(const char *device_id)
 {
   const char *regexp = "^(PCL[ -]?5[ -]?c)$";
   return(prRegExMatchDevIDField(device_id, "CMD",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
 	 prRegExMatchDevIDField(device_id, "COMMAND SET",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
 }
 
 
 //
 // 'prSupportsPCLXL()' - Check by the device ID whether a printer
-//                         supports PCL-XL
+//                       supports PCL-XL
 //
 
 bool
@@ -453,9 +450,9 @@ prSupportsPCLXL(const char *device_id)
 {
   const char *regexp = "^(PCL[ -]?XL|PXL|PCL[ -]?6)$";
   return(prRegExMatchDevIDField(device_id, "CMD",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0 ||
 	 prRegExMatchDevIDField(device_id, "COMMAND SET",
-				    regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
+				regexp, PR_DEVID_REGEX_MATCH_ITEM) > 0);
 }
 
 
@@ -463,11 +460,11 @@ prSupportsPCLXL(const char *device_id)
 // 'prAutoAdd()' - Auto-add printer simply by the best-matching PPD file
 //
 
-const char *			// O - Driver name or `NULL` for none
+const char *				// O - Driver name or `NULL` for none
 prAutoAdd(const char *device_info,	// I - Device name (unused)
-	   const char *device_uri,	// I - Device URI (unused)
-	   const char *device_id,	// I - IEEE-1284 device ID
-	   void       *data)            // I - Global data
+	  const char *device_uri,	// I - Device URI (unused)
+	  const char *device_id,	// I - IEEE-1284 device ID
+	  void       *data)		// I - Global data
 {
   pr_printer_app_global_data_t *global_data =
     (pr_printer_app_global_data_t *)data;
@@ -486,9 +483,8 @@ prAutoAdd(const char *device_info,	// I - Device name (unused)
 
 //
 // 'prPSIdentify()' - Identify a PostScript printer by sending a
-//                      zero-page job. This should cause the printer
-//                      to make some noise and/or light up its
-//                      display.
+//                    zero-page job. This should cause the printer to
+//                    make some noise and/or light up its display.
 //
 
 void
@@ -548,20 +544,19 @@ prPSIdentify(
 
 //
 // 'prIdentify()' - Identify the printer. As there is no standard way
-//                   for an arbitrary printer to identify itself (make
-//                   noise, light up display or any LEDs, ... without
-//                   printing something and so wasting paper and
-//                   ink/toner) we need to try different approaches
-//                   and hope that one of them does the
-//                   trick. Currently we send a zero-page PostScript
-//                   job (if printer understands PostScript), a soft
-//                   reset command, a status check command, and a
-//                   request for the device ID. Not all printers react
-//                   visibly or audibly to these operations, also not
-//                   all print backends (both of PAPPL and CUPS
-//                   actally support all these operations. So it is
-//                   not assured whether this function actually works
-//                   with your printer.
+//                  for an arbitrary printer to identify itself (make
+//                  noise, light up display or any LEDs, ... without
+//                  printing something and so wasting paper and
+//                  ink/toner) we need to try different approaches and
+//                  hope that one of them does the trick. Currently we
+//                  send a zero-page PostScript job (if printer
+//                  understands PostScript), a soft reset command, a
+//                  status check command, and a request for the device
+//                  ID. Not all printers react visibly or audibly to
+//                  these operations, also not all print backends
+//                  (both of PAPPL and CUPS actally support all these
+//                  operations. So it is not assured whether this
+//                  function actually works with your printer.
 //
 
 void
@@ -663,8 +658,8 @@ prIdentify(
 
 int
 _prComparePPDPaths(void *a,
-		     void *b,
-		     void *data)
+		   void *b,
+		   void *data)
 {
   pr_ppd_path_t *aa = (pr_ppd_path_t *)a;
   pr_ppd_path_t *bb = (pr_ppd_path_t *)b;
@@ -675,8 +670,8 @@ _prComparePPDPaths(void *a,
 
 
 //
-// '_prDriverDelete()' - Free dynamic data structures of the driver when
-//                        removing a printer.
+// '_prDriverDelete()' - Free dynamic data structures of the driver
+//                       when removing a printer.
 //
 
 void
@@ -763,11 +758,11 @@ _prDriverDelete(
 //                           otherwise NULL
 //
 
-char *                               // O - Executable path of filter,
+char *                                      // O - Executable path of filter,
                                             //     NULL if filter not found or
                                             //     not executable
-_prCUPSFilterPath(const char *filter,     // I - CUPS filter name
-		    const char *filter_dir) // I - Filter directory
+_prCUPSFilterPath(const char *filter,       // I - CUPS filter name
+		  const char *filter_dir)   // I - Filter directory
 {
   char		*filter_path;      /* Path to filter executable */
 
@@ -800,23 +795,22 @@ _prCUPSFilterPath(const char *filter,     // I - CUPS filter name
 
 //
 // '_prPPDFindCUPSFilter()' - Check the strings of the
-//                               "*cupsFilter(2):" lines in a PPD file
-//                               whether there is a suitable filter
-//                               applying to a given input
-//                               format. Return the path to call the
-//                               filter or NULL if there is no
-//                               suitable one.
+//                            "*cupsFilter(2):" lines in a PPD file
+//                            whether there is a suitable filter
+//                            applying to a given input format. Return
+//                            the path to call the filter or NULL if
+//                            there is no suitable one.
 //
 
 char *                           // O - Executable path of filter,
-                                        //     NULL if filter not found or
-                                        //     not executable
+                                 //     NULL if filter not found or
+                                 //     not executable
 _prPPDFindCUPSFilter(const char *input_format, // I - Input data format
-			int num_filters,          // I - Number of filter
-			                          //     entries in PPD
-			char **filters,           // I - Pointer to PPD's
-                                                  //     filter list entries
-			const char *filter_dir)   // I - Filter directory
+		     int num_filters,          // I - Number of filter
+			                       //     entries in PPD
+		     char **filters,           // I - Pointer to PPD's
+                                               //     filter list entries
+		     const char *filter_dir)   // I - Filter directory
 {
   int i,
       cost,
@@ -909,20 +903,20 @@ _prPPDFindCUPSFilter(const char *input_format, // I - Input data format
 
 //
 // '_prPPDMissingFilters()' - Check the strings of the
-//                              "*cupsFilter(2):" lines in a PPD file
-//                              whether all the CUPS filters defined
-//                              in them are actually installed. List
-//                              the filters which are missing.
+//                            "*cupsFilter(2):" lines in a PPD file
+//                            whether all the CUPS filters defined in
+//                            them are actually installed. List the
+//                            filters which are missing.
 //
 
 char *                           // O - Executable path of filter,
-                                        //     NULL if filter not found or
-                                        //     not executable
+                                 //     NULL if filter not found or
+                                 //     not executable
 _prPPDMissingFilters(int num_filters,          // I - Number of filter
-		                                 //     entries in PPD
-		       char **filters,           // I - Pointer to PPD's
-                                                 //     filter list entries
-		       const char *filter_dir)   // I - Filter directory
+		                               //     entries in PPD
+		     char **filters,           // I - Pointer to PPD's
+                                               //     filter list entries
+		     const char *filter_dir)   // I - Filter directory
 {
   int i;
   char *filter_str,
@@ -975,13 +969,13 @@ _prPPDMissingFilters(int num_filters,          // I - Number of filter
 
 
 //
-// '_prStrHasCode()' - Check a string whether it contains active PostScript
-//                       or PJL code and not only whitespace and comments
+// '_prStrHasCode()' - Check a string whether it contains active
+//                     PostScript or PJL code and not only whitespace
+//                     and comments
 //
 
 bool
-_prStrHasCode(
-    const char *str)   // I - String to check
+_prStrHasCode(const char *str)   // I - String to check
 {
   const char *ptr;
   bool       incomment = false;
@@ -1005,11 +999,10 @@ _prStrHasCode(
 
 
 // '_prOptionHasCode()' - Check a PPD option whether it has active
-//                          PostScript or PJL code in enough choices
-//                          for the option and all its choices making
-//                          sense.
-//                          This means that at maximum one choice can
-//                          be without code.
+//                        PostScript or PJL code in enough choices for
+//                        the option and all its choices making sense.
+//                        This means that at maximum one choice can be
+//                        without code.
 //
 
 bool
@@ -1046,12 +1039,11 @@ _prOptionHasCode(
 
 
 //
-// '_prDefaultPaperSize()' - Determine default paper size
-//                             (A4/Letter) based on the location,
-//                             Letter for US and Canada, A4 for the
-//                             rest of the world. Use the locale
-//                             environment variables ("LC_...") for
-//                             that.
+// '_prDefaultPaperSize()' - Determine default paper size (A4/Letter)
+//                           based on the location, Letter for US and
+//                           Canada, A4 for the rest of the world. Use
+//                           the locale environment variables
+//                           ("LC_...") for that.
 //
 
 const char *_prDefaultPaperSize()
@@ -1096,28 +1088,28 @@ const char *_prDefaultPaperSize()
 //
 // '_prDriverSetup()' - PostScript driver setup callback.
 //
-//                       Runs in two modes: Init and Update
+//                      Runs in two modes: Init and Update
 //
-//                       It runs in Init mode when the
-//                       driver_data->extension is still NULL, meaning
-//                       that the extension structure is not yet
-//                       defined. This is the case when the printer
-//                       data structure is created on startup or on
-//                       adding a printer. Then we load and read the
-//                       PPD and enter the properties into the driver
-//                       data structure, not taking into account any
-//                       user defaults or accessory settings.
+//                      It runs in Init mode when the
+//                      driver_data->extension is still NULL, meaning
+//                      that the extension structure is not yet
+//                      defined. This is the case when the printer
+//                      data structure is created on startup or on
+//                      adding a printer. Then we load and read the
+//                      PPD and enter the properties into the driver
+//                      data structure, not taking into account any
+//                      user defaults or accessory settings.
 //
-//                       When called again with the data structure
-//                       already present, it runs in Update mode,
-//                       applying user defaults and modifying the data
-//                       structure if the user changed the
-//                       configuration of installable accessories.
-//                       This mode is triggered when called by the
-//                       _prStatus() callback which in turn is called
-//                       after completely loading the printer's state
-//                       file entry or when doing changes on the
-//                       "Device Settings" web interface page.
+//                      When called again with the data structure
+//                      already present, it runs in Update mode,
+//                      applying user defaults and modifying the data
+//                      structure if the user changed the
+//                      configuration of installable accessories.
+//                      This mode is triggered when called by the
+//                      _prStatus() callback which in turn is called
+//                      after completely loading the printer's state
+//                      file entry or when doing changes on the
+//                      "Device Settings" web interface page.
 //
 
 bool					   // O - `true` on success, `false`
@@ -1406,8 +1398,8 @@ _prDriverSetup(
     else
     {
       ptr = _prPPDFindCUPSFilter("application/vnd.cups-postscript",
-				    ppd->num_filters, ppd->filters,
-				    global_data->filter_dir);
+				 ppd->num_filters, ppd->filters,
+				 global_data->filter_dir);
       if (ptr && ptr[0] == '.')
 	extension->filterless_ps = true;
       else
@@ -1549,7 +1541,8 @@ _prDriverSetup(
 	l = 0;
 	optheader = header;
 	ppdMarkDefaults(ppd);
-	ppdMarkOptions(ppd, extension->num_inst_options, extension->inst_options);
+	ppdMarkOptions(ppd, extension->num_inst_options,
+		       extension->inst_options);
 	ppdMarkOptions(ppd, pc->num_presets[i][j], pc->presets[i][j]);
 	if (k > 0)
 	  ppdMarkOptions(ppd, pc->num_optimize_presets[k],
@@ -1557,7 +1550,8 @@ _prDriverSetup(
 	// Check influence on the Resolution by (pseudo) PostScript code
 	// assigned to the option choices
 	ppdRasterInterpretPPD(&optheader, ppd, 0, NULL, NULL);
-	if (optheader.HWResolution[0] != 100 || optheader.HWResolution[1] != 100)
+	if (optheader.HWResolution[0] != 100 ||
+	    optheader.HWResolution[1] != 100)
         {
 	  l = 1;
 	  if (optheader.HWResolution[0] > res[j][0])
@@ -3008,15 +3002,16 @@ _prDriverSetup(
 
 
 //
-// '_prHaveForceGray()' - Check PPD file whether there is an option setting
-//                          which forces grayscale output. Return the first
-//                          suitable one as pair of option name and value.
+// '_prHaveForceGray()' - Check PPD file whether there is an option
+//                        setting which forces grayscale
+//                        output. Return the first suitable one as
+//                        pair of option name and value.
 //
 
-bool                                // O - True if suitable setting found
+bool                                     // O - True if suitable setting found
 _prHaveForceGray(ppd_file_t *ppd,        // I - PPD file to check
-		   const char **optstr,    // I - Option name of found option
-		   const char **choicestr) // I - Choice name to force grayscale
+		 const char **optstr,    // I - Option name of found option
+		 const char **choicestr) // I - Choice name to force grayscale
 {
   int i;
   char *p1, *p2;
@@ -3121,13 +3116,13 @@ _prHaveForceGray(ppd_file_t *ppd,        // I - PPD file to check
 
 void
 _prMediaCol(pwg_size_t *pwg_size,            // I - Media size entry from PPD
-	                                      //     cache
-	     const char *def_source,          // I - Default media source
-	     const char *def_type,            // I - Default media type
-	     int left_offset,                 // I - Left offset
-	     int top_offset,                  // I - Top offset
-	     pappl_media_tracking_t tracking, // I - Media tracking
-	     pappl_media_col_t *col)          // O - PAPPL media col entry
+	                                     //     cache
+	    const char *def_source,          // I - Default media source
+	    const char *def_type,            // I - Default media type
+	    int left_offset,                 // I - Left offset
+	    int top_offset,                  // I - Top offset
+	    pappl_media_tracking_t tracking, // I - Media tracking
+	    pappl_media_col_t *col)          // O - PAPPL media col entry
 {
   strncpy(col->size_name, pwg_size->map.pwg, sizeof(col->size_name) - 1);
   col->size_width = pwg_size->width;
@@ -3145,10 +3140,10 @@ _prMediaCol(pwg_size_t *pwg_size,            // I - Media size entry from PPD
 
 
 //
-// '_prPollDeviceOptionDefaults()' - This function uses query PostScript
-//                                      code from the PPD file to poll
-//                                      default option settings from the
-//                                      printer
+// '_prPollDeviceOptionDefaults()' - This function uses query
+//                                   PostScript code from the PPD file
+//                                   to poll default option settings
+//                                   from the printer
 //
 
 int                             // O - Number of polled default settings
@@ -3422,7 +3417,7 @@ _prPollDeviceOptionDefaults(
       // Read the response data...
       //
 
-      bufptr    = buf;
+      bufptr = buf;
       buf[0] = '\0';
       // When we use a PAPPL-native backend then if no bytes get read
       // (bytes <= 0), we repeat up to 100 times in 100 msec intervals
@@ -3596,10 +3591,10 @@ _prPollDeviceOptionDefaults(
 
 //
 // '_prPrinterUpdateForInstallableOptions() - Update printer's driver
-//                                                data and driver IPP
-//                                                attributes for changes
-//                                                in the "Installable Options"
-//                                                settings.
+//                                            data and driver IPP
+//                                            attributes for changes
+//                                            in the "Installable
+//                                            Options" settings.
 //
 
 void
@@ -3709,7 +3704,7 @@ _prPrinterUpdateForInstallableOptions(
     // Update the driver data to correspond with the printer hardware
     // accessory configuration ("Installable Options" in the PPD)
     _prDriverSetup(system, NULL, NULL, NULL, &driver_data, &driver_attrs,
-		    extension->global_data);
+		   extension->global_data);
 
     // Data structure for vendor option IPP attributes
     vendor_attrs = ippNew();
@@ -3770,15 +3765,15 @@ prSetupAddPPDFilesPage (void *data)  // I - Global data
 
 //
 // 'prSetupDeviceSettingsPage()' - Add web admin interface page for
-//                                     device settings: Installable
-//                                     accessories and polling PostScript
-//                                     option defaults
+//                                 device settings: Installable
+//                                 accessories and polling PostScript
+//                                 option defaults
 //
 
 void
 prSetupDeviceSettingsPage(pappl_printer_t *printer, // I - Printer
-			      void *data)               // I - Global data
-                                                        //     (unused)
+			  void *data)               // I - Global data
+                                                    //     (unused)
 {
   char                   path[256];     // Path to resource
   pappl_system_t         *system;	// System
@@ -4038,11 +4033,12 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 		*ptr = '\0';
 	      // Convert device ID to make/model string, so that we can add
 	      // the language for building final index strings
-	      mfg_mdl = cfIEEE1284NormalizeMakeModel(ppd->record.device_id,
-						      NULL,
-						      CF_IEEE1284_NORMALIZE_HUMAN,
-						      NULL, buf2, sizeof(buf2),
-						      NULL, NULL, NULL);
+	      mfg_mdl =
+		cfIEEE1284NormalizeMakeModel(ppd->record.device_id,
+					     NULL,
+					     CF_IEEE1284_NORMALIZE_HUMAN,
+					     NULL, buf2, sizeof(buf2),
+					     NULL, NULL, NULL);
 	      if (strncasecmp(mfg_mdl, buf1, strlen(buf1)) == 0)
 		pre_normalized = 1;
 	    }
@@ -4130,9 +4126,9 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 	  // IPP-compatible string as driver name
 	  drivers[i].name =
 	    strdup(cfIEEE1284NormalizeMakeModel(buf1, ppd->record.make,
-						 CF_IEEE1284_NORMALIZE_IPP,
-						 NULL, buf2, sizeof(buf2),
-						 NULL, NULL, NULL));
+						CF_IEEE1284_NORMALIZE_IPP,
+						NULL, buf2, sizeof(buf2),
+						NULL, NULL, NULL));
 	  ppd_path->driver_name = strdup(drivers[i].name);
 	  // Path to grab PPD from repositories
 	  ppd_path->ppd_path = strdup(ppd->record.name);
@@ -4143,9 +4139,9 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 	  else
 	    drivers[i].description =
 	      strdup(cfIEEE1284NormalizeMakeModel(buf1, ppd->record.make,
-						   CF_IEEE1284_NORMALIZE_HUMAN,
-						   NULL, buf2, sizeof(buf2),
-						   NULL, NULL, NULL));
+						  CF_IEEE1284_NORMALIZE_HUMAN,
+						  NULL, buf2, sizeof(buf2),
+						  NULL, NULL, NULL));
 	  // List sorting index with padded numbers (typos in example intended)
 	  // "LaserJet 3P" < "laserjet 4P" < "Laserjet3000P" < "LaserJet 4000P"
 	  drivers[i].extension =
@@ -4461,12 +4457,12 @@ _prUpdateStatus(
 
 
 //
-// 'prTestPage()' - Return a test page file to print
-//                   Simple function for Printer Applications which
-//                   have one single test page for all printers
+// 'prTestPage()' - Return a test page file to print Simple function
+//                  for Printer Applications which have one single
+//                  test page for all printers
 //
 
-const char *			// O - Filename or `NULL`
+const char *				// O - Filename or `NULL`
 prTestPage(
     pappl_printer_t *printer,		// I - Printer
     char            *buffer,		// I - File Buffer
@@ -4507,7 +4503,7 @@ prTestPage(
 //
 
 pappl_system_t *			// O - New system object
-_prSystemCB(int           num_options,	// I - Number of options
+_prSystemCB(int            num_options,	// I - Number of options
 	     cups_option_t *options,	// I - Options
 	     void          *data)	// I - Callback data
 {

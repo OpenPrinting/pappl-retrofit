@@ -26,10 +26,11 @@
 
 
 //
-// '_prPrinterWebDeviceConfig()' - Web interface page for entering/polling
-//                                    the configuration of printer add-ons
-//                                    ("Installable Options" in PPD and polling
-//                                    default option settings
+// '_prPrinterWebDeviceConfig()' - Web interface page for
+//                                 entering/polling the configuration
+//                                 of printer add-ons ("Installable
+//                                 Options" in PPD and polling default
+//                                 option settings
 //
 
 void
@@ -118,8 +119,7 @@ _prPrinterWebDeviceConfig(
     {
       status = "Installable accessory configuration saved.";
       buf[0] = '\0';
-      for (i = num_form, opt = form; i > 0;
-	   i --, opt ++)
+      for (i = num_form, opt = form; i > 0; i --, opt ++)
 	if (opt->name[0] == '\t')
 	{
 	  if (opt->name[1] == '\t')
@@ -238,7 +238,7 @@ _prPrinterWebDeviceConfig(
     {
       // Poll default option values
       num_options = _prPollDeviceOptionDefaults(printer, false,
-						   &options);
+						&options);
       if (num_options)
       {
 	// Read the polled option settings, mark them in the PPD, update them
@@ -641,7 +641,10 @@ _prPrinterWebDeviceConfig(
 	  // readable choice name for "True" (checked). This way we can treat
 	  // the result correctly, taking into account that nothing for this
 	  // option gets submitted when the box is unchecked.
-	  papplClientHTMLPrintf(client, "<input type=\"checkbox\" name=\"\t\t%s\t%s\"%s>", option->keyword, option->choices[k].choice, default_choice == 1 ? " checked" : "");
+	  papplClientHTMLPrintf(client,
+				"<input type=\"checkbox\" name=\"\t\t%s\t%s\"%s>",
+				option->keyword, option->choices[k].choice,
+				default_choice == 1 ? " checked" : "");
 	}
 	else
 	{
@@ -653,10 +656,15 @@ _prPrinterWebDeviceConfig(
 	  // The tab in the beginning also assures that the PPD option names
 	  // never conflict with fixed option names of this function, like
 	  // "action" or "session".
-	  papplClientHTMLPrintf(client, "<select name=\"\t%s\">", option->keyword);
+	  papplClientHTMLPrintf(client, "<select name=\"\t%s\">",
+				option->keyword);
 	  default_choice = 0;
 	  for (k = 0; k < option->num_choices; k ++)
-	    papplClientHTMLPrintf(client, "<option value=\"%s\"%s>%s</option>", option->choices[k].choice, option->choices[k].marked ? " selected" : "", option->choices[k].text);
+	    papplClientHTMLPrintf(client,
+				  "<option value=\"%s\"%s>%s</option>",
+				  option->choices[k].choice,
+				  option->choices[k].marked ? " selected" : "",
+				  option->choices[k].text);
 	  papplClientHTMLPuts(client, "</select>");
 	}
 
@@ -713,8 +721,8 @@ _prPrinterWebDeviceConfig(
 	if ((option = ppdFindOption(ppd, opt->name)) != NULL &&
 	    (choice = ppdFindChoice(option, opt->value)) != NULL)
 	  papplClientHTMLPrintf(client,
-			    "              <tr><th>%s:</th><td>%s</td></tr>\n",
-			    option->text, choice->text);
+				"              <tr><th>%s:</th><td>%s</td></tr>\n",
+				option->text, choice->text);
 
     papplClientHTMLPrintf(client, "          <tr><th></th><td><input type=\"hidden\" name=\"action\" value=\"poll-defaults\"><input type=\"submit\" value=\"%s\"></td>\n",
 			  (polled_defaults ? "Poll again" : "Poll"));
@@ -735,10 +743,10 @@ _prPrinterWebDeviceConfig(
 
 
 //
-// '_prSystemWebAddPPD()' - Web interface page for adding/deleting
-//                             PPD files by the user, to add support for
-//                             printers not supported by the built-in PPD
-//                             files
+// '_prSystemWebAddPPD()' - Web interface page for adding/deleting PPD
+//                          files by the user, to add support for
+//                          printers not supported by the built-in PPD
+//                          files
 //
 
 void

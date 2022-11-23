@@ -35,7 +35,7 @@ extern "C" {
 //
 
 extern void   _prPrinterWebDeviceConfig(pappl_client_t *client,
-					   pappl_printer_t *printer);
+					pappl_printer_t *printer);
 extern void   _prSystemWebAddPPD(pappl_client_t *client, void *data);
 
 

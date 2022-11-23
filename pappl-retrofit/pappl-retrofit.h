@@ -155,31 +155,31 @@ struct pr_printer_app_global_data_s
 
 extern int    _prComparePPDPaths(void *a, void *b, void *data);
 extern void   _prDriverDelete(pappl_printer_t *printer,
-			       pappl_pr_driver_data_t *driver_data);
+			      pappl_pr_driver_data_t *driver_data);
 extern char   *_prCUPSFilterPath(const char *filter,
-				   const char *filter_dir);
+				 const char *filter_dir);
 extern char   *_prPPDFindCUPSFilter(const char *input_format,
-				       int num_filters, char **filters,
-				       const char *filter_dir);
+				    int num_filters, char **filters,
+				    const char *filter_dir);
 extern char   *_prPPDMissingFilters(int num_filters, char **filters,
-				      const char *filter_dir);
+				    const char *filter_dir);
 extern bool   _prStrHasCode(const char *str);
 extern bool   _prOptionHasCode(pappl_system_t *system, ppd_file_t *ppd,
-				 ppd_option_t *option);
+			       ppd_option_t *option);
 extern const char *_prDefaultPaperSize();
 extern bool   _prDriverSetup(pappl_system_t *system, const char *driver_name,
-			      const char *device_uri, const char *device_id,
-			      pappl_pr_driver_data_t *driver_data,
-			      ipp_t **driver_attrs, void *data);
+			     const char *device_uri, const char *device_id,
+			     pappl_pr_driver_data_t *driver_data,
+			     ipp_t **driver_attrs, void *data);
 extern bool   _prHaveForceGray(ppd_file_t *ppd,
-				 const char **optstr, const char **choicestr);
+			       const char **optstr, const char **choicestr);
 extern void   _prMediaCol(pwg_size_t *pwg_size, const char *def_source,
-			   const char *def_type, int left_offset,
-			   int top_offset, pappl_media_tracking_t tracking,
-			   pappl_media_col_t *col);
+			  const char *def_type, int left_offset,
+			  int top_offset, pappl_media_tracking_t tracking,
+			  pappl_media_col_t *col);
 extern int    _prPollDeviceOptionDefaults(pappl_printer_t *printer,
-					     bool installable,
-					     cups_option_t **defaults);
+					  bool installable,
+					  cups_option_t **defaults);
 extern void   _prPrinterUpdateForInstallableOptions(
 					   pappl_printer_t *printer,
 					   pappl_pr_driver_data_t driver_data,
@@ -188,9 +188,9 @@ extern void   _prSetupDriverList(pr_printer_app_global_data_t *global_data);
 extern void   _prSetup(pr_printer_app_global_data_t *global_data);
 extern bool   _prStatus(pappl_printer_t *printer);
 extern bool   _prUpdateStatus(pappl_printer_t *printer,
-			       pappl_device_t *device);
+			      pappl_device_t *device);
 extern pappl_system_t *_prSystemCB(int num_options, cups_option_t *options,
-				    void *data);
+				   void *data);
 
 
 //

@@ -90,9 +90,10 @@ typedef struct pr_cups_device_data_s
                                side_timeout; // Timeout side channel (sec)
   pr_printer_app_global_data_t *global_data; // Global data
   pr_cups_devlog_data_t        devlog_data;  // Data for log function
-  cf_filter_data_t                *filter_data; // Common data for filter functions
-  cf_filter_external_t       backend_params;// Parameters for launching
-                                             // backend via ppdFilterExternalCUPS()
+  cf_filter_data_t             *filter_data; // Common data for filter functions
+  cf_filter_external_t         backend_params;// Parameters for launching
+                                             // backend via
+                                             // ppdFilterExternalCUPS()
   bool                         internal_filter_data; // Is filter_data
                                              // internal?
 } pr_cups_device_data_t;
@@ -113,28 +114,28 @@ extern void *_PRCUPSDeviceUserData;
 //
 
 extern bool   _prDummyDevice(const char *device_info, const char *device_uri,
-			      const char *device_id, void *data);
+			     const char *device_id, void *data);
 extern double _prGetCurrentTime(void);
 extern void   _prCUPSDevLog(void *data, cf_loglevel_t level,
-			     const char *message, ...);
+			    const char *message, ...);
 extern int    _prCUPSCompareDevices(pr_backend_device_t *d0,
-				      pr_backend_device_t *d1);
+				    pr_backend_device_t *d1);
 extern void   _prCUPSSigchldSigAction(int sig, siginfo_t *info,
-					void *ucontext);
+				      void *ucontext);
 extern bool   _prCUPSDevList(pappl_device_cb_t cb, void *data,
-			      pappl_deverror_cb_t err_cb, void *err_data);
+			     pappl_deverror_cb_t err_cb, void *err_data);
 extern bool   _prCUPSDevLaunchBackend(pappl_device_t *device);
 extern void   _prCUPSDevStopBackend(pappl_device_t *device);
 extern bool   _prCUPSDevOpen(pappl_device_t *device, const char *device_uri,
-			      const char *name);
+			     const char *name);
 extern void   _prCUPSDevClose(pappl_device_t *device);
 extern ssize_t _prCUPSDevRead(pappl_device_t *device, void *buffer,
-			       size_t bytes);
+			      size_t bytes);
 extern ssize_t _prCUPSDevWrite(pappl_device_t *device, const void *buffer,
-				size_t bytes);
+			       size_t bytes);
 extern pappl_preason_t _prCUPSDevStatus(pappl_device_t *device);
 extern char   *_prCUPSDevID(pappl_device_t *device, char *buffer,
-			     size_t bufsize);
+			    size_t bufsize);
 
 
 //
