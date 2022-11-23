@@ -19,7 +19,7 @@
 #  define _GNU_SOURCE
 #endif
 
-#include <pappl-retrofit/pappl-retrofit.h>
+#include <pappl-retrofit/pappl-retrofit-private.h>
 
 
 //

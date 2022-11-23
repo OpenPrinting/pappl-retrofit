@@ -19,8 +19,8 @@
 #  define _GNU_SOURCE
 #endif
 
-#include <pappl-retrofit/web-interface.h>
-#include <pappl-retrofit/pappl-retrofit.h>
+#include <pappl-retrofit/web-interface-private.h>
+#include <pappl-retrofit/pappl-retrofit-private.h>
 #include <ppd/ppd.h>
 #include <cups/cups.h>
 

@@ -2,7 +2,7 @@
 // PPD/Classic CUPS driver retro-fit Printer Application Library
 // (libpappl-retrofit) for the Printer Application Framework (PAPPL)
 //
-// print-job.h
+// print-job-private.h
 //
 // Copyright © 2020 by Till Kamppeter.
 // Copyright © 2020 by Michael R Sweet.

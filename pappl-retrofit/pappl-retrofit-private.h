@@ -2,7 +2,7 @@
 // PPD/Classic CUPS driver retro-fit Printer Application Library
 // (libpappl-retrofit) for the Printer Application Framework (PAPPL)
 //
-// pappl-retrofit.h
+// pappl-retrofit-private.h
 //
 // Copyright © 2020 by Till Kamppeter.
 // Copyright © 2020 by Michael R Sweet.
@@ -23,9 +23,9 @@
 #endif
 
 #include <pappl-retrofit/base.h>
-#include <pappl-retrofit/print-job.h>
-#include <pappl-retrofit/cups-backends.h>
-#include <pappl-retrofit/web-interface.h>
+#include <pappl-retrofit/print-job-private.h>
+#include <pappl-retrofit/cups-backends-private.h>
+#include <pappl-retrofit/web-interface-private.h>
 #include <pappl/pappl.h>
 #include <ppd/ppd.h>
 #include <cupsfilters/ieee1284.h>

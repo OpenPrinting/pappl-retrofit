@@ -15,7 +15,7 @@
 // Include necessary headers...
 //
 
-#include <pappl-retrofit/cups-backends.h>
+#include <pappl-retrofit/cups-backends-private.h>
 #include <pappl-retrofit/base.h>
 #include <cupsfilters/ieee1284.h>
 #include <cups/dir.h>
