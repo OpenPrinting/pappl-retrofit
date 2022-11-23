@@ -105,35 +105,35 @@ typedef struct pr_cups_device_data_s
 // Pointer to global data for CUPS backends ("cups" scheme)
 // This is the only one global variable needed as papplDeviceAddScheme()
 // has no user data pointer
-extern void *pr_cups_device_user_data;
+extern void *_PRCUPSDeviceUserData;
 
 
 //
 // Functions...
 //
 
-extern bool   pr_dummy_device(const char *device_info, const char *device_uri,
+extern bool   _prDummyDevice(const char *device_info, const char *device_uri,
 			      const char *device_id, void *data);
-extern double pr_get_current_time(void);
-extern void   pr_cups_devlog(void *data, cf_loglevel_t level,
+extern double _prGetCurrentTime(void);
+extern void   _prCUPSDevLog(void *data, cf_loglevel_t level,
 			     const char *message, ...);
-extern int    pr_cups_compare_devices(pr_backend_device_t *d0,
+extern int    _prCUPSCompareDevices(pr_backend_device_t *d0,
 				      pr_backend_device_t *d1);
-extern void   pr_cups_sigchld_sigaction(int sig, siginfo_t *info,
+extern void   _prCUPSSigchldSigAction(int sig, siginfo_t *info,
 					void *ucontext);
-extern bool   pr_cups_devlist(pappl_device_cb_t cb, void *data,
+extern bool   _prCUPSDevList(pappl_device_cb_t cb, void *data,
 			      pappl_deverror_cb_t err_cb, void *err_data);
-extern bool   pr_cups_dev_launch_backend(pappl_device_t *device);
-extern void   pr_cups_dev_stop_backend(pappl_device_t *device);
-extern bool   pr_cups_devopen(pappl_device_t *device, const char *device_uri,
+extern bool   _prCUPSDevLaunchBackend(pappl_device_t *device);
+extern void   _prCUPSDevStopBackend(pappl_device_t *device);
+extern bool   _prCUPSDevOpen(pappl_device_t *device, const char *device_uri,
 			      const char *name);
-extern void   pr_cups_devclose(pappl_device_t *device);
-extern ssize_t pr_cups_devread(pappl_device_t *device, void *buffer,
+extern void   _prCUPSDevClose(pappl_device_t *device);
+extern ssize_t _prCUPSDevRead(pappl_device_t *device, void *buffer,
 			       size_t bytes);
-extern ssize_t pr_cups_devwrite(pappl_device_t *device, const void *buffer,
+extern ssize_t _prCUPSDevWrite(pappl_device_t *device, const void *buffer,
 				size_t bytes);
-extern pappl_preason_t pr_cups_devstatus(pappl_device_t *device);
-extern char   *pr_cups_devid(pappl_device_t *device, char *buffer,
+extern pappl_preason_t _prCUPSDevStatus(pappl_device_t *device);
+extern char   *_prCUPSDevID(pappl_device_t *device, char *buffer,
 			     size_t bufsize);
 
 

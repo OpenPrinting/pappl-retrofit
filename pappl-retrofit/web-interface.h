@@ -34,9 +34,9 @@ extern "C" {
 // Functions...
 //
 
-extern void   pr_printer_web_device_config(pappl_client_t *client,
+extern void   _prPrinterWebDeviceConfig(pappl_client_t *client,
 					   pappl_printer_t *printer);
-extern void   pr_system_web_add_ppd(pappl_client_t *client, void *data);
+extern void   _prSystemWebAddPPD(pappl_client_t *client, void *data);
 
 
 //

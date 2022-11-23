@@ -153,7 +153,7 @@ typedef struct pr_printer_app_config_s
   const char        *backends_only;
 
   // Data for the test page callback function
-  // For pr_testpage() this is simply the file name of the only one test
+  // For prTestPage() this is simply the file name of the only one test
   // page without directory
   void              *testpage_data;
 
@@ -187,7 +187,7 @@ typedef struct pr_printer_app_config_s
   const char        *driver_display_regex;
 
   // The function to automatically find the best PPD for a printer
-  // given by its device ID, pr_best_matching_ppd(), to be used by the
+  // given by its device ID, prBestMatchingPPD(), to be used by the
   // auto-add callbacks, uses these regular expressions to prioritize
   // between PPD files if they are for the same printer model and the
   // same UI language. A matching PPD is prioritized against a
@@ -227,53 +227,53 @@ typedef struct pr_printer_app_config_s
 // Functions...
 //
 
-extern pappl_system_t *pr_get_system(pr_printer_app_global_data_t *global_data);
-extern int pr_retrofit_printer_app(pr_printer_app_config_t *printer_app_config,
+extern pappl_system_t *prGetSystem(pr_printer_app_global_data_t *global_data);
+extern int prRetroFitPrinterApp(pr_printer_app_config_t *printer_app_config,
 				   int argc, char *argv[]);
-extern const char *pr_best_matching_ppd(const char *device_id,
+extern const char *prBestMatchingPPD(const char *device_id,
 					pr_printer_app_global_data_t
 					*global_data);
-extern int  pr_regex_match_devid_field(const char *device_id,
+extern int  prRegExMatchDevIDField(const char *device_id,
 				       const char *key,
 				       const char *value_regex,
 				       pr_devid_regex_mode_t mode);
-extern bool pr_supports_postscript(const char *device_id);
-extern bool pr_supports_pdf(const char *device_id);
-extern bool pr_supports_pcl5(const char *device_id);
-extern bool pr_supports_pcl5c(const char *device_id);
-extern bool pr_supports_pclxl(const char *device_id);
-extern const char *pr_autoadd(const char *device_info, const char *device_uri,
+extern bool prSupportsPostScript(const char *device_id);
+extern bool prSupportsPDF(const char *device_id);
+extern bool prSupportsPCL5(const char *device_id);
+extern bool prSupportsPCL5c(const char *device_id);
+extern bool prSupportsPCLXL(const char *device_id);
+extern const char *prAutoAdd(const char *device_info, const char *device_uri,
 			      const char *device_id, void *data);
-extern void pr_ps_identify(pappl_printer_t *printer, pappl_device_t *device);
-extern void pr_identify(pappl_printer_t *printer,
+extern void prPSIdentify(pappl_printer_t *printer, pappl_device_t *device);
+extern void prIdentify(pappl_printer_t *printer,
 			pappl_identify_actions_t actions,
 			const char *message);
-extern const char *pr_testpage(pappl_printer_t *printer, char *buffer,
+extern const char *prTestPage(pappl_printer_t *printer, char *buffer,
 			       size_t bufsize);
-extern bool   pr_pwg_rendjob(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPWGRasterEndJob(pappl_job_t *job, pappl_pr_options_t *options,
 			      pappl_device_t *device);
-extern bool   pr_pwg_rendpage(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPWGRasterEndPage(pappl_job_t *job, pappl_pr_options_t *options,
 			       pappl_device_t *device, unsigned page);
-extern bool   pr_pwg_rstartjob(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPWGRasterStartJob(pappl_job_t *job, pappl_pr_options_t *options,
 				pappl_device_t *device);
-extern bool   pr_pwg_rstartpage(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPWGRasterStartPage(pappl_job_t *job, pappl_pr_options_t *options,
 				 pappl_device_t *device, unsigned page);
-extern bool   pr_pwg_rwriteline(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPWGRasterWriteLine(pappl_job_t *job, pappl_pr_options_t *options,
 				 pappl_device_t *device, unsigned y,
 				 const unsigned char *pixels);
-extern bool   pr_ps_rendjob(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPSRasterEndJob(pappl_job_t *job, pappl_pr_options_t *options,
 			    pappl_device_t *device);
-extern bool   pr_ps_rendpage(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPSRasterEndPage(pappl_job_t *job, pappl_pr_options_t *options,
 			     pappl_device_t *device, unsigned page);
-extern bool   pr_ps_rstartjob(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPSRasterStartJob(pappl_job_t *job, pappl_pr_options_t *options,
 			      pappl_device_t *device);
-extern bool   pr_ps_rstartpage(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPSRasterStartPage(pappl_job_t *job, pappl_pr_options_t *options,
 			       pappl_device_t *device, unsigned page);
-extern bool   pr_ps_rwriteline(pappl_job_t *job, pappl_pr_options_t *options,
+extern bool   prPSRasterWriteLine(pappl_job_t *job, pappl_pr_options_t *options,
 			       pappl_device_t *device, unsigned y,
 			       const unsigned char *pixels);
-extern void   pr_setup_add_ppd_files_page(void *data);
-extern void   pr_setup_device_settings_page(pappl_printer_t *printer,
+extern void   prSetupAddPPDFilesPage(void *data);
+extern void   prSetupDeviceSettingsPage(pappl_printer_t *printer,
 					    void *data);
 
 
@@ -281,7 +281,7 @@ extern void   pr_setup_device_settings_page(pappl_printer_t *printer,
 // Spooling conversions
 //
 
-static pr_spooling_conversion_t pr_convert_pdf_to_pdf =
+static const pr_spooling_conversion_t PR_CONVERT_PDF_TO_PDF =
 {
   "application/pdf",
   "application/vnd.cups-pdf",
@@ -295,7 +295,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_pdf =
   }
 };
 
-static pr_spooling_conversion_t pr_convert_pdf_to_ps =
+static const pr_spooling_conversion_t PR_CONVERT_PDF_TO_PS =
 {
   "application/pdf",
   "application/vnd.cups-postscript",
@@ -314,7 +314,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_ps =
   }
 };
 
-static pr_spooling_conversion_t pr_convert_pdf_to_raster =
+static const pr_spooling_conversion_t PR_CONVERT_PDF_TO_RASTER =
 {
   "application/pdf",
   "application/vnd.cups-raster",
@@ -333,7 +333,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_raster =
   }
 };
 
-static pr_spooling_conversion_t pr_convert_pdf_to_raster_poppler =
+static const pr_spooling_conversion_t PR_CONVERT_PDF_TO_RASTER_POPPLER =
 {
   "application/pdf",
   "application/vnd.cups-raster",
@@ -352,7 +352,7 @@ static pr_spooling_conversion_t pr_convert_pdf_to_raster_poppler =
   }
 };
 
-static pr_spooling_conversion_t pr_convert_ps_to_ps =
+static const pr_spooling_conversion_t PR_CONVERT_PS_TO_PS =
 {
   "application/postscript",
   "application/vnd.cups-postscript",
@@ -366,7 +366,7 @@ static pr_spooling_conversion_t pr_convert_ps_to_ps =
   }
 };
 
-static pr_spooling_conversion_t pr_convert_ps_to_pdf =
+static const pr_spooling_conversion_t PR_CONVERT_PS_TO_PDF =
 {
   "application/postscript",
   "application/vnd.cups-pdf",
@@ -385,7 +385,7 @@ static pr_spooling_conversion_t pr_convert_ps_to_pdf =
   }
 };
 
-static pr_spooling_conversion_t pr_convert_ps_to_raster =
+static const pr_spooling_conversion_t PR_CONVERT_PS_TO_RASTER =
 {
   "application/postscript",
   "application/vnd.cups-raster",
@@ -409,14 +409,14 @@ static pr_spooling_conversion_t pr_convert_ps_to_raster =
 // Stream formats
 //
 
-static pr_stream_format_t pr_stream_cups_raster =
+static const pr_stream_format_t PR_STREAM_CUPS_RASTER =
 {
   "application/vnd.cups-raster",
-  pr_pwg_rendjob,
-  pr_pwg_rendpage,
-  pr_pwg_rstartjob,
-  pr_pwg_rstartpage,
-  pr_pwg_rwriteline,
+  prPWGRasterEndJob,
+  prPWGRasterEndPage,
+  prPWGRasterStartJob,
+  prPWGRasterStartPage,
+  prPWGRasterWriteLine,
   1,
   {
     {
@@ -427,25 +427,25 @@ static pr_stream_format_t pr_stream_cups_raster =
   }
 };
 
-static pr_stream_format_t pr_stream_postscript =
+static const pr_stream_format_t PR_STREAM_POSTSCRIPT =
 {
   "application/vnd.cups-postscript",
-  pr_ps_rendjob,
-  pr_ps_rendpage,
-  pr_ps_rstartjob,
-  pr_ps_rstartpage,
-  pr_ps_rwriteline,
+  prPSRasterEndJob,
+  prPSRasterEndPage,
+  prPSRasterStartJob,
+  prPSRasterStartPage,
+  prPSRasterWriteLine,
   0
 };
 
-static pr_stream_format_t pr_stream_pdf =
+static const pr_stream_format_t PR_STREAM_PDF =
 {
   "application/vnd.cups-pdf",
-  pr_ps_rendjob,
-  pr_ps_rendpage,
-  pr_ps_rstartjob,
-  pr_ps_rstartpage,
-  pr_ps_rwriteline,
+  prPSRasterEndJob,
+  prPSRasterEndPage,
+  prPSRasterStartJob,
+  prPSRasterStartPage,
+  prPSRasterWriteLine,
   2,
   {
     {

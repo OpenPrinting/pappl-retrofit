@@ -62,9 +62,9 @@ legacy_autoadd(const char *device_info,	// I - Device name (unused)
     return (NULL);
 
   // Look at the COMMAND SET (CMD) key for the list of printer languages...
-  if (1 || pr_supports_postscript(device_id))
+  if (1 || prSupportsPostScript(device_id))
     // Printer supports our PDL, so find the best-matching PPD file
-    ret = pr_best_matching_ppd(device_id, global_data);
+    ret = prBestMatchingPPD(device_id, global_data);
   else
     // Printer does not support our PDL, it is not supported by this
     // Printer Application
@@ -93,12 +93,12 @@ main(int  argc,				// I - Number of command-line arguments
   // but as many printers have buggy PS interpreters we prefer converting
   // PDF to Raster and not to PS
   spooling_conversions = cupsArrayNew(NULL, NULL);
-  cupsArrayAdd(spooling_conversions, &pr_convert_pdf_to_pdf);
-  cupsArrayAdd(spooling_conversions, &pr_convert_pdf_to_raster);
-  cupsArrayAdd(spooling_conversions, &pr_convert_pdf_to_ps);
-  cupsArrayAdd(spooling_conversions, &pr_convert_ps_to_ps);
-  cupsArrayAdd(spooling_conversions, &pr_convert_ps_to_pdf);
-  cupsArrayAdd(spooling_conversions, &pr_convert_ps_to_raster);
+  cupsArrayAdd(spooling_conversions, (void *)&PR_CONVERT_PDF_TO_PDF);
+  cupsArrayAdd(spooling_conversions, (void *)&PR_CONVERT_PDF_TO_RASTER);
+  cupsArrayAdd(spooling_conversions, (void *)&PR_CONVERT_PDF_TO_PS);
+  cupsArrayAdd(spooling_conversions, (void *)&PR_CONVERT_PS_TO_PS);
+  cupsArrayAdd(spooling_conversions, (void *)&PR_CONVERT_PS_TO_PDF);
+  cupsArrayAdd(spooling_conversions, (void *)&PR_CONVERT_PS_TO_RASTER);
 
   // Array of stream formats, most desirables first
   //
@@ -106,9 +106,9 @@ main(int  argc,				// I - Number of command-line arguments
   // PostScript comes second as it is Ghostscript's streamable
   // input format.
   stream_formats = cupsArrayNew(NULL, NULL);
-  cupsArrayAdd(stream_formats, &pr_stream_cups_raster);
-  cupsArrayAdd(stream_formats, &pr_stream_postscript);
-  cupsArrayAdd(stream_formats, &pr_stream_pdf);
+  cupsArrayAdd(stream_formats, (void *)&PR_STREAM_CUPS_RASTER);
+  cupsArrayAdd(stream_formats, (void *)&PR_STREAM_POSTSCRIPT);
+  cupsArrayAdd(stream_formats, (void *)&PR_STREAM_PDF);
 
   // Array of regular expressions for driver priorization
   driver_selection_regex_list = cupsArrayNew(NULL, NULL);
@@ -143,10 +143,10 @@ main(int  argc,				// I - Number of command-line arguments
     PR_COPTIONS_CUPS_BACKENDS |
     PR_COPTIONS_NO_GENERIC_DRIVER,
     legacy_autoadd,           // Auto-add (driver assignment) callback
-    pr_identify,              // Printer identify callback
-    pr_testpage,              // Test page print callback
-    pr_setup_add_ppd_files_page, // Set up "Add PPD Files" web interface page
-    pr_setup_device_settings_page, // Set up "Device Settings" printer web
+    prIdentify,              // Printer identify callback
+    prTestPage,              // Test page print callback
+    prSetupAddPPDFilesPage, // Set up "Add PPD Files" web interface page
+    prSetupDeviceSettingsPage, // Set up "Device Settings" printer web
                               // interface page
     spooling_conversions,     // Array of data format conversion rules for
                               // printing in spooling mode
@@ -158,7 +158,7 @@ main(int  argc,				// I - Number of command-line arguments
                               // CUPS backends to be used exclusively
                               // If empty all but the ignored backends are used
     TESTPAGE,                 // Test page (printable file), used by the
-                              // standard test print callback pr_testpage()
+                              // standard test print callback prTestPage()
     " +Foomatic/(.+)$| +- +CUPS\\+(Gutenprint)",
                               // Regular expression to separate the
                               // extra information after make/model in
@@ -185,5 +185,5 @@ main(int  argc,				// I - Number of command-line arguments
   // drivers.
   putenv("NO_DRIVERLESS_PPDS=1");
 
-  return (pr_retrofit_printer_app(&printer_app_config, argc, argv));
+  return (prRetroFitPrinterApp(&printer_app_config, argc, argv));
 }

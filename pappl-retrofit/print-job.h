@@ -40,7 +40,7 @@ extern "C" {
 // Types...
 //
 
-// Data for pr_print_filter_function()
+// Data for _prPrintFilterFunction()
 typedef struct pr_print_filter_function_data_s 
                                         // look-up table
 {
@@ -82,27 +82,27 @@ typedef struct pr_job_data_s		// Job data
 // Functions...
 //
 
-extern void   pr_ascii85(FILE *outputfp, const unsigned char *data, int length,
+extern void   _prASCII85(FILE *outputfp, const unsigned char *data, int length,
 			 int last_data);
-extern pappl_content_t pr_get_file_content_type(pappl_job_t *job);
-extern pr_job_data_t *pr_create_job_data(pappl_job_t *job,
+extern pappl_content_t _prGetFileContentType(pappl_job_t *job);
+extern pr_job_data_t *_prCreateJobData(pappl_job_t *job,
 					 pappl_pr_options_t *job_options);
-extern bool   pr_filter(pappl_job_t *job, pappl_device_t *device, void *data);
-extern void   pr_free_job_data(pr_job_data_t *job_data);
-extern int    pr_job_is_canceled(void *data);
-extern void   pr_job_log(void *data, cf_loglevel_t level,
+extern bool   _prFilter(pappl_job_t *job, pappl_device_t *device, void *data);
+extern void   _prFreeJobData(pr_job_data_t *job_data);
+extern int    _prJobIsCanceled(void *data);
+extern void   _prJobLog(void *data, cf_loglevel_t level,
 			 const char *message, ...);
-extern void   pr_one_bit_dither_on_draft(pappl_job_t *job,
+extern void   _prOneBitDitherOnDraft(pappl_job_t *job,
 					 pappl_pr_options_t *options);
-extern void   pr_clean_debug_copies(pr_printer_app_global_data_t *global_data);
-extern int    pr_print_filter_function(int inputfd, int outputfd,
+extern void   _prCleanDebugCopies(pr_printer_app_global_data_t *global_data);
+extern int    _prPrintFilterFunction(int inputfd, int outputfd,
 				       int inputseekable, cf_filter_data_t *data,
 				       void *parameters);
-extern pr_job_data_t* pr_rpreparejob(pappl_job_t *job,
+extern pr_job_data_t* _prRasterPrepareJob(pappl_job_t *job,
 				     pappl_pr_options_t *options,
 				     pappl_device_t *device,
 				     char *starttype);
-extern void   pr_rcleanupjob(pappl_job_t *job, pappl_device_t *device);
+extern void   _prRasterCleanUpJob(pappl_job_t *job, pappl_device_t *device);
 
 
 //

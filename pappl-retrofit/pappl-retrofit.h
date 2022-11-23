@@ -153,47 +153,43 @@ struct pr_printer_app_global_data_s
 // Functions...
 //
 
-extern int    pr_compare_ppd_paths(void *a, void *b, void *data); 
-extern pappl_content_t pr_get_file_content_type(pappl_job_t *job);
-extern void   pr_driver_delete(pappl_printer_t *printer,
+extern int    _prComparePPDPaths(void *a, void *b, void *data);
+extern void   _prDriverDelete(pappl_printer_t *printer,
 			       pappl_pr_driver_data_t *driver_data);
-extern char   *pr_cups_filter_path(const char *filter,
+extern char   *_prCUPSFilterPath(const char *filter,
 				   const char *filter_dir);
-extern char   *pr_ppd_find_cups_filter(const char *input_format,
+extern char   *_prPPDFindCUPSFilter(const char *input_format,
 				       int num_filters, char **filters,
 				       const char *filter_dir);
-extern char   *pr_ppd_missing_filters(int num_filters, char **filters,
+extern char   *_prPPDMissingFilters(int num_filters, char **filters,
 				      const char *filter_dir);
-extern bool   pr_str_has_code(const char *str);
-extern bool   pr_option_has_code(pappl_system_t *system, ppd_file_t *ppd,
+extern bool   _prStrHasCode(const char *str);
+extern bool   _prOptionHasCode(pappl_system_t *system, ppd_file_t *ppd,
 				 ppd_option_t *option);
-extern const char *pr_default_paper_size();
-extern bool   pr_driver_setup(pappl_system_t *system, const char *driver_name,
+extern const char *_prDefaultPaperSize();
+extern bool   _prDriverSetup(pappl_system_t *system, const char *driver_name,
 			      const char *device_uri, const char *device_id,
 			      pappl_pr_driver_data_t *driver_data,
 			      ipp_t **driver_attrs, void *data);
-extern bool   pr_have_force_gray(ppd_file_t *ppd,
+extern bool   _prHaveForceGray(ppd_file_t *ppd,
 				 const char **optstr, const char **choicestr);
-extern void   pr_media_col(pwg_size_t *pwg_size, const char *def_source,
+extern void   _prMediaCol(pwg_size_t *pwg_size, const char *def_source,
 			   const char *def_type, int left_offset,
 			   int top_offset, pappl_media_tracking_t tracking,
 			   pappl_media_col_t *col);
-extern int    pr_poll_device_option_defaults(pappl_printer_t *printer,
+extern int    _prPollDeviceOptionDefaults(pappl_printer_t *printer,
 					     bool installable,
 					     cups_option_t **defaults);
-extern void   pr_printer_update_for_installable_options(
+extern void   _prPrinterUpdateForInstallableOptions(
 					   pappl_printer_t *printer,
 					   pappl_pr_driver_data_t driver_data,
 					   const char *instoptstr);
-extern void   pr_setup_driver_list(pr_printer_app_global_data_t *global_data);
-extern void   pr_setup(pr_printer_app_global_data_t *global_data);
-extern void   pr_system_web_add_ppd(pappl_client_t *client, void *data);
-extern bool   pr_status(pappl_printer_t *printer);
-extern bool   pr_update_status(pappl_printer_t *printer,
+extern void   _prSetupDriverList(pr_printer_app_global_data_t *global_data);
+extern void   _prSetup(pr_printer_app_global_data_t *global_data);
+extern bool   _prStatus(pappl_printer_t *printer);
+extern bool   _prUpdateStatus(pappl_printer_t *printer,
 			       pappl_device_t *device);
-extern const char *pr_testpage(pappl_printer_t *printer, char *buffer,
-			       size_t bufsize);
-extern pappl_system_t *pr_system_cb(int num_options, cups_option_t *options,
+extern pappl_system_t *_prSystemCB(int num_options, cups_option_t *options,
 				    void *data);
 
 

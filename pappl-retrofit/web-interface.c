@@ -26,14 +26,14 @@
 
 
 //
-// 'pr_printer_web_device_config()' - Web interface page for entering/polling
+// '_prPrinterWebDeviceConfig()' - Web interface page for entering/polling
 //                                    the configuration of printer add-ons
 //                                    ("Installable Options" in PPD and polling
 //                                    default option settings
 //
 
 void
-pr_printer_web_device_config(
+_prPrinterWebDeviceConfig(
     pappl_client_t  *client,		// I - Client
     pappl_printer_t *printer)		// I - Printer
 {
@@ -188,7 +188,7 @@ pr_printer_web_device_config(
       // sense with the current installable accessory configuration
       papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
 		      "\"Installable Options\" marked in PPD: %s", buf);
-      pr_printer_update_for_installable_options(printer, driver_data, buf);
+      _prPrinterUpdateForInstallableOptions(printer, driver_data, buf);
 
       // Save the changes
       papplSystemSaveState(system, global_data->state_file);
@@ -196,7 +196,7 @@ pr_printer_web_device_config(
     else if (!strcmp(action, "poll-installable"))
     {
       // Poll installed options info
-      num_options = pr_poll_device_option_defaults(printer, true, &options);
+      num_options = _prPollDeviceOptionDefaults(printer, true, &options);
       if (num_options)
       {
 	status = "Installable accessory configuration polled from printer.";
@@ -225,7 +225,7 @@ pr_printer_web_device_config(
 	// sense with the current installable accessory configuration
 	papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
 			"\"Installable Options\" marked in PPD: %s", buf);
-	pr_printer_update_for_installable_options(printer, driver_data, buf);
+	_prPrinterUpdateForInstallableOptions(printer, driver_data, buf);
 
 	// Save the changes
 	papplSystemSaveState(system, global_data->state_file);
@@ -237,7 +237,7 @@ pr_printer_web_device_config(
     else if (!strcmp(action, "poll-defaults"))
     {
       // Poll default option values
-      num_options = pr_poll_device_option_defaults(printer, false,
+      num_options = _prPollDeviceOptionDefaults(printer, false,
 						   &options);
       if (num_options)
       {
@@ -735,14 +735,14 @@ pr_printer_web_device_config(
 
 
 //
-// 'pr_system_web_add_ppd()' - Web interface page for adding/deleting
+// '_prSystemWebAddPPD()' - Web interface page for adding/deleting
 //                             PPD files by the user, to add support for
 //                             printers not supported by the built-in PPD
 //                             files
 //
 
 void
-pr_system_web_add_ppd(
+_prSystemWebAddPPD(
     pappl_client_t *client,		// I - Client
     void *data)                         // I - Global data
 {
@@ -1063,7 +1063,7 @@ pr_system_web_add_ppd(
 		    if (ppd->num_filters)
 		    {
 		      missing_filters =
-			pr_ppd_missing_filters
+			_prPPDMissingFilters
 			  (ppd->num_filters, ppd->filters,
 			   global_data->filter_dir);
 		      if (missing_filters)
@@ -1116,7 +1116,7 @@ pr_system_web_add_ppd(
 			// this option not to work
 			// Don't worry if the filter is installed
 			if (check_options &&
-			    !pr_option_has_code(system, ppd, option))
+			    !_prOptionHasCode(system, ppd, option))
 			{
 			  codeless_option_found = true;
 			  snprintf(strbuf + strlen(strbuf),
@@ -1336,7 +1336,7 @@ pr_system_web_add_ppd(
 
     // Refresh driver list (if at least 1 PPD got added or removed)
     if (ppd_repo_changed)
-      pr_setup_driver_list(global_data);
+      _prSetupDriverList(global_data);
 
     cupsFreeOptions(num_form, form);
   }
