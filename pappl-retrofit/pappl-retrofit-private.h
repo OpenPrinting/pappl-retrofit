@@ -71,6 +71,11 @@ typedef struct pr_driver_extension_s	// Driver data extension
                                         // represented as vendor options;
   cups_array_t *ipp_name_lookup;        // Look-up table for the IPP names
                                         // assigned to vendor PPD options
+  char       *human_strings;            // Table of human-readable strings
+                                        // from the PPD file, for displaying
+                                        // the vendor options in the web UI
+  char       *human_strings_resource;   // Resource under which we registered
+                                        // the human-readable strings
   int        num_inst_options;          // PPD option settings representing 
   cups_option_t *inst_options;          // presence of installable accressories
   // Special properties taken from the PPD file

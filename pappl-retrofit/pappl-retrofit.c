@@ -740,6 +740,14 @@ _prDriverDelete(
     free(opt_name);
   }
   cupsArrayDelete(extension->ipp_name_lookup);
+  if (extension->human_strings_resource)
+  {
+    papplSystemRemoveResource(extension->global_data->system,
+			      extension->human_strings_resource);
+    free(extension->human_strings_resource);
+  }
+  if (extension->human_strings)
+    free(extension->human_strings);
   if (extension->num_inst_options)
     cupsFreeOptions(extension->num_inst_options, extension->inst_options);
   free(extension->stream_filter);
@@ -1039,6 +1047,37 @@ _prOptionHasCode(
 
 
 //
+// 'add_strings_line()' - Add a new translation to a translation table of
+//                        *.strings type (the way translations are handled
+//                        by PAPPL).
+//
+
+static void
+add_strings_line(
+    char **strings_data,   // Strings translation list list in a string
+    const char *key,       // Key, option name, or English string
+    const char *attr,      // Option's attribute/choice or NULL
+    const char *ui_string) // Human-readable string or translation
+{
+  char buf[1024];
+  size_t append_pos, append_chars;
+
+  if (!strings_data || !key || !ui_string)
+    return;
+
+  snprintf(buf, sizeof(buf), "\"%s%s%s\" = \"%s\";\n",
+	   key, attr ? "." : "", attr ? attr : "", ui_string);
+  append_pos = *strings_data ? strlen(*strings_data) : 0;
+  append_chars = strlen(buf);
+
+  *strings_data = realloc(*strings_data,
+			  (append_pos + append_chars + 1) *
+			  sizeof(char));
+  strcpy(*strings_data + append_pos, buf);
+}
+
+
+//
 // '_prDriverSetup()' - PostScript driver setup callback.
 //
 //                      Runs in two modes: Init and Update
@@ -1305,6 +1344,8 @@ _prDriverSetup(
     extension = (pr_driver_extension_t *)driver_data->extension;
     extension->ppd                  = ppd;
     extension->ipp_name_lookup      = NULL;
+    extension->human_strings        = NULL;
+    extension->human_strings_resource = NULL;
     extension->num_inst_options     = 0;
     extension->inst_options         = NULL;
     extension->defaults_pollable    = false;
@@ -2822,6 +2863,15 @@ _prDriverSetup(
 		continue;
 	      // Choice is valid, add it
 	      choice_list[l] = strdup(ipp_choice);
+	      if (!update)
+	      {
+		// Register human-readable strings of the vendor option
+		// choices in a *.strings-type translation table, to be
+		// displayed in the web interface
+		add_strings_line(&extension->human_strings,
+				 ipp_opt, ipp_choice,
+				 option->choices[k].text);
+	      }
 	      if (first_choice == -2)
 		first_choice = k;
 	      if ((!update && controlled_by_presets == 0 &&
@@ -2879,6 +2929,15 @@ _prDriverSetup(
 	       option->keyword);
       extension->vendor_ppd_options[driver_data->num_vendor] = strdup(buf);
 
+      if (!update)
+      {
+	// Register human-readable strings of the vendoe option
+	// in a *.strings-type translation table, to be displayed
+	// in the web interface
+	add_strings_line(&extension->human_strings,
+			 ipp_opt, NULL, option->text);
+      }
+
       // Next entry ...
       driver_data->num_vendor ++;
 
@@ -2892,12 +2951,17 @@ _prDriverSetup(
 	cparam = (ppd_cparam_t *)cupsArrayIndex(coption->params, k);
 	// Name for extra vendor option to set this parameter
 	if (num_cparams == 1)
+	{
 	  snprintf(ipp_custom_opt, sizeof(ipp_custom_opt), "custom-%s", ipp_opt);
+	  snprintf(buf, sizeof(buf), "Custom %s", option->text);
+	}
 	else
 	{
 	  ppdPwgUnppdizeName(cparam->text, ipp_param, sizeof(ipp_param), NULL);
 	  snprintf(ipp_custom_opt, sizeof(ipp_custom_opt), "custom-%s-for-%s",
 		   ipp_param, ipp_opt);
+	  snprintf(buf, sizeof(buf), "Custom %s for %s",
+		   cparam->text, option->text);
 	}
 	snprintf(ipp_supported, sizeof(ipp_supported), "%s-supported",
 		 ipp_custom_opt);
@@ -2937,6 +3001,14 @@ _prDriverSetup(
 		   "  Unsupported parameter \"%s\" (\"%s\") as IPP attribute \"%s\" -> This should never happen, \"Custom\" choice should have been rejected",
 		   cparam->name, cparam->text, ipp_custom_opt);
 	  break;
+	}
+	if (!update)
+	{
+	  // Register human-readable strings of the vendoe option
+	  // in a *.strings-type translation table, to be displayed
+	  // in the web interface
+	  add_strings_line(&extension->human_strings,
+			   ipp_custom_opt, NULL, buf);
 	}
 	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		 "  Adding custom parameter \"%s\" (\"%s\") as IPP attribute \"%s\"",
@@ -4322,6 +4394,7 @@ _prStatus(pappl_printer_t *printer) // I - Printer
   pr_printer_app_global_data_t *global_data;
   pappl_device_t	*device;		// Printer device
   pappl_supply_t	supply[32];		// Printer supply information
+  char                  buf[1024];
 
   // Get system...
   system = papplPrinterGetSystem(printer);
@@ -4333,6 +4406,17 @@ _prStatus(pappl_printer_t *printer) // I - Printer
   papplPrinterGetDriverData(printer, &driver_data);
   extension = (pr_driver_extension_t *)driver_data.extension;
   global_data = extension->global_data;
+  if (!extension->human_strings_resource && extension->human_strings)
+  {
+    // Register human-readable strings of vendor options for web interface
+    papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
+		    "Registering human-readable strings of the PPD's options for the web interface.");
+    snprintf(buf, sizeof(buf), "/%s/ui.strings",
+	     papplPrinterGetName(printer));
+    extension->human_strings_resource = strdup(buf);
+    papplSystemAddStringsData(system, extension->human_strings_resource,
+			      "en", extension->human_strings);
+  }
   if (!extension->updated)
   {
     // Adjust the driver data according to the installed accessories
