@@ -229,15 +229,15 @@ Then have a look at
 ```
 legacy/legacy-printer-app.c
 ```
-and
+as a coding example and
 ```
 pappl-retrofit/pappl-retrofit.h
 ```
-to get a feeling how to create a Printer Application in your desired
-configuration.
+for the full public API to get a feeling how to create a Printer
+Application in your desired configuration.
 
 
-## Setting up
+## Setting up your Printer Application
 
 If you have your Printer Application, start it as a server, for
 example (using the name of our Legacy Printer Application in the
@@ -428,7 +428,7 @@ libpappl-retrofit](https://github.com/OpenPrinting/pappl-retrofit/issues)
 
 ## ALREADY AVAILABLE PRINTER APPLICATIONS
 
-Please have a look at the [PostScript Printer
+Please also have a look at the [PostScript Printer
 Application](https://github.com/OpenPrinting/ps-printer-app), the
 [Ghostscript Printer
 Application](https://github.com/OpenPrinting/ghostscript-printer-app),
