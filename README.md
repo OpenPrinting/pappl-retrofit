@@ -204,7 +204,7 @@ interface. Here a feature for downloading HP's proprietary plugin is
 added.
 
 
-## Installation
+## INSTALLATION
 
 To install this library, you need libcups (of
 [CUPS](https://github.com/OpenPrinting/cups) 2.2.x or newer),
