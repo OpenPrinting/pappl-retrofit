@@ -7,8 +7,11 @@ pkgconf_DATA = \
 doc_DATA = \
 	README.md \
 	AUTHORS \
+	COPYING \
 	NOTICE \
-	LICENSE
+	LICENSE \
+	DEVELOPING.md \
+	CONTRIBUTING.md
 
 EXTRA_DIST = \
 	$(doc_DATA) \
@@ -16,9 +19,9 @@ EXTRA_DIST = \
 	config.rpath \
 	libpappl-retrofit.pc.in
 
-# ==========================
+# ==================================
 # CUPS Driver legacy support library
-# ==========================
+# ==================================
 pkgpappl_retrofitincludedir = $(includedir)
 pkgpappl_retrofitinclude_DATA = \
 	pappl-retrofit/pappl-retrofit.h

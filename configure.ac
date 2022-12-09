@@ -5,17 +5,16 @@ AC_PREREQ([2.65])
 # ====================
 # Version informations
 # ====================
-m4_define([pappl_retrofit_version_major],[0])
-m4_define([pappl_retrofit_version_minor],[99])
-m4_define([pappl_retrofit_version_micro],[0])
-m4_define([pappl_retrofit_version],[pappl_retrofit_version_major.pappl_retrofit_version_minor.pappl_retrofit_version_micro])
+AC_INIT([pappl-retrofit], [1.0b1], [https://github.com/OpenPrinting/pappl-retrofit/issues], [pappl-retrofit], [https://github.com/OpenPrinting/pappl-retrofit/])
+pappl_retrofit_version="AC_PACKAGE_VERSION"
+pappl_retrofit_version_major="`echo AC_PACKAGE_VERSION | awk -F. '{print $1}'`"
+pappl_retrofit_version_minor="`echo AC_PACKAGE_VERSION | awk -F. '{printf("%d\n",$2);}'`"
 
 # =============
 # Automake init
 # =============
-AC_INIT([pappl-retrofit],[pappl_retrofit_version])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([1.11 gnu dist-xz dist-bzip2 subdir-objects])
+AM_INIT_AUTOMAKE([1.11 gnu dist-xz dist-bzip2 subdir-objects foreign])
 AM_SILENT_RULES([yes])
 AC_LANG([C])
 # Workaround to fix Snap build
@@ -145,7 +144,7 @@ AC_CHECK_HEADER(strings.h,AC_DEFINE(HAVE_STRINGS_H))
 PKG_CHECK_MODULES([PAPPL], [pappl])
 AC_SUBST(PAPPL_CFLAGS)
 AC_SUBST(PAPPL_LIBS)
-PKG_CHECK_MODULES([CUPSFILTERS], [libcupsfilters])
+PKG_CHECK_MODULES([LIBCUPSFILTERS], [libcupsfilters])
 AC_SUBST(CUPSFILTERS_CFLAGS)
 AC_SUBST(CUPSFILTERS_LIBS)
 PKG_CHECK_MODULES([PPD], [libppd])
