@@ -1,24 +1,29 @@
+
 # PPD/Classic CUPS driver retro-fit Printer Application Library
 
 
 ## INTRODUCTION
 
-This library together with [PAPPL](https://www.msweet.org/pappl) and
-[cups-filters 2.x](https://github.com/OpenPrinting/cups-filters)
-allows to convert classic [CUPS](https://github.com/OpenPrinting/cups)
-printer drivers into Printer Applications. This way the printer
-appears as an emulated IPP printer and one can print on it from
-practically any operating system, especially also mobile operating
-systems and IoT platforms, without need any client-side driver.
+This library together with [PAPPL](https://www.msweet.org/pappl),
+[libcupsfilters 2.x](https://github.com/OpenPrinting/libcupsfilters),
+and [libppd](https://github.com/OpenPrinting/libppd) allows to convert
+classic [CUPS](https://github.com/OpenPrinting/cups) printer drivers
+into Printer Applications. This way the printer appears as an emulated
+IPP printer and one can print on it from practically any operating
+system, especially also mobile operating systems and IoT platforms,
+without need any client-side driver.
 
 It also makes printers needing a classic CUPS driver available to the
-[CUPS Snap](https://github.com/OpenPrinting/cups-snap) which does not
-support installing classic CUPS drivers.
+[CUPS Snap](https://github.com/OpenPrinting/cups-snap) and to CUPS 3.x
+([library](https://github.com/OpenPrinting/libcups), [local
+server](https://github.com/OpenPrinting/cups-local), [sharing
+server](https://github.com/OpenPrinting/cups-sharing)) which do not
+support installing and using classic CUPS drivers.
 
 The basic framework for making up a Printer Application comes from
 PAPPL, many resources to cope with PPD files, CUPS filters, job data
 format conversions, and even CUPS backends are provided by
-cups-filters.
+libcupsfilters, libppd, and cups-filters.
 
 With this library a Printer Application is simply made up by defining
 a configuration of basic properties and data conversion rules, and
@@ -35,15 +40,16 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
 
 ### Properties
 
-- A classic CUPS printer driver consists of PPD files, CUPS filters, and
-  sometimes also CUPS backends. All this sis supported by this library.
+- A classic CUPS printer driver consists of PPD files, CUPS filters,
+  and sometimes also CUPS backends. All this is supported by this
+  library.
 
 - The PPD files can be provided in all forms which CUPS supports:
   Individual files, compressed files, tar archives, driver information
   files (`.drv`), executables which generate PPDs on-the-fly.
 
-- Even more complex filters and backends which use the side and back channel
-  communication are supported.
+- Even more complex filters and backends which use the side and back
+  channel communication are supported.
 
 - All user-settable options of the PPD file are made available in the
   web interface of the Printer Application, under "Printing
@@ -56,16 +62,16 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
   paper sizes, types, trays, duplex, but especially "print-color-mode"
   (color/monochrome), "print-quality" (draft/normal/high), and
   "print-content-optimize" (auto/photo/graphics/text/text&graphics)
-  are auto-selecting the best possible PPS option settings, and that
+  are auto-selecting the best possible PPD option settings, and that
   for ~10000 PPD files without any manually created database of option
   presets (no one will take the time for that).
 
 - If you want to get the last bits out of your printer and therefore
   want to override the automatic settings done by the standard job IPP
   attributes you can always move the option settings on the "Printing
-  Defaults" web interface page away from "automatic-selection" and get
+  Defaults" web interface page away from "Automatic Selection" and get
   all the choices from the original PPD. Remember to go back to
-  "automatic-selection" when done with the special job.
+  "Automatic Selection" when done with the special job.
 
 - If "print-content-optimize" is set to "auto" the job data is
   pre-checked for the content. Images (JPEG, PNG) are considered as
@@ -112,15 +118,15 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
   PPD for a printer or checking which PDLs (Page Description
   Languages) the printer supports.
 
-- Thw included Legacy Printer Application allows to easily check
+- The included Legacy Printer Application allows to easily check
   whether a CUPS driver works inside a Printer Application. Simply
   install the driver normally (into the system's conventionally
   installed CUPS) and the Legacy Printer Application looks for the
   driver's files in the usual CUPS directories. It can also be used to
   make classically installed printer drivers available to the CUPS
-  Snap, especially proprietary legacy drivers which do not exist in a
-  Snap in the Snap Store. In addition it serves as example to create
-  your own driver-retro-fitting Printer Application.
+  Snap or to CUPS 3.x, especially proprietary legacy drivers which do
+  not exist in a Snap in the Snap Store. In addition, it serves as
+  example to create your own driver-retro-fitting Printer Application.
 
 
 ### Remark
@@ -140,17 +146,13 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
   up in the Printer Application, to avoid that the user removes these
   files.
 
-- Human-readable strings for vendor options (Needs support by PAPPL:
-  [Issue #58: Localization
-  support](https://github.com/michaelrsweet/pappl/issues/58))
-
 - Internationalization/Localization (Needs support by PAPPL: [Issue
   #58: Localization
   support](https://github.com/michaelrsweet/pappl/issues/58))
 
-- SNMP Ink level check via ps_status() function (Needs support by PAPPL:
-  [Issue #83: CUPS does IPP and SNMP ink level polls via backends,
-  PAPPL should have functions for
+- SNMP Ink level check via ps_status() function (Needs support by
+  PAPPL: [Issue #83: CUPS does IPP and SNMP ink level polls via
+  backends, PAPPL should have functions for
   this](https://github.com/michaelrsweet/pappl/issues/83))
 
 - In the C files some places can be marked with `TODO`. These are
@@ -206,10 +208,10 @@ added.
 
 To install this library, you need libcups (of
 [CUPS](https://github.com/OpenPrinting/cups) 2.2.x or newer),
-[PAPPL](https://www.msweet.org/pappl), preferably the current GIT
-snapshot, and
-[cups-filters](https://github.com/OpenPrinting/cups-filters) 2.x, also
-preferably the current GIT snapshot.
+[PAPPL](https://www.msweet.org/pappl) 1.3.x or newer,
+[libcupsfilters](https://github.com/OpenPrinting/libcupsfilters) 2.0b1
+or newer, and [libppd](https://github.com/OpenPrinting/libood) 2.0b1
+or newer.
 
 With this installed, you do the usual
 ```
@@ -229,7 +231,7 @@ legacy/legacy-printer-app.c
 ```
 and
 ```
-pappl-retrofit/base.h
+pappl-retrofit/pappl-retrofit.h
 ```
 to get a feeling how to create a Printer Application in your desired
 configuration.
@@ -261,9 +263,8 @@ or print with CUPS, CUPS (and also cups-browsed) discover and treat
 the printers set up with this Printer Application as driverless IPP
 printers (IPP Everywhere and AirPrint).
 
-You can also add PPD files, either by
-using the "Add PPD files" button in the web interface or by manually
-copying PPD files:
+You can also add PPD files, either by using the "Add PPD files" button
+in the web interface or by manually copying PPD files:
 ```
 sudo cp PPDFILE /var/lib/legacy-printer-app/ppd/
 ```
@@ -304,47 +305,53 @@ legacy-printer-app --help
 ```
 for more options.
 
-Use the `--debug` argument for verbose logging in your terminal window.
+Use the `--debug` argument for verbose logging in your terminal
+window.
 
 
 ## LEGACY PRINTER APPLICATION
 
-The Legacy Printer Application simply points to the directories
-of the CUPS installed conventionally (not the CUPS Snap) on your
-system. So it makes all of your installed printer drivers available in
-a Printer Application. Some drivers may not work in the different
-environment (for example if a filter or backend tries to communicate
-with the CUPS daemon), but such cases are rare.
+The Legacy Printer Application simply points to the directories of the
+CUPS installed conventionally (not the CUPS Snap) on your system. So
+it makes all of your installed printer drivers available in a Printer
+Application. Some drivers may not work in the different environment
+(for example if a filter or backend tries to communicate with the CUPS
+daemon), but such cases are rare.
 
 This especially makes the drivers available to the [CUPS
 Snap](https://github.com/OpenPrinting/cups-snap) ([Snap
-Store](https://snapcraft.io/cups)) which does not directly support
-classically installed printer drivers. So the CUPS Snap can be used as
-the system's standard printing environment keeping the classically
-installed printer drivers. This works but is generally not
-recommended, as most free software printer drivers are already
-available as Printer Applications ([Snap
+Store](https://snapcraft.io/cups)) and to CUPS 3.x
+([library](https://github.com/OpenPrinting/libcups), [local
+server](https://github.com/OpenPrinting/cups-local), [sharing
+server](https://github.com/OpenPrinting/cups-sharing)) which do not
+directly support classically installed printer drivers. So the CUPS
+Snap/CUPS 3.x can be used as the system's standard printing
+environment keeping the classically installed printer drivers. This
+works but is generally not recommended, as most free software printer
+drivers are already available as Printer Applications ([Snap
 Store](https://snapcraft.io/search?q=OpenPrinting)), but there could
 be some drivers which are not yet converted, especially many
 proprietary legacy drivers from printer manufacturers. Here the Legacy
 Printer Application comes in handy.
 
-So the best way for a Linux distribution using the CUPS Snap as its
-printing system it is recommended not to install the standard drivers
-classically and use the appropriate Printer Application Snaps instead,
-but also install the Legacy Printer Application classically to catch
-any drivers for which we do not have a Printer Application.
+So the best way for a Linux distribution using the CUPS Snap or CUPS
+3.x as its printing system it is recommended not to install the
+standard drivers classically but use the appropriate Printer
+Application (Snaps) instead, but also install the Legacy Printer
+Application classically to catch any drivers for which we do not have
+a Printer Application.
 
 You can also use this Printer Application to test the driver which you
 want to retro-fit before you start to configure your Printer
-Application executable and package everything into a Snap. This
-library and the functions of the
-[cups-filters](https://github.com/OpenPrinting/cups-filters) used by
-it try to resemble the CUPS environment for the filters and backends
-as well as possible: Environment variables, command lines, even side
-and back channels. But it is always better to test whether the driver
-behaves correctly, whether the PPD options are represented well on the
-"Device Settings", "Media", and "Printing Defaults" pages of the web
+Application executable and package everything into a Snap (or other
+packaging/containerization format). This library and the functions of
+[libcupsfilters](https://github.com/OpenPrinting/libcupsfilters) and
+[libppd](https://github.com/OpenPrinting/libppd) used by it try to
+resemble the CUPS environment for the filters and backends as well as
+possible: Environment variables, command lines, even side and back
+channels. But it is always better to test whether the driver behaves
+correctly, whether the PPD options are represented well on the "Device
+Settings", "Media", and "Printing Defaults" pages of the web
 interface, and whether the printer reacts correctly to IPP attributes
 supplied with the job, especially `print-color-mode`, `print-quality`,
 and `print-content-optimize`.
@@ -355,37 +362,6 @@ not the backends built into PAPPL, to get the best compatibility with
 the CUPS drivers. To make the PAPPL backends also available, the
 Legacy Printer Application has to be built with the
 `--enable-pappl-backends-for-legacy-printer-app` for `./configure`.
-
-If anything behaves wrongly and you cannot get it working by modifying
-the configuration of your Printer Application, your callbacks, regular
-expressions, conversion rule selections, ... please report an [issue
-on
-libpappl-retrofit](https://github.com/OpenPrinting/pappl-retrofit/issues)
-(we move it to cups-filters if it is actually there).
-
-Please have a look at the [PostScript Printer
-Application](https://github.com/OpenPrinting/ps-printer-app), the
-[Ghostscript Printer
-Application](https://github.com/OpenPrinting/ghostscript-printer-app),
-the [HPLIP Printer
-Application](https://github.com/OpenPrinting/hplip-printer-app), and
-the [Gutenprint Printer
-Application](https://github.com/OpenPrinting/gutenprint-printer-app)
-for examples on how Snaps of Printer Applications are created. All
-these Printer Applications use this library, retro-fitting PostScript
-printer PPD files, [Ghostscript](http://www.ghostscript.com/) drivers
-with [Foomatic](https://github.com/OpenPrinting/foomatic-db) PPD files
-(and many other printer drivers), HPLIP, and Gutenprint. Practically
-every free software printer driver which is available as Debian
-package is now also available as a Printer Application Snap. They can
-be all installed from the [Snap
-Store](https://snapcraft.io/search?q=OpenPrinting).
-
-The HPLIP Printer Application is especially an example of how to add
-driver-specific functionality which is beyond the pappl-retrofit
-library and control this functionality through extra pages in the web
-interface. Here a feature for downloading HP's proprietary plugin is
-added.
 
 The Legacy Printer Application searches for PPDs, PPD archives, driver
 information files (`.drv`), and PPD-generating executables on
@@ -406,15 +382,15 @@ It uses the following directories for its files:
 /usr/share/legacy-printer-app
 /usr/lib/legacy-printer-app
 ```
-The last directory is linked to `/usr/lib/cups` so that the Printer Application
-sees the filters and backends of CUPS.
+The last directory is linked to `/usr/lib/cups` so that the Printer
+Application sees the filters and backends of CUPS.
 
 The test page
 ```
 /usr/share/legacy-printer-app/testpage.ps
 ```
-is the good old 21-year-old PostScript test page of CUPS, but you can easily
-use any other test page for your Printer Application.
+is the good old 21-year-old PostScript test page of CUPS, but you can
+easily use any other test page for your Printer Application.
 
 Configured print queues and job history is saved in
 ```
@@ -441,6 +417,41 @@ Apple Raster, PWG Raster):
 ```
 TESTPAGE=/path/to/my/testpage/my_testpage.ps PPD_PATHS=/path/to/my/ppds:/my/second/place ./legacy-printer-app server
 ```
+
+If anything behaves wrongly and you cannot get it working by modifying
+the configuration of your Printer Application, your callbacks, regular
+expressions, conversion rule selections, ... please report an [issue
+on
+libpappl-retrofit](https://github.com/OpenPrinting/pappl-retrofit/issues)
+(we move it to cups-filters if it is actually there).
+
+
+## ALREADY AVAILABLE PRINTER APPLICATIONS
+
+Please have a look at the [PostScript Printer
+Application](https://github.com/OpenPrinting/ps-printer-app), the
+[Ghostscript Printer
+Application](https://github.com/OpenPrinting/ghostscript-printer-app),
+the [HPLIP Printer
+Application](https://github.com/OpenPrinting/hplip-printer-app), and
+the [Gutenprint Printer
+Application](https://github.com/OpenPrinting/gutenprint-printer-app)
+for examples on how Printer Applications and their Snaps are
+created. All these Printer Applications use this library,
+retro-fitting PostScript printer PPD files,
+[Ghostscript](http://www.ghostscript.com/) drivers with
+[Foomatic](https://github.com/OpenPrinting/foomatic-db) PPD files (and
+many other printer drivers), HPLIP, and Gutenprint. Practically every
+free software printer driver which is available as Debian package is
+now also available as a Printer Application Snap. They can be all
+installed from the [Snap
+Store](https://snapcraft.io/search?q=OpenPrinting).
+
+The HPLIP Printer Application is especially an example of how to add
+driver-specific functionality which is beyond the pappl-retrofit
+library and control this functionality through extra pages in the web
+interface. Here a feature for downloading HP's proprietary plugin is
+added.
 
 
 ## HISTORY
@@ -469,27 +480,29 @@ posts](https://openprinting.github.io/news/) on the OpenPrinting web
 site.
 
 I also wrote up my ideas on the design and the inner workings of this
-libraryn in the weeks of development before putting up a GitHub
+library in the weeks of development before putting up a GitHub
 repossitory for it on [this thread in the PostScript Printer
 Application
-GitHub](https://github.com/OpenPrinting/ps-printer-app/discussions/8). The
-thread will end now and further write-ups will appear in the commit
-messages of this library's GIT, as I am already doing with the [CUPS
-Snap](https://github.com/OpenPrinting/cups-snap/commits/master).
+GitHub](https://github.com/OpenPrinting/ps-printer-app/discussions/8).
+The thread has ended now and further write-ups will appear in the
+commit messages of this library's GIT, as I am already doing with the
+[CUPS Snap](https://github.com/OpenPrinting/cups-snap/commits/master).
 
 
 ## LEGAL STUFF
 
-The CUPS driver retro-fit library is Copyright © 2021 by Till Kamppeter.
+The CUPS driver retro-fit library is Copyright © 2021-2022 by Till
+Kamppeter.
 
 It is derived from the PostScript Printer Application and this one
-derived from the HP PCL Printer Application, a first working model of
-a raster Printer Application using PAPPL. It is available here:
+derived from the [HP PCL Printer
+Application](https://github.com/michaelrsweet/hp-printer-app), a first
+working model of a raster Printer Application using PAPPL.
 
-https://github.com/michaelrsweet/hp-printer-app
+The HP PCL Printer Application is Copyright © 2019-2020 by Michael R
+Sweet.
 
-The HP PCL Printer Application is Copyright © 2019-2020 by Michael R Sweet.
-
-This software is licensed under the Apache License Version 2.0 with an exception
-to allow linking against GPL2/LGPL2 software (like older versions of CUPS).  See
-the files "LICENSE" and "NOTICE" for more information.
+This software is licensed under the Apache License Version 2.0 with an
+exception to allow linking against GPL2/LGPL2 software (like older
+versions of CUPS). See the files "LICENSE" and "NOTICE" for more
+information.
