@@ -171,7 +171,6 @@ extern char   *_prPPDMissingFilters(int num_filters, char **filters,
 extern bool   _prStrHasCode(const char *str);
 extern bool   _prOptionHasCode(pappl_system_t *system, ppd_file_t *ppd,
 			       ppd_option_t *option);
-extern const char *_prDefaultPaperSize();
 extern bool   _prDriverSetup(pappl_system_t *system, const char *driver_name,
 			     const char *device_uri, const char *device_id,
 			     pappl_pr_driver_data_t *driver_data,
