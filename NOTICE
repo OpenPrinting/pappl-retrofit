@@ -2,11 +2,12 @@ pappl-retrofit
 
 PPD/Classic CUPS driver retro-fit Printer Application Library
 
-Copyright © 2021-2022 by OpenPrinting
-Copyright © 2020-2022 by Till Kamppeter.
+Copyright © 2021-2023 by OpenPrinting
+Copyright © 2020-2023 by Till Kamppeter.
 Copyright © 2020-2021 by Michael R Sweet.
 Copyright © 2007-2019 by Apple Inc.
 Copyright © 1997-2007 by Easy Software Products.
+Copyright © 1996-2023 Free Software Foundation, Inc.
 
 Licensed under Apache License v2.0 with CUPS Exceptions. See the file
 "LICENSE" for the Apache License v2.0.
