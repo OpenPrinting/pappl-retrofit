@@ -11,7 +11,7 @@ classic [CUPS](https://github.com/OpenPrinting/cups) printer drivers
 into Printer Applications. This way the printer appears as an emulated
 IPP printer and one can print on it from practically any operating
 system, especially also mobile operating systems and IoT platforms,
-without need any client-side driver.
+without need of any client-side driver.
 
 It also makes printers needing a classic CUPS driver available to the
 [CUPS Snap](https://github.com/OpenPrinting/cups-snap) and to CUPS 3.x
@@ -146,14 +146,9 @@ requests](https://github.com/OpenPrinting/pappl-retrofit).
   up in the Printer Application, to avoid that the user removes these
   files.
 
-- Internationalization/Localization (Needs support by PAPPL: [Issue
-  #58: Localization
-  support](https://github.com/michaelrsweet/pappl/issues/58))
+- Internationalization/Localization
 
-- SNMP Ink level check via ps_status() function (Needs support by
-  PAPPL: [Issue #83: CUPS does IPP and SNMP ink level polls via
-  backends, PAPPL should have functions for
-  this](https://github.com/michaelrsweet/pappl/issues/83))
+- SNMP Ink level check via ps_status() function
 
 - In the C files some places can be marked with `TODO`. These are
   points to be improved or where functionality in PAPPL is still
@@ -475,7 +470,7 @@ on creating this library.
 
 You can see the sections about the **PostScript Printer Application**
 and about **Retro-fitting of CUPS printer drivers into Printer
-ApplicationsPermalink** in my [monthly news
+Applications** in my [monthly news
 posts](https://openprinting.github.io/news/) on the OpenPrinting web
 site.
 
