@@ -231,6 +231,17 @@ pappl-retrofit/pappl-retrofit.h
 for the full public API to get a feeling how to create a Printer
 Application in your desired configuration.
 
+If you have a systemd-based system and want to run the Legacy Printer
+Application (see below) as a permanently running system daemon to make
+your classic CUPS drivers available to CUPS 3.x or to the CUPS Snap,
+do the same as above but run the `./configure` command as follows:
+```
+./configure --enable-legacy-printer-app-as-daemon
+```
+This installs the `legacy-printer-app` in `/usr/(local/)sbin/` and
+installs a systemd service file to make the Printer Application
+automatically start during boot.
+
 
 ## Setting up your Printer Application
 
@@ -419,6 +430,11 @@ expressions, conversion rule selections, ... please report an [issue
 on
 libpappl-retrofit](https://github.com/OpenPrinting/pappl-retrofit/issues)
 (we move it to cups-filters if it is actually there).
+
+If you want the Legacy Printer Application to be permanently run as a
+server, being auto-started during boot, build the package with the
+`--enable-legacy-printer-app-as-daemon` option for `./configure`. This
+way an appropriate systemd service file gets installed.
 
 
 ## ALREADY AVAILABLE PRINTER APPLICATIONS

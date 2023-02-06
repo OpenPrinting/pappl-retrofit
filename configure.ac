@@ -197,6 +197,21 @@ AC_ARG_WITH([shell],
 )
 AC_DEFINE_UNQUOTED([SHELL], "$with_shell", [Path for a modern shell])
 
+# =============================================
+# Run legacy-printer-app permanently as daemon?
+# =============================================
+AC_ARG_ENABLE([legacy-printer-app-as-daemon],
+	[AS_HELP_STRING([--enable-legacy-printer-app-as-daemon], [Run legacy-printer-app permanently as daemon (to make claasically installed CUPS drivers available as Printer Application).])],
+        [enable_legacy_printer_app_as_daemon="$enableval"],
+        [enable_legacy_printer_app_as_daemon=no]
+)
+SYSTEMD_UNITDIR=
+AS_IF([test "x$enable_legacy_printer_app_as_daemon" != "xno"], [
+    SYSTEMD_UNITDIR=`$PKG_CONFIG --variable=systemdsystemunitdir systemd`
+])
+AC_SUBST(SYSTEMD_UNITDIR)
+AM_CONDITIONAL([LEGACY_PRINTER_APP_AS_DAEMON], test x$enable_legacy_printer_app_as_daemon != xno)
+
 # ============================================
 # Enable PAPPL backends in legacy-printer-app?
 # ============================================
@@ -228,6 +243,8 @@ Environment settings:
 	LDFLAGS:         ${LDFLAGS}
 Build configuration:
 	cups-config:     ${with_cups_config}
+	legacy-printer-app as daemon: ${enable_legacy_printer_app_as_daemon}
 	legacy-printer-app w/ PAPPL backends: ${enable_pappl_backends_for_legacy_printer_app}
+	systemd unitdir: ${SYSTEMD_UNITDIR}
 ==============================================================================
 ])
