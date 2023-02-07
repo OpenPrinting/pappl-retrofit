@@ -5,7 +5,7 @@ AC_PREREQ([2.65])
 # ====================
 # Version informations
 # ====================
-AC_INIT([pappl-retrofit], [1.0b1], [https://github.com/OpenPrinting/pappl-retrofit/issues], [pappl-retrofit], [https://github.com/OpenPrinting/pappl-retrofit/])
+AC_INIT([pappl-retrofit], [1.0b2], [https://github.com/OpenPrinting/pappl-retrofit/issues], [pappl-retrofit], [https://github.com/OpenPrinting/pappl-retrofit/])
 pappl_retrofit_version="AC_PACKAGE_VERSION"
 pappl_retrofit_version_major="`echo AC_PACKAGE_VERSION | awk -F. '{print $1}'`"
 pappl_retrofit_version_minor="`echo AC_PACKAGE_VERSION | awk -F. '{printf("%d\n",$2);}'`"
