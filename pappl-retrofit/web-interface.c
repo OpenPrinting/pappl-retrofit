@@ -1066,24 +1066,24 @@ _prSystemWebAddPPD(
 		    // for a PostScript printer we do not worry about
 		    // options with unsufficient PostScript or PJL
 		    // code.
-			cups_array_t *report;
-			cups_array_t *file_array;
-			int result;
+		    cups_array_t *report;
+		    cups_array_t *file_array;
+		    int result;
 
-			cupsArrayAdd(file_array, destpath);
-			result = ppdTest(0,0,NULL,0,0,0,0,0,0,1,file_array,&report);
+		    cupsArrayAdd(file_array, destpath);
+		    result = ppdTest(0,0,NULL,0,0,0,0,0,0,1,file_array,&report);
 
-            if (report)
-            {
-              for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
-              {
-                papplLogClient(client, PAPPL_LOGLEVEL_DEBUG, line);
-				if (result == 1)
-				  cupsArrayAdd(accepted_report, strdup(strbuf));
-				else
-				  cupsArrayAdd(rejected_report, strdup(strbuf));
-              }
-            }
+                    if (report)
+                    {
+                      for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
+                      {
+                        papplLogClient(client, PAPPL_LOGLEVEL_DEBUG, line);
+			if (result == 1)
+		          cupsArrayAdd(accepted_report, strdup(strbuf));
+			else
+			  cupsArrayAdd(rejected_report, strdup(strbuf));
+                       }
+                     }
 
 			
 		    check_options = false;
