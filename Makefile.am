@@ -58,8 +58,13 @@ EXTRA_DIST += \
 # ==========================
 # Legacy Printer Application
 # ==========================
+if LEGACY_PRINTER_APP_AS_DAEMON
+sbin_PROGRAMS = \
+	legacy-printer-app
+else
 bin_PROGRAMS = \
 	legacy-printer-app
+endif
 
 legacy_printer_app_SOURCES = \
 	legacy/legacy-printer-app.c
@@ -73,6 +78,9 @@ legacy_printer_app_CFLAGS = \
 	$(CUPSFILTERS_CFLAGS) \
 	$(PPD_CFLAGS) \
 	-I$(srcdir)/pappl-retrofit/
+
+EXTRA_DIST += \
+	legacy/legacy-printer-app.service
 
 # ===========
 # Directories
@@ -115,6 +123,10 @@ install-data-hook:
 	  $(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_serverbin)/filter; \
 	  $(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_serverbin)/backend; \
 	fi
+if LEGACY_PRINTER_APP_AS_DAEMON
+	$(INSTALL) -d -m 755 $(DESTDIR)$(SYSTEMD_UNITDIR)
+	$(INSTALL) -m 644 legacy/legacy-printer-app.service $(DESTDIR)$(SYSTEMD_UNITDIR)
+endif
 
 uninstall-hook:
 	-rmdir $(DESTDIR)$(legacy_printer_app_userppddir)
@@ -130,6 +142,10 @@ uninstall-hook:
 	fi
 	-rmdir $(DESTDIR)$(includedir)/pappl-retrofit
 	-rmdir $(DESTDIR)$(docdir)
+if LEGACY_PRINTER_APP_AS_DAEMON
+	-rm $(DESTDIR)$(SYSTEMD_UNITDIR)/legacy-printer-app.service
+	-rmdir $(DESTDIR)$(SYSTEMD_UNITDIR)
+endif
 
 uninstall-hook:
 

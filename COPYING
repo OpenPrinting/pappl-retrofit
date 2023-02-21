@@ -4,16 +4,13 @@ Upstream-Contact: OpenPrinting <printing-architecture@lists.linux-foundation.org
 Source: http://www.openprinting.org/download/pappl-retrofit/
 
 Files: *
-Copyright: 2011-2022 OpenPrinting
- 2020-2021 Till Kamppeter.
+Copyright: 2011-2023 OpenPrinting
+ 2020-2023 Till Kamppeter.
  2020-2021 Michael R Sweet.
  2007-2019 Apple Inc.
  1997-2007 Easy Software Products.
-Licence: Apache-2.0-with-GPL2-LGPL2-Exception
-
-Files: ltmain.sh
-Copyright: 1996-2001, 2003-2011 Free Software Foundation, Inc.
-License: GPL-2+
+ 1996-2023 Free Software Foundation, Inc.
+License: Apache-2.0-with-GPL2-LGPL2-Exception
 
 License: Apache-2.0-with-GPL2-LGPL2-Exception
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,13 +39,3 @@ License: Apache-2.0-with-GPL2-LGPL2-Exception
  prospectively choose to deem waived or otherwise exclude such Section(s) of
  the License, but only in their entirety and only with respect to the Combined
  Software.
-
-License: GPL-2+
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; version 2 dated June, 1991, or (at
- your option) any later version.
- .
- On Debian systems, the complete text of version 2 of the GNU General
- Public License can be found in '/usr/share/common-licenses/GPL-2'.
-

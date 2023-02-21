@@ -5,7 +5,7 @@ AC_PREREQ([2.65])
 # ====================
 # Version informations
 # ====================
-AC_INIT([pappl-retrofit], [1.0b1], [https://github.com/OpenPrinting/pappl-retrofit/issues], [pappl-retrofit], [https://github.com/OpenPrinting/pappl-retrofit/])
+AC_INIT([pappl-retrofit], [1.0b2], [https://github.com/OpenPrinting/pappl-retrofit/issues], [pappl-retrofit], [https://github.com/OpenPrinting/pappl-retrofit/])
 pappl_retrofit_version="AC_PACKAGE_VERSION"
 pappl_retrofit_version_major="`echo AC_PACKAGE_VERSION | awk -F. '{print $1}'`"
 pappl_retrofit_version_minor="`echo AC_PACKAGE_VERSION | awk -F. '{printf("%d\n",$2);}'`"
@@ -197,6 +197,21 @@ AC_ARG_WITH([shell],
 )
 AC_DEFINE_UNQUOTED([SHELL], "$with_shell", [Path for a modern shell])
 
+# =============================================
+# Run legacy-printer-app permanently as daemon?
+# =============================================
+AC_ARG_ENABLE([legacy-printer-app-as-daemon],
+	[AS_HELP_STRING([--enable-legacy-printer-app-as-daemon], [Run legacy-printer-app permanently as daemon (to make claasically installed CUPS drivers available as Printer Application).])],
+        [enable_legacy_printer_app_as_daemon="$enableval"],
+        [enable_legacy_printer_app_as_daemon=no]
+)
+SYSTEMD_UNITDIR=
+AS_IF([test "x$enable_legacy_printer_app_as_daemon" != "xno"], [
+    SYSTEMD_UNITDIR=`$PKG_CONFIG --variable=systemdsystemunitdir systemd`
+])
+AC_SUBST(SYSTEMD_UNITDIR)
+AM_CONDITIONAL([LEGACY_PRINTER_APP_AS_DAEMON], test x$enable_legacy_printer_app_as_daemon != xno)
+
 # ============================================
 # Enable PAPPL backends in legacy-printer-app?
 # ============================================
@@ -228,6 +243,8 @@ Environment settings:
 	LDFLAGS:         ${LDFLAGS}
 Build configuration:
 	cups-config:     ${with_cups_config}
+	legacy-printer-app as daemon: ${enable_legacy_printer_app_as_daemon}
 	legacy-printer-app w/ PAPPL backends: ${enable_pappl_backends_for_legacy_printer_app}
+	systemd unitdir: ${SYSTEMD_UNITDIR}
 ==============================================================================
 ])
