@@ -1069,9 +1069,6 @@ _prSystemWebAddPPD(
 		    cups_array_t *report = NULL;       // Report variable for ppdTest
 		    cups_array_t *file_array;          // List of PPD Files
 		    int result;                        // PPD passed?
-		    char output_string[1024];          // Concatenated string consisting of entire report
-		    int x = 0;                         // Looping var
-		    int y = 0;                         // Looping var
 
 		    file_array = cupsArrayNew(NULL,"");
 		    cupsArrayAdd(file_array, destpath);
@@ -1079,20 +1076,11 @@ _prSystemWebAddPPD(
 
                     if (report)
                     {
+                      papplClientHTMLPrintf(client, "          <div class=\"banner\">");
                       for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
-                      {
-		        x = 0;
-			while (line[x] != "\0")
-			{
-			  output_string[y] = line[x];
-			  x++;
-			  y++;
-			}
-			output_string[y] = "\n";
-			y++;
-                      }
-		      papplClientHTMLPrintf(client, "          <div class=\"banner\">%s</div>\n", output_string);
-                    }
+                        papplClientHTMLPrintf(client, "%s\n", line);
+                      papplClientHTMLPrintf(client, "</div>\n");
+		    }
                     cupsArrayDelete(report);
 		    cupsArrayDelete(file_array);
 			
