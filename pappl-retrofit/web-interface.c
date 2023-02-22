@@ -1094,6 +1094,7 @@ _prSystemWebAddPPD(
 		      papplClientHTMLPrintf(client, "          <div class=\"banner\">%s</div>\n", output_string);
                     }
                     cupsArrayDelete(report);
+		    cupsArrayDelete(file_array);
 			
 		    check_options = false;
 		    warn_opt_part = NULL;
