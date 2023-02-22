@@ -1066,7 +1066,7 @@ _prSystemWebAddPPD(
 		    // for a PostScript printer we do not worry about
 		    // options with unsufficient PostScript or PJL
 		    // code.
-		    cups_array_t *report;       // Report variable for ppdTest
+		    cups_array_t *report = NULL;       // Report variable for ppdTest
 		    cups_array_t *file_array;   // List of PPD Files
 		    int result;                 // PPD passed?
 		    char output_string[1024];   // Concatenated string consisting of entire report
@@ -1074,23 +1074,23 @@ _prSystemWebAddPPD(
 		    int y = 0;                  // Looping var
 
 		    cupsArrayAdd(file_array, destpath);
-		    result = ppdTest(0,0,NULL,0,0,0,0,0,1,file_array,&report,NULL,NULL);
+		    result = ppdTest(0, 0, NULL, 0, 0, 0, 0, 0, 1, file_array, &report, NULL, NULL);
 
                     if (report)
                     {
-                       for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
-                       {
-		          x = 0;
-			  while (line[x] != "\0")
-			  {
-			     output_string[y] = line[x];
-			     x++;
-			     y++;
-			  }
-			  output_string[y] = "\n";
+                      for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
+                      {
+		        x = 0;
+			while (line[x] != "\0")
+			{
+			  output_string[y] = line[x];
+			  x++;
 			  y++;
-                       }
-		       papplClientHTMLPrintf(client, "          <div class=\"banner\">%s</div>\n", output_string);
+			}
+			output_string[y] = "\n";
+			y++;
+                      }
+		      papplClientHTMLPrintf(client, "          <div class=\"banner\">%s</div>\n", output_string);
                     }
 
 			
