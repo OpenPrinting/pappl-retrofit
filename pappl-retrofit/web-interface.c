@@ -1067,12 +1067,13 @@ _prSystemWebAddPPD(
 		    // options with unsufficient PostScript or PJL
 		    // code.
 		    cups_array_t *report = NULL;       // Report variable for ppdTest
-		    cups_array_t *file_array;   // List of PPD Files
-		    int result;                 // PPD passed?
-		    char output_string[1024];   // Concatenated string consisting of entire report
-		    int x = 0;                  // Looping var
-		    int y = 0;                  // Looping var
+		    cups_array_t *file_array;          // List of PPD Files
+		    int result;                        // PPD passed?
+		    char output_string[1024];          // Concatenated string consisting of entire report
+		    int x = 0;                         // Looping var
+		    int y = 0;                         // Looping var
 
+		    file_array = cupsArrayNew(NULL,"");
 		    cupsArrayAdd(file_array, destpath);
 		    result = ppdTest(0, 0, NULL, 0, 0, 0, 0, 0, 1, file_array, &report, NULL, NULL);
 
@@ -1092,7 +1093,7 @@ _prSystemWebAddPPD(
                       }
 		      papplClientHTMLPrintf(client, "          <div class=\"banner\">%s</div>\n", output_string);
                     }
-
+                    cupsArrayDelete(report);
 			
 		    check_options = false;
 		    warn_opt_part = NULL;
