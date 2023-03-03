@@ -1073,13 +1073,12 @@ _prSystemWebAddPPD(
 		    file_array = cupsArrayNew(NULL,"");
 		    cupsArrayAdd(file_array, destpath);
 		    result = ppdTest(0, 0, NULL, 0, 0, 0, 1, file_array, &report, NULL, NULL);
+                    char final_string[2048];
 
                     if (report)
                     {
-                      papplClientHTMLPrintf(client, "          <div class=\"banner\">");
                       for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
-                        papplClientHTMLPrintf(client, "%s\n", line);
-                      papplClientHTMLPrintf(client, "</div>\n");
+                        strcat(final_string, line);
 		    }
                     cupsArrayDelete(report);
 		    cupsArrayDelete(file_array);
