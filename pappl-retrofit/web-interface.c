@@ -1068,18 +1068,15 @@ _prSystemWebAddPPD(
 		    // code.
 		    cups_array_t *report = NULL;       // Report variable for ppdTest
 		    cups_array_t *file_array;          // List of PPD Files
-		    int result;                        // PPD passed?
 
 		    file_array = cupsArrayNew(NULL,"");
 		    cupsArrayAdd(file_array, destpath);
-		    result = ppdTest(0, 0, NULL, 0, 0, 0, 1, file_array, &report, NULL, NULL);
+		    ppdTest(0, 0, NULL, 0, 0, 0, 1, file_array, &report, NULL, NULL);
 
                     if (report)
                     {
                       for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
-                        snprintf(strbuf, sizeof(strbuf),
-			     "%s\n", line);
-		    	cupsArrayAdd(rejected_report, strdup(strbuf));
+		    	cupsArrayAdd(rejected_report, strdup(line));
 		    }
                     cupsArrayDelete(report);
 		    cupsArrayDelete(file_array);
