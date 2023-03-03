@@ -1079,6 +1079,7 @@ _prSystemWebAddPPD(
                     {
                       for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
                         strcat(final_string, line);
+                      status = final_string
 		    }
                     cupsArrayDelete(report);
 		    cupsArrayDelete(file_array);
