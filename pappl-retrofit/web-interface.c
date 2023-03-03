@@ -1073,13 +1073,13 @@ _prSystemWebAddPPD(
 		    file_array = cupsArrayNew(NULL,"");
 		    cupsArrayAdd(file_array, destpath);
 		    result = ppdTest(0, 0, NULL, 0, 0, 0, 1, file_array, &report, NULL, NULL);
-                    char final_string[2048];
 
                     if (report)
                     {
                       for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
-                        strcat(final_string, line);
-                      status = final_string
+                        snprintf(strbuf, sizeof(strbuf),
+			     "%s\n", line);
+		    	cupsArrayAdd(rejected_report, strdup(strbuf));
 		    }
                     cupsArrayDelete(report);
 		    cupsArrayDelete(file_array);
