@@ -1071,7 +1071,8 @@ _prSystemWebAddPPD(
 
 		    file_array = cupsArrayNew(NULL,"");
 		    cupsArrayAdd(file_array, destpath);
-		    ppdTest(0, 0, NULL, 0, 0, 0, 1, file_array, &report, NULL, NULL);
+		    len_file = cupsArrayCount(file_array);
+		    ppdTest(0, 0, NULL, 0, 0, 0, len_file, file_array, &report, NULL, NULL);
 
                     if (report)
                     {
