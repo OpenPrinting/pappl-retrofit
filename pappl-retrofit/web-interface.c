@@ -1068,6 +1068,7 @@ _prSystemWebAddPPD(
 		    // code.
 		    cups_array_t *report = NULL;       // Report variable for ppdTest
 		    cups_array_t *file_array;          // List of PPD Files
+		    int len_file = 0;                      // Length of file_array
 
 		    file_array = cupsArrayNew(NULL,"");
 		    cupsArrayAdd(file_array, destpath);
