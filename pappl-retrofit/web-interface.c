@@ -1403,27 +1403,27 @@ _prSystemWebAddPPD(
   if (cupsArrayCount(rejected_report))
   {
     papplClientHTMLPrintf(client,
-			"              <tr><div style = \"overflow: auto; height: 200px\">");
+			"              <tr><div style = \"overflow: auto; height: 200px; \" class=\"col-12\"><div class=\"log\">");
     for (i = 0; i < cupsArrayCount(rejected_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
-			     "              Upload&nbsp;failed:%s<br><br>" :
-			     "              %s<br><br>"),
+			     "              <pre>Upload&nbsp;failed:%s</pre>\n" :
+			     "              <pre>%s</pre>\n"),
 			    (char *)cupsArrayIndex(rejected_report, i));
   }
   if (cupsArrayCount(accepted_report))
   {
     papplClientHTMLPrintf(client,
-			"              <tr><div style = \"overflow: auto; height: 200px\">");
+			"              <tr><div style = \"overflow: auto; height: 200px\" class=\"col-12\"><div class=\"log\">");
     for (i = 0; i < cupsArrayCount(accepted_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
-			     "              Uploaded:%s<br><br>" :
-			     "              %s<br><br>"),
+			     "              <pre>Uploaded:%s</pre>\n" :
+			     "              <pre>%s</pre>\n"),
 			    (char *)cupsArrayIndex(accepted_report, i));
   }
   papplClientHTMLPrintf(client,
-			"              </div></tr>");
+			"              </div></div></tr>");
   papplClientHTMLPuts(client,
 		      "              <tr><th><label for=\"ppdfiles\">PPD&nbsp;file(s):</label></th><td><input type=\"file\" name=\"ppdfiles\" accept=\".ppd,.PPD,.ppd.gz,.PPD.gz\" required multiple></td><td>(Only individual PPD files, no PPD-generating executables)</td></tr>\n");
   papplClientHTMLPuts(client,
