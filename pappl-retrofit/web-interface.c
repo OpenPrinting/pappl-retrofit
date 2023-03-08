@@ -1068,17 +1068,15 @@ _prSystemWebAddPPD(
 		    // code.
 		    cups_array_t *report = NULL;       // Report variable for ppdTest
 		    cups_array_t *file_array;          // List of PPD Files
-		    int len_file = 0;                  // Length of file_array
+		    int res = 0;              // Result (Pass/Fail) of ppdTest()
 
-		    file_array = cupsArrayNew(NULL,"");
+		    file_array = cupsArrayNew(NULL, "");
 		    cupsArrayAdd(file_array, destpath);
-		    len_file = cupsArrayCount(file_array);
-		    ppdTest(0, 0, NULL, 0, 0, 0, len_file, file_array, &report, NULL, NULL);
-
-                    if (report)
+		    res = ppdTest(0, 0, NULL, 0, 0, 0, file_array, &report, NULL, NULL);
+                    if (res != 1 && report)
                     {
                       for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
-		    	cupsArrayAdd(rejected_report, strdup(line));
+		    	cupsArrayAdd(accepted_report, strdup(line));
 		    }
                     cupsArrayDelete(report);
 		    cupsArrayDelete(file_array);
@@ -1404,26 +1402,28 @@ _prSystemWebAddPPD(
 
   if (cupsArrayCount(rejected_report))
   {
+    papplClientHTMLPrintf(client,
+			"              <tr><div style = \"overflow: auto; height: 200px\">");
     for (i = 0; i < cupsArrayCount(rejected_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
-			     "              <tr><th>Upload&nbsp;failed:</th><td>%s</td></tr>\n" :
-			     "              <tr><th></th><td>%s</td></tr>\n"),
+			     "              Upload&nbsp;failed:%s<br><br>" :
+			     "              %s<br><br>"),
 			    (char *)cupsArrayIndex(rejected_report, i));
-    papplClientHTMLPuts(client,
-			"              <tr><th></th><td></td></tr>\n");
   }
   if (cupsArrayCount(accepted_report))
   {
+    papplClientHTMLPrintf(client,
+			"              <tr><div style = \"overflow: auto; height: 200px\">");
     for (i = 0; i < cupsArrayCount(accepted_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
-			     "              <tr><th>Uploaded:</th><td>%s</td></tr>\n" :
-			     "              <tr><th></th><td>%s</td></tr>\n"),
+			     "              Uploaded:%s<br><br>" :
+			     "              %s<br><br>"),
 			    (char *)cupsArrayIndex(accepted_report, i));
-    papplClientHTMLPuts(client,
-			"              <tr><th></th><td></td></tr>\n");
   }
+  papplClientHTMLPrintf(client,
+			"              </div></tr>");
   papplClientHTMLPuts(client,
 		      "              <tr><th><label for=\"ppdfiles\">PPD&nbsp;file(s):</label></th><td><input type=\"file\" name=\"ppdfiles\" accept=\".ppd,.PPD,.ppd.gz,.PPD.gz\" required multiple></td><td>(Only individual PPD files, no PPD-generating executables)</td></tr>\n");
   papplClientHTMLPuts(client,
