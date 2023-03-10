@@ -990,6 +990,7 @@ _prSystemWebAddPPD(
 		// Write the data
 		while (bend > ptr) // We have data to write
 		{
+		  errno = 0;
 		  bytes = fwrite(ptr, 1, (size_t)(bend - ptr), fp);
 		  papplLogClient(client, PAPPL_LOGLEVEL_DEBUG,
 				 "Bytes to write: %ld; %ld bytes written",
@@ -1002,7 +1003,7 @@ _prSystemWebAddPPD(
 		    // Report error
 		    snprintf(strbuf, sizeof(strbuf),
 			     "%s: Cannot write file - %s",
-			     filename, strerror(errno));
+			     destpath, strerror(errno));
 		    cupsArrayAdd(rejected_report, strdup(strbuf));
 		    // PPD incomplete, close and delete it.
 		    fclose(fp);
@@ -1403,7 +1404,7 @@ _prSystemWebAddPPD(
   if (cupsArrayCount(rejected_report))
   {
     papplClientHTMLPrintf(client,
-			"              <tr><div style = \"overflow: auto; height: 200px \" class=\"col-12\"><div class=\"log\"><pre>");
+			"              <tr><div class=\"col-12\"><div class=\"log\" style = \"height: 200px\"><pre>");
     for (i = 0; i < cupsArrayCount(rejected_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
@@ -1414,7 +1415,7 @@ _prSystemWebAddPPD(
   if (cupsArrayCount(accepted_report))
   {
     papplClientHTMLPrintf(client,
-			"              <tr><div style = \"overflow: auto; height: 200px\" class=\"col-12\"><div class=\"log\"><pre>");
+			"              <tr><div class=\"col-12\"><div class=\"log\" style = \"height: 200px\"><pre>");
     for (i = 0; i < cupsArrayCount(accepted_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
