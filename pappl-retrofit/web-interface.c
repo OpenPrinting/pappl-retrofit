@@ -1408,7 +1408,7 @@ _prSystemWebAddPPD(
     for (i = 0; i < cupsArrayCount(rejected_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
-			     "              Upload&nbsp;failed:%s\n\n" :
+			     "              Upload&nbsp;failed:%s\n" :
 			     "              %s\n"),
 			    (char *)cupsArrayIndex(rejected_report, i));
   }
@@ -1419,7 +1419,7 @@ _prSystemWebAddPPD(
     for (i = 0; i < cupsArrayCount(accepted_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
-			     "              Uploaded:%s\n\n" :
+			     "              Uploaded:%s\n" :
 			     "              %s\n"),
 			    (char *)cupsArrayIndex(accepted_report, i));
   }
