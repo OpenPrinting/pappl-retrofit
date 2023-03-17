@@ -990,6 +990,7 @@ _prSystemWebAddPPD(
 		// Write the data
 		while (bend > ptr) // We have data to write
 		{
+		  errno = 0;
 		  bytes = fwrite(ptr, 1, (size_t)(bend - ptr), fp);
 		  papplLogClient(client, PAPPL_LOGLEVEL_DEBUG,
 				 "Bytes to write: %ld; %ld bytes written",
@@ -1002,7 +1003,7 @@ _prSystemWebAddPPD(
 		    // Report error
 		    snprintf(strbuf, sizeof(strbuf),
 			     "%s: Cannot write file - %s",
-			     filename, strerror(errno));
+			     destpath, strerror(errno));
 		    cupsArrayAdd(rejected_report, strdup(strbuf));
 		    // PPD incomplete, close and delete it.
 		    fclose(fp);
@@ -1066,6 +1067,21 @@ _prSystemWebAddPPD(
 		    // for a PostScript printer we do not worry about
 		    // options with unsufficient PostScript or PJL
 		    // code.
+		    cups_array_t *report = NULL;       // Report variable for ppdTest
+		    cups_array_t *file_array;          // List of PPD Files
+		    int res = 0;              // Result (Pass/Fail) of ppdTest()
+
+		    file_array = cupsArrayNew(NULL, "");
+		    cupsArrayAdd(file_array, destpath);
+		    res = ppdTest(0, 0, NULL, 0, 0, 0, file_array, &report, NULL, NULL);
+                    if (res != 1 && report)
+                    {
+                      for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
+		    	cupsArrayAdd(accepted_report, strdup(line));
+		    }
+                    cupsArrayDelete(report);
+		    cupsArrayDelete(file_array);
+			
 		    check_options = false;
 		    warn_opt_part = NULL;
 		    if (ppd->num_filters)
@@ -1387,26 +1403,28 @@ _prSystemWebAddPPD(
 
   if (cupsArrayCount(rejected_report))
   {
+    papplClientHTMLPrintf(client,
+			"              <tr><div class=\"col-12\"><div class=\"log\" style = \"height: 200px\"><pre>");
     for (i = 0; i < cupsArrayCount(rejected_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
-			     "              <tr><th>Upload&nbsp;failed:</th><td>%s</td></tr>\n" :
-			     "              <tr><th></th><td>%s</td></tr>\n"),
+			     "              Upload&nbsp;failed:%s\n" :
+			     "              %s\n"),
 			    (char *)cupsArrayIndex(rejected_report, i));
-    papplClientHTMLPuts(client,
-			"              <tr><th></th><td></td></tr>\n");
   }
   if (cupsArrayCount(accepted_report))
   {
+    papplClientHTMLPrintf(client,
+			"              <tr><div class=\"col-12\"><div class=\"log\" style = \"height: 200px\"><pre>");
     for (i = 0; i < cupsArrayCount(accepted_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
-			     "              <tr><th>Uploaded:</th><td>%s</td></tr>\n" :
-			     "              <tr><th></th><td>%s</td></tr>\n"),
+			     "              Uploaded:%s\n" :
+			     "              %s\n"),
 			    (char *)cupsArrayIndex(accepted_report, i));
-    papplClientHTMLPuts(client,
-			"              <tr><th></th><td></td></tr>\n");
   }
+  papplClientHTMLPrintf(client,
+			"              </pre></div></div></tr>");
   papplClientHTMLPuts(client,
 		      "              <tr><th><label for=\"ppdfiles\">PPD&nbsp;file(s):</label></th><td><input type=\"file\" name=\"ppdfiles\" accept=\".ppd,.PPD,.ppd.gz,.PPD.gz\" required multiple></td><td>(Only individual PPD files, no PPD-generating executables)</td></tr>\n");
   papplClientHTMLPuts(client,
