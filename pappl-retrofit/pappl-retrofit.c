@@ -165,7 +165,7 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
 	else
 	{
 	  papplLog(global_data->system, PAPPL_LOGLEVEL_ERROR,
-		   "Out of memory, cannot add more regular expressions to driver priorization list, first not included one is: %s", regex);
+		   "Out of memory, cannot add more regular expressions to driver prioritization list, first not included one is: %s", regex);
 	  break;
 	}
 	cupsArrayAdd(compiled_re_list, re);
@@ -4089,7 +4089,7 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 	  else
 	    // Extra models in list of products
 	    mfg_mdl = ppd->record.products[j];
-	  // Remove parantheses from model name if it came from a Product
+	  // Remove parentheses from model name if it came from a Product
 	  // entry of the PPD
 	  if (mfg_mdl[0] == '(' && mfg_mdl[strlen(mfg_mdl) - 1] == ')')
 	  {

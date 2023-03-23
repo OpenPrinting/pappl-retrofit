@@ -2,9 +2,9 @@
 
 AC_PREREQ([2.65])
 
-# ====================
-# Version informations
-# ====================
+# ===================
+# Version information
+# ===================
 AC_INIT([pappl-retrofit], [1.0b2], [https://github.com/OpenPrinting/pappl-retrofit/issues], [pappl-retrofit], [https://github.com/OpenPrinting/pappl-retrofit/])
 pappl_retrofit_version="AC_PACKAGE_VERSION"
 pappl_retrofit_version_major="`echo AC_PACKAGE_VERSION | awk -F. '{print $1}'`"
@@ -201,7 +201,7 @@ AC_DEFINE_UNQUOTED([SHELL], "$with_shell", [Path for a modern shell])
 # Run legacy-printer-app permanently as daemon?
 # =============================================
 AC_ARG_ENABLE([legacy-printer-app-as-daemon],
-	[AS_HELP_STRING([--enable-legacy-printer-app-as-daemon], [Run legacy-printer-app permanently as daemon (to make claasically installed CUPS drivers available as Printer Application).])],
+	[AS_HELP_STRING([--enable-legacy-printer-app-as-daemon], [Run legacy-printer-app permanently as daemon (to make classically installed CUPS drivers available as Printer Application).])],
         [enable_legacy_printer_app_as_daemon="$enableval"],
         [enable_legacy_printer_app_as_daemon=no]
 )
@@ -233,9 +233,9 @@ AC_CONFIG_FILES([
 ])
 AC_OUTPUT
 
-# ==============================================
-# Display final informations about configuration
-# ==============================================
+# =============================================
+# Display final information about configuration
+# =============================================
 AC_MSG_NOTICE([
 ==============================================================================
 Environment settings:

@@ -137,7 +137,7 @@ typedef struct pr_printer_app_config_s
   // later (first match in list gets used)
   cups_array_t      *spooling_conversions;
 
-  // Supported data formats to get from streaning Raster input and the
+  // Supported data formats to get from streaming Raster input and the
   // needed callback functions (output mime type, 5 callback functions:
   // start/end job, start/emd page, output raster line), more desired formats
   // (streamability) first: CUPS Raster, PosdtScript, PDF (we will actually
@@ -169,8 +169,8 @@ typedef struct pr_printer_app_config_s
   //
   // Thee regular expression must match the whole extra information,
   // beginning from the character right after the model name. If it
-  // contains parantheses, the substring in the first matching pair of
-  // parantheses will be considered the driver name and displayed
+  // contains parentheses, the substring in the first matching pair of
+  // parentheses will be considered the driver name and displayed
   // after the model name in the driver list entry. Otherwise the
   // whole extra information string, up to the end of the *Nickname
   // will be displayed.

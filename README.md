@@ -492,7 +492,7 @@ site.
 
 I also wrote up my ideas on the design and the inner workings of this
 library in the weeks of development before putting up a GitHub
-repossitory for it on [this thread in the PostScript Printer
+repository for it on [this thread in the PostScript Printer
 Application
 GitHub](https://github.com/OpenPrinting/ps-printer-app/discussions/8).
 The thread has ended now and further write-ups will appear in the

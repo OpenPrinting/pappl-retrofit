@@ -953,7 +953,7 @@ _prFilter(
   bool			ret = false;	// Return value
   cf_filter_external_t* ppd_filter_params = NULL; // Parameters for CUPS
                                         // filter defined in the PPD
-  pr_print_filter_function_data_t *print_params; // Paramaters for
+  pr_print_filter_function_data_t *print_params; // Parameters for
                                         // _prPrintFilterFunction()
   cf_filter_filter_in_chain_t banner_filter = // cfFilterBannerToPDF() filter
                                         // function in filter chain, mainly for

@@ -376,7 +376,7 @@ _prPrinterWebDeviceConfig(
 			  NULL &&
 			  strcasecmp(ptr1, "automatic-selection") == 0)
 		      {
-			// Do not switch a preset-conntrolled option to
+			// Do not switch a preset-controlled option to
 			// manual (away from "automatic-selection")
 			// Instead, search for the setting in the preset
 			// and increase the score for each preset which
@@ -1065,7 +1065,7 @@ _prSystemWebAddPPD(
 		    // If all the filters the PPD mentions in its
 		    // cupsFilter(2) entries and/or if the PPD is not
 		    // for a PostScript printer we do not worry about
-		    // options with unsufficient PostScript or PJL
+		    // options with insufficient PostScript or PJL
 		    // code.
 		    cups_array_t *report = NULL;       // Report variable for ppdTest
 		    cups_array_t *file_array;          // List of PPD Files
@@ -1171,7 +1171,7 @@ _prSystemWebAddPPD(
 		      cupsArrayAdd(accepted_report, strdup(strbuf));
 		      // New PPD added, so driver list needs update
 		      ppd_repo_changed = true;
-		      // Log the addtion of the PPD file
+		      // Log the addition of the PPD file
 		      cupsArrayAdd(uploaded, strdup(destpath));
 		    }
 		    else

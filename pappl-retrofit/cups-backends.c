@@ -642,7 +642,7 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	    }
 	    else if (bytes < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
 	    {
-	      // An error occured (not simply no further bytes due to the
+	      // An error occurred (not simply no further bytes due to the
 	      // backend to take time to find the next device)
 	      _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
 			    "Read error from backend '%s' - %s",
@@ -811,7 +811,7 @@ _prCUPSDevLaunchBackend(pappl_device_t *device)
   // Arguments amd parameters for the ppdFilterExternalCUPS() filter
   // function to run the CUPS backend in job execution mode. The backend
   // will be waiting for job data but also for commands from the side
-  // channel. In addtion it can log status messages (control messages
+  // channel. In addition it can log status messages (control messages
   // staring with "STATE:")
   memset(&device_data->backend_params, 0, sizeof(device_data->backend_params));
   device_data->backend_params.filter = strdup(buf);
