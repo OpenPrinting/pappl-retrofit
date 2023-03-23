@@ -110,7 +110,7 @@ main(int  argc,				// I - Number of command-line arguments
   cupsArrayAdd(stream_formats, (void *)&PR_STREAM_POSTSCRIPT);
   cupsArrayAdd(stream_formats, (void *)&PR_STREAM_PDF);
 
-  // Array of regular expressions for driver priorization
+  // Array of regular expressions for driver prioritization
   driver_selection_regex_list = cupsArrayNew(NULL, NULL);
   cupsArrayAdd(driver_selection_regex_list, "-recommended-");
   cupsArrayAdd(driver_selection_regex_list, "-postscript-");
