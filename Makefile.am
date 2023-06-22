@@ -90,7 +90,7 @@ legacy_printer_app_statedir=$(localstatedir)/lib/legacy-printer-app
 legacy_printer_app_userppddir=$(legacy_printer_app_statedir)/ppd
 legacy_printer_app_spooldir=$(localstatedir)/spool/legacy-printer-app
 legacy_printer_app_resourcedir=$(datadir)/legacy-printer-app
-legacy_printer_app_serverbin=$(libdir)/legacy-printer-app
+legacy_printer_app_serverbin=$(prefix)/lib/legacy-printer-app
 
 # ==========
 # Test pages
