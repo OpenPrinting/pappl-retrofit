@@ -88,12 +88,25 @@ EXTRA_DIST += \
 
 man_MANS =
 
-legacy_printer_app_manpages = \
+legacy_printer_app_manpage1 = \
         legacy/legacy-printer-app.1
+legacy_printer_app_manpage8 = \
+        legacy/legacy-printer-app.8
+
+if LEGACY_PRINTER_APP_AS_DAEMON
+$(legacy_printer_app_manpage8): $(legacy_printer_app_manpage1)
+	cp $(legacy_printer_app_manpage1) $(legacy_printer_app_manpage8)
+	sed -i -e 's/\.TH legacy-printer-app 1 "/\.TH legacy-printer-app 8 "/' $(legacy_printer_app_manpage8)
+legacy_printer_app_manpages = \
+        $(legacy_printer_app_manpage8)
+else
+legacy_printer_app_manpages = \
+        $(legacy_printer_app_manpage1)
+endif
 man_MANS += $(legacy_printer_app_manpages)
 
 EXTRA_DIST += \
-        $(legacy_printer_app_manpages)
+        $(legacy_printer_app_manpage1)
 
 # ===========
 # Directories
@@ -123,6 +136,9 @@ EXTRA_DIST += $(testpagefiles)
 
 distclean-local:
 	rm -rf *.cache *~ */*~
+
+clean-local:
+	rm -f $(legacy_printer_app_manpage8)
 
 install-data-hook:
 	$(INSTALL) -d -m 755 $(DESTDIR)$(legacy_printer_app_statedir)
