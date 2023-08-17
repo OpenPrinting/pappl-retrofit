@@ -1,0 +1,112 @@
+.\"
+.\" Legacy Printer Application man page
+.\"
+.\" Copyright © 2020 by Till Kamppeter
+.\" Copyright © 2020 by Michael R Sweet
+.\"
+.\" Licensed under Apache License v2.0.  See the file "LICENSE" for more
+.\" information.
+.\"
+.TH legacy-printer-app 1 "legacy-printer-app" "2023-08-17" "OpenPrinting"
+.SH NAME
+legacy-printer-app \- Legacy Printer Application
+.SH SYNOPSIS
+.B legacy-printer-app
+[
+.I SUB-COMMAND
+] [ OPTIONS ] [ FILES ]
+.SH DESCRIPTION
+.B legacy-printer-app
+is a Printer Application that can be run standalone or as a dedicated IPP Everywhere network service.
+.B legacy-printer-app
+maps arbitrary classic CUPS drivers to the Printer Application format. If on a system there is no classic installation (DEB, RPM, ... packages, installation from source) of CUPS 2.x or older, but instead, CUPS 3.x or newer is used and/or the CUPS Snap, claasic CUPS drivers are not supported any more and printer drivers can only be provided by means of Printer Applications.
+.B legacy-printer-app
+finds classic CUPS drivers in the locations where they are usually installed for being found by the distribution's classic CUPS 2.x installation, typically filters in /usr/lib/cups/filter, backends in /usr/lib/cups/backend, PPD files (and files generating PPDs) in /usr/share/ppd, /usr/share/cups/model/, /usr/share/cups/drv, and /usr/lib/cups/driver. When opening the Printer Application's web interface (http://localhost:8000/, http://localhost:8001/, ...) and clicking "Add Printer" printers are discovered and available classic drivers offered. Once setting up a printer it gets available as an emulation of a driverless IPP printer and the Printer Application uses the classically installed driver. A classic installation of CUPS or any general CUPS filters (cups-filters package) is not needed.
+
+This way classic CUPS drivers for which no equivalent Printer Application is available, especially manufacturer-supplied proprietary drivers for legacy printers, can be continued to be used with CUPS 3.x or the CUPS Snap.
+
+.SH SUB-COMMANDS
+If no sub-command is specified, "submit" is assumed.
+
+The following sub-commands are recognized by
+.B legacy-printer-app:
+.TP 5
+add
+Add a printer queue.
+.TP 5
+cancel
+Cancel one or more print jobs.
+.TP 5
+default
+Get/Set the default printer queue.
+.TP 5
+delete
+Delete a printer queue.
+.TP 5
+devices
+List connected printers.
+.TP 5
+drivers
+List the supported drivers.
+.TP 5
+jobs
+List pending print jobs.
+.TP 5
+modify
+Modify a printer queue.
+.TP 5
+options
+List supported options.
+.TP 5
+printers
+List the printer queues.
+.TP 5
+server
+Start a server.
+.TP 5
+shutdown
+Shutdown a running server.
+.TP 5
+status
+Show the status of a printer or all printers.
+.TP 5
+submit
+Submit a file for printing.
+.SH OPTIONS
+The following options are recognized by
+.B legacy-printer-app:
+.TP 5
+-a
+Cancel all jobs.
+.TP 5
+-d PRINTER
+Specify printer.
+.TP 5
+-h HOST
+Specify hostname.
+.TP 5
+-j JOB-ID
+Specify job ID.
+.TP 5
+-m DRIVER-NAME
+Specify driver.
+.TP 5
+-n COPIES
+Specify number of copies.
+.TP 5
+-o NAME=VALUE
+Specify option.
+.TP 5
+-t TITLE
+Specify job title.
+.TP 5
+-u URI
+Specify ipp: or ipps: printer/server.
+.TP 5
+-v DEVICE-URI
+Specify socket: or usb: device.
+.SH SEE ALSO
+https://github.com/OpenPrinting/pappl-retrofit
+.SH COPYRIGHT
+Copyright \[co] 2020 by Till Kamppeter.
+Copyright \[co] 2020 by Michael R Sweet.

@@ -82,6 +82,19 @@ legacy_printer_app_CFLAGS = \
 EXTRA_DIST += \
 	legacy/legacy-printer-app.service
 
+# =========
+# Man pages
+# =========
+
+man_MANS =
+
+legacy_printer_app_manpages = \
+        legacy/legacy-printer-app.1
+man_MANS += $(legacy_printer_app_manpages)
+
+EXTRA_DIST += \
+        $(legacy_printer_app_manpages)
+
 # ===========
 # Directories
 # ===========
