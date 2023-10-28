@@ -36,7 +36,8 @@ libpappl_retrofit_la_SOURCES = \
 	pappl-retrofit/cups-backends.c \
 	pappl-retrofit/cups-backends-private.h \
 	pappl-retrofit/web-interface.c \
-	pappl-retrofit/web-interface-private.h
+	pappl-retrofit/web-interface-private.h \
+	pappl-retrofit/libcups2-private.h
 	$(pkgpappl_retrofitinclude_DATA)
 libpappl_retrofit_la_LIBADD = \
 	$(CUPS_LIBS) \

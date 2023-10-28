@@ -58,53 +58,90 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
+
+# ==========
+# pkg-config
+# ==========
 PKG_PROG_PKG_CONFIG([0.20])
+AC_PATH_TOOL([PKGCONFIG], [pkg-config])
 
 AM_GNU_GETTEXT_VERSION([0.18.3])
 AM_GNU_GETTEXT([external])
 
-# ================================
-# Find CUPS internals (no pc file)
-# ================================
-AC_ARG_WITH([cups-config],
-	[AS_HELP_STRING([--with-cups-config=path], [Specify path to cups-config executable.])],
-	[with_cups_config="$withval"],
-	[with_cups_config=system]
-)
-
-AS_IF([test "x$with_cups_config" != "xsystem"], [
-	CUPSCONFIG=$with_cups_config
-], [
-	AC_PATH_TOOL(CUPSCONFIG, [cups-config])
-	AS_IF([test -z "$CUPSCONFIG"], [
-		AC_MSG_ERROR([Required cups-config is missing. Please install CUPS developer packages.])
+# ====
+# CUPS
+# ====
+AC_MSG_CHECKING([for CUPS library v3.0 or higher])
+AS_IF([$PKGCONFIG --exists cups3], [
+    CUPS_VERSION="$($PKGCONFIG --modversion cups3)"
+    AC_MSG_RESULT([yes, v$CUPS_VERSION])
+    CUPS_CFLAGS="$($PKGCONFIG --cflags cups3)"
+    CUPS_LIBS="$LIBS $($PKGCONFIG --libs cups3)"
+    AC_SUBST(CUPS_CFLAGS)
+    AC_SUBST(CUPS_LIBS)
+    CUPS_DATADIR="$($PKGCONFIG --variable=prefix cups3)/share/cups"
+    AC_DEFINE_UNQUOTED(CUPS_DATADIR, "$CUPS_DATADIR", [CUPS datadir])
+    AC_SUBST(CUPS_DATADIR)
+    AS_IF([test x$host_os_name = xdarwin], [
+	CUPS_SERVERROOT="/private/etc/cups"
+    ], [
+	AS_IF([test "x$($PKGCONFIG --variable=prefix cups3)" = x/usr], [
+	    CUPS_SERVERROOT="/etc/cups"
+	], [
+	    CUPS_SERVERROOT="$($PKGCONFIG --variable=prefix cups3)/etc/cups"
 	])
+    ])
+    AC_DEFINE_UNQUOTED(CUPS_SERVERROOT, "$CUPS_SERVERROOT", [CUPS serverroot])
+    AC_SUBST(CUPS_SERVERROOT)
+    CUPS_FONTPATH="$CUPS_DATADIR/fonts"
+    AC_DEFINE_UNQUOTED(CUPS_FONTPATH, "$CUPS_FONTPATH",
+		       [Path to CUPS fonts dir])
+    AC_SUBST(CUPS_FONTPATH)
+    CUPS_SERVERBIN="$($PKGCONFIG --variable=prefix cups3)/lib/cups"
+    AC_DEFINE_UNQUOTED(CUPS_SERVERBIN, "$CUPS_SERVERBIN",
+		       [Path to CUPS binaries dir])
+    AC_SUBST(CUPS_SERVERBIN)
+], [
+    AC_MSG_RESULT(no)
+    AC_ARG_WITH([cups-config],
+		[AS_HELP_STRING([--with-cups-config=path], [Specify path to cups-config executable.])],
+		[with_cups_config="$withval"],
+		[with_cups_config=system])
+    AS_IF([test "x$with_cups_config" != "xsystem"], [
+	CUPSCONFIG=$with_cups_config
+    ], [
+	AC_PATH_TOOL(CUPSCONFIG, [cups-config])
+    ])
+    AC_MSG_CHECKING([for CUPS library v2.x])
+    AS_IF([test -n "$CUPSCONFIG"], [
+	CUPS_VERSION=`$CUPSCONFIG --version`
+	AC_MSG_RESULT([yes, v$CUPS_VERSION])
+	AC_DEFINE([HAVE_LIBCUPS2], [1], [Use libcups2])
+	CUPS_CFLAGS=`$CUPSCONFIG --cflags`
+	CUPS_LIBS=`$CUPSCONFIG --image --libs`
+	AC_SUBST(CUPS_CFLAGS)
+	AC_SUBST(CUPS_LIBS)
+	CUPS_DATADIR="`$CUPSCONFIG --datadir`"
+	AC_DEFINE_UNQUOTED(CUPS_DATADIR, "$CUPS_DATADIR", [CUPS datadir])
+	AC_SUBST(CUPS_DATADIR)
+	CUPS_SERVERROOT="`$CUPSCONFIG --serverroot`"
+	AC_DEFINE_UNQUOTED(CUPS_SERVERROOT, "$CUPS_SERVERROOT",
+			   [CUPS serverroot])
+	AC_SUBST(CUPS_SERVERROOT)
+	CUPS_FONTPATH="$CUPS_DATADIR/fonts"
+	AC_DEFINE_UNQUOTED(CUPS_FONTPATH, "$CUPS_FONTPATH",
+			   [Path to CUPS fonts dir])
+	AC_SUBST(CUPS_FONTPATH)
+	CUPS_SERVERBIN="`$CUPSCONFIG --serverbin`"
+	AC_DEFINE_UNQUOTED(CUPS_SERVERBIN, "$CUPS_SERVERBIN",
+			   [Path to CUPS binaries dir])
+	AC_SUBST(CUPS_SERVERBIN)
+    ], [
+	AC_MSG_RESULT(no)
+	AC_MSG_ERROR([Required cups-config is missing. Please install CUPS developer packages.])
+    ])
 ])
-CUPS_CFLAGS=`$CUPSCONFIG --cflags`
-CUPS_LIBS=`$CUPSCONFIG --image --libs`
-CUPS_VERSION=`$CUPSCONFIG --version`
-AC_SUBST(CUPS_CFLAGS)
-AC_SUBST(CUPS_LIBS)
-
-CUPS_DATADIR="`$CUPSCONFIG --datadir`"
-AC_DEFINE_UNQUOTED(CUPS_DATADIR, "$CUPS_DATADIR", [CUPS datadir])
-AC_SUBST(CUPS_DATADIR)
-
-CUPS_SERVERROOT="`$CUPSCONFIG --serverroot`"
-AC_DEFINE_UNQUOTED(CUPS_SERVERROOT, "$CUPS_SERVERROOT", [CUPS serverroot])
-AC_SUBST(CUPS_SERVERROOT)
-
-CUPS_FONTPATH="$CUPS_DATADIR/fonts"
-AC_DEFINE_UNQUOTED(CUPS_FONTPATH, "$CUPS_FONTPATH", [Path to CUPS fonts dir])
-AC_SUBST(CUPS_FONTPATH)
-
-CUPS_SERVERBIN="`$CUPSCONFIG --serverbin`"
-AC_DEFINE_UNQUOTED(CUPS_SERVERBIN, "$CUPS_SERVERBIN", [Path to CUPS binaries dir])
-AC_SUBST(CUPS_SERVERBIN)
-
-AX_COMPARE_VERSION([$CUPS_VERSION],[gt],[2.2], [
-	AC_DEFINE(CUPS_2_2, 1, [CUPS Version is 2.2 or newer])
-])
+AC_DEFINE_UNQUOTED(CUPS_SERVERROOT, "$CUPS_SERVERROOT", [Location of CUPS config files])
 
 # ======================
 # Check system functions
