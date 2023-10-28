@@ -23,6 +23,7 @@
 #include <pappl-retrofit/pappl-retrofit-private.h>
 #include <ppd/ppd.h>
 #include <cups/cups.h>
+#include <pappl-retrofit/libcups2-private.h>
 
 
 //
@@ -774,12 +775,12 @@ _prSystemWebAddPPD(
     return;
 
   // Create arrays to log PPD file upload
-  uploaded = cupsArrayNew3(NULL, NULL, NULL, 0, NULL,
-			   (cups_afree_func_t)free);
-  accepted_report = cupsArrayNew3(NULL, NULL, NULL, 0, NULL,
-				  (cups_afree_func_t)free);
-  rejected_report = cupsArrayNew3(NULL, NULL, NULL, 0, NULL,
-				  (cups_afree_func_t)free);
+  uploaded = cupsArrayNew(NULL, NULL, NULL, 0, NULL,
+			   (cups_afree_cb_t)free);
+  accepted_report = cupsArrayNew(NULL, NULL, NULL, 0, NULL,
+				  (cups_afree_cb_t)free);
+  rejected_report = cupsArrayNew(NULL, NULL, NULL, 0, NULL,
+				  (cups_afree_cb_t)free);
 
   // Handle POSTs to add and delete PPD files...
   if (papplClientGetMethod(client) == HTTP_STATE_POST)
@@ -1071,12 +1072,12 @@ _prSystemWebAddPPD(
 		    cups_array_t *file_array;          // List of PPD Files
 		    int res = 0;              // Result (Pass/Fail) of ppdTest()
 
-		    file_array = cupsArrayNew(NULL, "");
+		    file_array = cupsArrayNew(NULL, "", NULL, 0, NULL, NULL);
 		    cupsArrayAdd(file_array, destpath);
 		    res = ppdTest(0, 0, NULL, 0, 0, 0, file_array, &report, NULL, NULL);
                     if (res != 1 && report)
                     {
-                      for (line = (char *)cupsArrayFirst(report); line; line = (char *)cupsArrayNext(report))
+                      for (line = (char *)cupsArrayGetFirst(report); line; line = (char *)cupsArrayGetNext(report))
 		    	cupsArrayAdd(accepted_report, strdup(line));
 		    }
                     cupsArrayDelete(report);
@@ -1210,16 +1211,16 @@ _prSystemWebAddPPD(
 			       "Invalid session ID: %s",
 			       ptr);
 		// Remove already uploaded PPD files ...
-		while ((ptr = cupsArrayFirst(uploaded)))
+		while ((ptr = cupsArrayGetFirst(uploaded)))
 		{
 		  unlink(ptr);
 		  cupsArrayRemove(uploaded, ptr);
 		}
 		// ... and the reports about them
 		while (cupsArrayRemove(accepted_report,
-				       cupsArrayFirst(accepted_report)));
+				       cupsArrayGetFirst(accepted_report)));
 		while (cupsArrayRemove(rejected_report,
-				       cupsArrayFirst(rejected_report)));
+				       cupsArrayGetFirst(rejected_report)));
 		// Stop here
 		status = "Invalid form submission.";
 		error = true;
@@ -1345,16 +1346,16 @@ _prSystemWebAddPPD(
       if (error)
       {
 	// Remove already uploaded PPD files ...
-	while ((ptr = cupsArrayFirst(uploaded)))
+	while ((ptr = cupsArrayGetFirst(uploaded)))
 	{
 	  unlink(ptr);
 	  cupsArrayRemove(uploaded, ptr);
 	}
 	// ... and the reports about them
 	while (cupsArrayRemove(accepted_report,
-			       cupsArrayFirst(accepted_report)));
+			       cupsArrayGetFirst(accepted_report)));
 	while (cupsArrayRemove(rejected_report,
-			       cupsArrayFirst(rejected_report)));
+			       cupsArrayGetFirst(rejected_report)));
       }
     }
 
@@ -1401,27 +1402,27 @@ _prSystemWebAddPPD(
 		      "          <table class=\"form\">\n"
 		      "            <tbody>\n");
 
-  if (cupsArrayCount(rejected_report))
+  if (cupsArrayGetCount(rejected_report))
   {
     papplClientHTMLPrintf(client,
 			"              <tr><div class=\"col-12\"><div class=\"log\" style = \"height: 200px\"><pre>");
-    for (i = 0; i < cupsArrayCount(rejected_report); i ++)
+    for (i = 0; i < cupsArrayGetCount(rejected_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
 			     "              Upload&nbsp;failed:%s\n" :
 			     "              %s\n"),
-			    (char *)cupsArrayIndex(rejected_report, i));
+			    (char *)cupsArrayGetElement(rejected_report, i));
   }
-  if (cupsArrayCount(accepted_report))
+  if (cupsArrayGetCount(accepted_report))
   {
     papplClientHTMLPrintf(client,
 			"              <tr><div class=\"col-12\"><div class=\"log\" style = \"height: 200px\"><pre>");
-    for (i = 0; i < cupsArrayCount(accepted_report); i ++)
+    for (i = 0; i < cupsArrayGetCount(accepted_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
 			     "              Uploaded:%s\n" :
 			     "              %s\n"),
-			    (char *)cupsArrayIndex(accepted_report, i));
+			    (char *)cupsArrayGetElement(accepted_report, i));
   }
   papplClientHTMLPrintf(client,
 			"              </pre></div></div></tr>");
@@ -1442,9 +1443,9 @@ _prSystemWebAddPPD(
   }
   else
   {
-    user_ppd_files = cupsArrayNew3((cups_array_func_t)strcasecmp,
+    user_ppd_files = cupsArrayNew((cups_array_cb_t)strcasecmp,
 				   NULL, NULL, 0, NULL,
-				   (cups_afree_func_t)free);
+				   (cups_afree_cb_t)free);
     while ((dent = cupsDirRead(dir)) != NULL)
       if (!S_ISDIR(dent->fileinfo.st_mode) &&
 	  dent->filename[0] && dent->filename[0] != '.' &&
@@ -1454,7 +1455,7 @@ _prSystemWebAddPPD(
 
     cupsDirClose(dir);
 
-    if (cupsArrayCount(user_ppd_files))
+    if (cupsArrayGetCount(user_ppd_files))
     {
       papplClientHTMLPrintf(client, "          <hr>\n");
 
@@ -1469,11 +1470,11 @@ _prSystemWebAddPPD(
 			  "          <table class=\"form\">\n"
 			  "            <tbody>\n");
 
-      for (i = 0; i < cupsArrayCount(user_ppd_files); i ++)
+      for (i = 0; i < cupsArrayGetCount(user_ppd_files); i ++)
 	papplClientHTMLPrintf(client,
 			      "              <tr><th><input type=\"checkbox\" name=\"\t%s\"></th><td>%s</td></tr>\n",
-			      (char *)cupsArrayIndex(user_ppd_files, i),
-			      (char *)cupsArrayIndex(user_ppd_files, i));
+			      (char *)cupsArrayGetElement(user_ppd_files, i),
+			      (char *)cupsArrayGetElement(user_ppd_files, i));
 
       papplClientHTMLPuts(client, "          <tr><th></th><td><input type=\"hidden\" name=\"action\" value=\"delete-ppdfiles\"><input type=\"submit\" value=\"Delete\"></td>\n");
 

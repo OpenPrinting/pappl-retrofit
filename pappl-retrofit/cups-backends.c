@@ -17,6 +17,7 @@
 
 #include <pappl-retrofit/cups-backends-private.h>
 #include <pappl-retrofit/pappl-retrofit.h>
+#include <pappl-retrofit/libcups2-private.h>
 #include <cupsfilters/ieee1284.h>
 #include <cups/dir.h>
 #include <poll.h>
@@ -300,8 +301,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
   else 
   {
     // Setup the devices array...
-    devices = cupsArrayNew3((cups_array_func_t)_prCUPSCompareDevices,
-			    NULL, NULL, 0, NULL, (cups_afree_func_t)free);
+    devices = cupsArrayNew((cups_array_cb_t)_prCUPSCompareDevices,
+			    NULL, NULL, 0, NULL, (cups_afree_cb_t)free);
 
     // Go through the backends
     while ((dent = cupsDirRead(dir)) != NULL)
