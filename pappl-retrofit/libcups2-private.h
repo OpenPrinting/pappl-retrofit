@@ -37,6 +37,7 @@
 #    define cupsRasterReadHeader   cupsRasterReadHeader2
 #    define cupsRasterWriteHeader  cupsRasterWriteHeader2
 #    define httpConnect            httpConnect2
+#    define httpRead               httpRead2
 #    define ippGetFirstAttribute   ippFirstAttribute
 #    define ippGetNextAttribute    ippNextAttribute
 

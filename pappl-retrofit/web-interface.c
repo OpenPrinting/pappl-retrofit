@@ -873,7 +873,7 @@ _prSystemWebAddPPD(
       filename[0] = '\0';
 
       for (bufinptr = buf, bufend = buf + sizeof(buf);
-	   (bytes = httpRead2(http, bufinptr,
+	   (bytes = httpRead(http, bufinptr,
 			      (size_t)(bufend - bufinptr))) > 0 ||
 	     bufinptr > buf;)
       {

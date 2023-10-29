@@ -279,6 +279,7 @@ Environment settings:
 	CFLAGS:          ${CFLAGS}
 	LDFLAGS:         ${LDFLAGS}
 Build configuration:
+    libcups:         ${CUPS_VERSION}
 	cups-config:     ${with_cups_config}
 	legacy-printer-app as daemon: ${enable_legacy_printer_app_as_daemon}
 	legacy-printer-app w/ PAPPL backends: ${enable_pappl_backends_for_legacy_printer_app}
