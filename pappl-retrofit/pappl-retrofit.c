@@ -572,7 +572,7 @@ prIdentify(
   pappl_preason_t        reasons;
   char                   buffer[2048];
   char                   *device_id;
-  cups_sc_status_t sc_status;
+  pr_sc_status_t         sc_status;
   int datalen;
   pr_cups_device_data_t *device_data;
 
@@ -625,10 +625,10 @@ prIdentify(
     dup2(device_data->sidefd, 4);
 
     datalen = 0;
-    if ((sc_status = cupsSideChannelDoRequest(CUPS_SC_CMD_SOFT_RESET, NULL,
-					      &datalen,
-					      device_data->side_timeout)) !=
-	CUPS_SC_STATUS_OK)
+    if ((sc_status = _prSideChannelDoRequest(_PR_SC_CMD_SOFT_RESET, NULL,
+					     &datalen,
+					     device_data->side_timeout)) !=
+	_PR_SC_STATUS_OK)
 	papplDeviceError(device, "Side channel error status: %s",
 			 pr_cups_sc_status_str[sc_status]);
     else if (datalen > 0)
@@ -3236,9 +3236,9 @@ _prPollDeviceOptionDefaults(
 
     // See if the backend supports bidirectional I/O...
     datalen = 1;
-    if (cupsSideChannelDoRequest(CUPS_SC_CMD_GET_BIDI, buf, &datalen,
-				 5.0) != CUPS_SC_STATUS_OK ||
-	buf[0] != CUPS_SC_BIDI_SUPPORTED)
+    if (_prSideChannelDoRequest(_PR_SC_CMD_GET_BIDI, buf, &datalen,
+				5.0) != _PR_SC_STATUS_OK ||
+	buf[0] != _PR_SC_BIDI_SUPPORTED)
     {
       papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
 		      "Unable to query defaults from printer - no "
@@ -3298,9 +3298,9 @@ _prPollDeviceOptionDefaults(
       sleep(1);
       datalen = 1;
     }
-    while (cupsSideChannelDoRequest(CUPS_SC_CMD_GET_CONNECTED, buf, &datalen,
-				    device_data->side_timeout) ==
-	   CUPS_SC_STATUS_OK && !buf[0]);
+    while (_prSideChannelDoRequest(_PR_SC_CMD_GET_CONNECTED, buf, &datalen,
+				   device_data->side_timeout) ==
+	   _PR_SC_STATUS_OK && !buf[0]);
   }
 
   //
@@ -3437,8 +3437,8 @@ _prPollDeviceOptionDefaults(
       {
 	// Flush the data from the backend into the printer
 	datalen = 0;
-	cupsSideChannelDoRequest(CUPS_SC_CMD_DRAIN_OUTPUT, buf, &datalen,
-				 device_data->side_timeout);
+	_prSideChannelDoRequest(_PR_SC_CMD_DRAIN_OUTPUT, buf, &datalen,
+				device_data->side_timeout);
       }
       
       //
@@ -3450,7 +3450,7 @@ _prPollDeviceOptionDefaults(
       // When we use a PAPPL-native backend then if no bytes get read
       // (bytes <= 0), we repeat up to 100 times in 100 msec intervals
       // (10 sec timeout), for a CUPS backend we use the built-in
-      // timeout handling of cupsBackChannelRead() (which is called by
+      // timeout handling of _prBackChannelRead() (which is called by
       // _prCUPSDevRead(), called by papplDeviceRead().
       for (k = 0; k < 100; k ++)
       {

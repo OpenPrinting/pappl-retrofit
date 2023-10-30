@@ -530,6 +530,7 @@ _prPrinterWebDeviceConfig(
 
 	// print-content-optimize
 	best_score = 0;
+	j = 0;
 	if (default_in_optimize_presets)
 	{
 	  for (i = 0; i < 5; i ++)
@@ -789,7 +790,7 @@ _prSystemWebAddPPD(
     cups_option_t	*form = NULL;	// Form variables
     cups_option_t	*opt;
     const char		*action;	// Form action
-    char                strbuf[2048],
+    char                strbuf[3072],
                         destpath[2048];	// File destination path
     const char	        *content_type;	// Content-Type header
     const char	        *boundary;	// boundary value for multi-part

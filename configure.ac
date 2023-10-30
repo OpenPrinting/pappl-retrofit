@@ -160,6 +160,9 @@ if test "$host_os_name" = "hp-ux" -a "$host_os_version" = "1020"; then
 else
         AC_CHECK_FUNCS(snprintf vsnprintf)
 fi
+AC_CHECK_FUNC([poll], [
+    AC_DEFINE([HAVE_POLL], [1], [Have poll function?])
+])
 
 # ========================
 # Check for system headers
