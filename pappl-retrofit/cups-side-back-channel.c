@@ -33,8 +33,8 @@
  * Buffer size for side-channel requests...
  */
 
-#define _CUPS_SC_MAX_DATA	65535
-#define _CUPS_SC_MAX_BUFFER	65540
+#define _PR_SC_MAX_DATA	65535
+#define _PR_SC_MAX_BUFFER	65540
 
 
 /*
@@ -319,7 +319,7 @@ _prSideChannelRead(
   * 4-N      Data
   */
 
-  if ((buffer = malloc(_CUPS_SC_MAX_BUFFER)) == NULL)
+  if ((buffer = malloc(_PR_SC_MAX_BUFFER)) == NULL)
   {
     *command = _PR_SC_CMD_NONE;
     *status  = _PR_SC_STATUS_TOO_BIG;
@@ -327,7 +327,7 @@ _prSideChannelRead(
     return (-1);
   }
 
-  while ((bytes = read(_PR_SC_FD, buffer, _CUPS_SC_MAX_BUFFER)) < 0)
+  while ((bytes = read(_PR_SC_FD, buffer, _PR_SC_MAX_BUFFER)) < 0)
     if (errno != EINTR && errno != EAGAIN)
     {
       free(buffer);
@@ -466,10 +466,10 @@ _prSideChannelSNMPGet(
                            (int)strlen(oid) + 1, timeout))
     return (_PR_SC_STATUS_TIMEOUT);
 
-  if ((real_data = malloc(_CUPS_SC_MAX_BUFFER)) == NULL)
+  if ((real_data = malloc(_PR_SC_MAX_BUFFER)) == NULL)
     return (_PR_SC_STATUS_TOO_BIG);
 
-  real_datalen = _CUPS_SC_MAX_BUFFER;
+  real_datalen = _PR_SC_MAX_BUFFER;
   if (_prSideChannelRead(&rcommand, &status, real_data, &real_datalen, timeout))
   {
     free(real_data);
@@ -561,7 +561,7 @@ _prSideChannelSNMPWalk(
   if (!oid || !*oid || !cb)
     return (_PR_SC_STATUS_BAD_MESSAGE);
 
-  if ((real_data = malloc(_CUPS_SC_MAX_BUFFER)) == NULL)
+  if ((real_data = malloc(_PR_SC_MAX_BUFFER)) == NULL)
     return (_PR_SC_STATUS_TOO_BIG);
 
  /*
@@ -585,7 +585,7 @@ _prSideChannelSNMPWalk(
       return (_PR_SC_STATUS_TIMEOUT);
     }
 
-    real_datalen = _CUPS_SC_MAX_BUFFER;
+    real_datalen = _PR_SC_MAX_BUFFER;
     if (_prSideChannelRead(&rcommand, &status, real_data, &real_datalen,
                             timeout))
     {
@@ -676,7 +676,7 @@ _prSideChannelWrite(
   */
 
   if (command < _PR_SC_CMD_SOFT_RESET || command >= _PR_SC_CMD_MAX ||
-      datalen < 0 || datalen > _CUPS_SC_MAX_DATA || (datalen > 0 && !data))
+      datalen < 0 || datalen > _PR_SC_MAX_DATA || (datalen > 0 && !data))
     return (-1);
 
  /*
