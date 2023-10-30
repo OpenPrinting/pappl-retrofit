@@ -21,6 +21,7 @@
 
 #include <pappl-retrofit/print-job-private.h>
 #include <pappl-retrofit/pappl-retrofit-private.h>
+#include <pappl-retrofit/libcups2-private.h>
 
 
 //
@@ -811,7 +812,7 @@ _prCreateJobData(pappl_job_t *job,
 	    (strcasecmp(choicestr, "Custom") ||
 	     (coption =
 	      ppdFindCustomOption(job_data->ppd, option->keyword)) == NULL ||
-	     (num_cparams = cupsArrayCount(coption->params)) <= 0))
+	     (num_cparams = cupsArrayGetCount(coption->params)) <= 0))
 	    num_options =
 	      cupsAddOption(option->keyword, choicestr, num_options,
 			    &(options));
@@ -1008,11 +1009,11 @@ _prFilter(
   
   for (conversion =
 	 (pr_spooling_conversion_t *)
-	 cupsArrayFirst(global_data->config->spooling_conversions);
+	 cupsArrayGetFirst(global_data->config->spooling_conversions);
        conversion;
        conversion =
 	 (pr_spooling_conversion_t *)
-	 cupsArrayNext(global_data->config->spooling_conversions))
+	 cupsArrayGetNext(global_data->config->spooling_conversions))
   {
     if (strcmp(conversion->srctype, informat) != 0)
       continue;
@@ -1094,7 +1095,7 @@ _prFilter(
   // Set up filter function chain
   //
 
-  job_data->chain = cupsArrayNew(NULL, NULL);
+  job_data->chain = cupsArrayNew(NULL, NULL, NULL, 0, NULL, NULL);
   if (is_banner)
     cupsArrayAdd(job_data->chain, &banner_filter);
   for (i = 0; i < conversion->num_filters; i ++)
@@ -1587,7 +1588,7 @@ _prRasterPrepareJob(
   // Create filter chain of the filter function for creating the stream
   // data format and/or call the CUPS filter defined in the PPD file, and the
   // print filter function
-  job_data->chain = cupsArrayNew(NULL, NULL);
+  job_data->chain = cupsArrayNew(NULL, NULL, NULL, 0, NULL, NULL);
   for (i = 0; i < job_data->stream_format->num_filters; i ++)
     cupsArrayAdd(job_data->chain, &(job_data->stream_format->filters[i]));
   // Set input and output formats for the filter chain
@@ -1838,7 +1839,7 @@ prPWGRasterStartPage(
   raster = (cups_raster_t *)job_data->data;
   job_data->line_count = 0;
 
-  if (!cupsRasterWriteHeader2(raster, &(options->header)))
+  if (!cupsRasterWriteHeader(raster, &(options->header)))
   {
     papplLogJob(job, PAPPL_LOGLEVEL_ERROR,
 		"Unable to output PWG Raster header for page %d", page);

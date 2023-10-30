@@ -25,13 +25,13 @@
 #include <pappl-retrofit/pappl-retrofit.h>
 #include <pappl-retrofit/print-job-private.h>
 #include <pappl-retrofit/cups-backends-private.h>
+#include <pappl-retrofit/cups-side-back-channel-private.h>
 #include <pappl-retrofit/web-interface-private.h>
 #include <pappl/pappl.h>
 #include <ppd/ppd.h>
 #include <cupsfilters/ieee1284.h>
 #include <cups/cups.h>
 #include <cups/dir.h>
-#include <cups/sidechannel.h>
 #include <limits.h>
 #include <poll.h>
 #include <regex.h>

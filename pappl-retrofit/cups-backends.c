@@ -16,7 +16,9 @@
 //
 
 #include <pappl-retrofit/cups-backends-private.h>
+#include <pappl-retrofit/cups-side-back-channel-private.h>
 #include <pappl-retrofit/pappl-retrofit.h>
+#include <pappl-retrofit/libcups2-private.h>
 #include <cupsfilters/ieee1284.h>
 #include <cups/dir.h>
 #include <poll.h>
@@ -300,8 +302,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
   else 
   {
     // Setup the devices array...
-    devices = cupsArrayNew3((cups_array_func_t)_prCUPSCompareDevices,
-			    NULL, NULL, 0, NULL, (cups_afree_func_t)free);
+    devices = cupsArrayNew((cups_array_cb_t)_prCUPSCompareDevices,
+			    NULL, NULL, 0, NULL, (cups_afree_cb_t)free);
 
     // Go through the backends
     while ((dent = cupsDirRead(dir)) != NULL)
@@ -586,11 +588,11 @@ _prCUPSDevList(pappl_device_cb_t cb,
 		// Check whether we have a duplicate and if so, skip it
 		if (cupsArrayFind(devices, device))
 		{
-		  free(device);
 		  _prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_DEBUG,
 				"Duplicate device from backend '%s' skipped: %s (URI: %s Device ID: %s)",
 				backends[i].name, info, device->device_uri,
 				device_id);
+		  free(device);
 		}
 		else
 		{
@@ -1017,7 +1019,7 @@ _prCUPSDevRead(pappl_device_t *device,
   dup2(device_data->backfd, 3);
 
   // Read from the back channel of the backend
-  return (cupsBackChannelRead(buffer, bytes, device_data->back_timeout));
+  return (_prBackChannelRead(buffer, bytes, device_data->back_timeout));
 }
 
 
@@ -1069,7 +1071,7 @@ _prCUPSDevWrite(pappl_device_t *device,
 pappl_preason_t
 _prCUPSDevStatus(pappl_device_t *device)
 {
-  cups_sc_status_t sc_status;
+  pr_sc_status_t sc_status;
   char _prStatus;
   int datalen;
   pappl_preason_t reason = PAPPL_PREASON_NONE;
@@ -1095,10 +1097,10 @@ _prCUPSDevStatus(pappl_device_t *device)
   dup2(device_data->sidefd, 4);
 
   datalen = 1;
-  if ((sc_status = cupsSideChannelDoRequest(CUPS_SC_CMD_GET_STATE, &_prStatus,
-					    &datalen,
-					    device_data->side_timeout)) !=
-      CUPS_SC_STATUS_OK)
+  if ((sc_status = _prSideChannelDoRequest(_PR_SC_CMD_GET_STATE, &_prStatus,
+					   &datalen,
+					   device_data->side_timeout)) !=
+      _PR_SC_STATUS_OK)
   {
     papplDeviceError(device, "Side channel error status: %s",
 		     pr_cups_sc_status_str[sc_status]);
@@ -1107,19 +1109,19 @@ _prCUPSDevStatus(pappl_device_t *device)
   {
     papplLog(device_data->global_data->system, PAPPL_LOGLEVEL_DEBUG,
 	     "Printer status: %d", _prStatus);
-    if (_prStatus & CUPS_SC_STATE_ONLINE)
+    if (_prStatus & _PR_SC_STATE_ONLINE)
       reason |= PAPPL_PREASON_NONE;
-    if (_prStatus & CUPS_SC_STATE_BUSY)
+    if (_prStatus & _PR_SC_STATE_BUSY)
       reason |= PAPPL_PREASON_NONE;
-    if (_prStatus & CUPS_SC_STATE_ERROR)
+    if (_prStatus & _PR_SC_STATE_ERROR)
       reason |= PAPPL_PREASON_OTHER;
-    if (_prStatus & CUPS_SC_STATE_MEDIA_LOW)
+    if (_prStatus & _PR_SC_STATE_MEDIA_LOW)
       reason |= PAPPL_PREASON_MEDIA_LOW;
-    if (_prStatus & CUPS_SC_STATE_MEDIA_EMPTY)
+    if (_prStatus & _PR_SC_STATE_MEDIA_EMPTY)
       reason |= PAPPL_PREASON_MEDIA_EMPTY;
-    if (_prStatus & CUPS_SC_STATE_MARKER_LOW)
+    if (_prStatus & _PR_SC_STATE_MARKER_LOW)
       reason |= PAPPL_PREASON_MARKER_SUPPLY_LOW;
-    if (_prStatus & CUPS_SC_STATE_MARKER_EMPTY)
+    if (_prStatus & _PR_SC_STATE_MARKER_EMPTY)
       reason |= PAPPL_PREASON_MARKER_SUPPLY_EMPTY;
   }
 
@@ -1145,7 +1147,7 @@ _prCUPSDevID(pappl_device_t *device,
 	     char *buffer,
 	     size_t bufsize)
 {
-  cups_sc_status_t sc_status;
+  pr_sc_status_t sc_status;
   int datalen;
   pr_cups_device_data_t *device_data =
     (pr_cups_device_data_t *)papplDeviceGetData(device);
@@ -1169,10 +1171,10 @@ _prCUPSDevID(pappl_device_t *device,
   dup2(device_data->sidefd, 4);
 
   datalen = bufsize;
-  if ((sc_status = cupsSideChannelDoRequest(CUPS_SC_CMD_GET_DEVICE_ID,
-					    buffer, &datalen,
-					    device_data->side_timeout)) !=
-      CUPS_SC_STATUS_OK)
+  if ((sc_status = _prSideChannelDoRequest(_PR_SC_CMD_GET_DEVICE_ID,
+					   buffer, &datalen,
+					   device_data->side_timeout)) !=
+      _PR_SC_STATUS_OK)
   {
     papplDeviceError(device, "Side channel error status: %s",
 		     pr_cups_sc_status_str[sc_status]);

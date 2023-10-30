@@ -20,6 +20,7 @@
 #endif
 
 #include <pappl-retrofit/pappl-retrofit-private.h>
+#include <pappl-retrofit/libcups2-private.h>
 
 
 //
@@ -145,12 +146,12 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
     // Compile regular expressions to prioritize drivers
     if (global_data->config->driver_selection_regex_list)
     {
-      compiled_re_list = cupsArrayNew(NULL, NULL);
+      compiled_re_list = cupsArrayNew(NULL, NULL, NULL, 0, NULL, NULL);
       for (regex = (const char *)
-	     cupsArrayFirst(global_data->config->driver_selection_regex_list);
+	     cupsArrayGetFirst(global_data->config->driver_selection_regex_list);
 	   regex;
 	   regex = (const char *)
-	     cupsArrayNext(global_data->config->driver_selection_regex_list))
+	     cupsArrayGetNext(global_data->config->driver_selection_regex_list))
       {
 	if ((re = (regex_t *)calloc(1, sizeof(regex_t))) != NULL)
         {
@@ -224,8 +225,8 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
       // Match the regular expressions on the driver name
       if (compiled_re_list)
       {
-	for (j = 0, re = (regex_t *)cupsArrayFirst(compiled_re_list);
-	     re; j ++, re = (regex_t *)cupsArrayNext(compiled_re_list))
+	for (j = 0, re = (regex_t *)cupsArrayGetFirst(compiled_re_list);
+	     re; j ++, re = (regex_t *)cupsArrayGetNext(compiled_re_list))
 	{
 	  if (!regexec(re, drivers[i].name, 0, NULL, 0))
 	  {
@@ -234,7 +235,7 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
 	    papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
 		     "Driver %s matched driver priority regular expression %d: \"%s\"",
 		     drivers[i].name, j + 1,
-		     (char *)cupsArrayIndex(
+		     (char *)cupsArrayGetElement(
 		       global_data->config->driver_selection_regex_list, j));
 	    break;
 	  }
@@ -251,8 +252,8 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
 
     if (compiled_re_list)
     {
-      for (re = (regex_t *)cupsArrayFirst(compiled_re_list);
-	   re; re = (regex_t *)cupsArrayNext(compiled_re_list))
+      for (re = (regex_t *)cupsArrayGetFirst(compiled_re_list);
+	   re; re = (regex_t *)cupsArrayGetNext(compiled_re_list))
 	regfree(re);
       cupsArrayDelete(compiled_re_list);
     }
@@ -571,7 +572,7 @@ prIdentify(
   pappl_preason_t        reasons;
   char                   buffer[2048];
   char                   *device_id;
-  cups_sc_status_t sc_status;
+  pr_sc_status_t         sc_status;
   int datalen;
   pr_cups_device_data_t *device_data;
 
@@ -624,10 +625,10 @@ prIdentify(
     dup2(device_data->sidefd, 4);
 
     datalen = 0;
-    if ((sc_status = cupsSideChannelDoRequest(CUPS_SC_CMD_SOFT_RESET, NULL,
-					      &datalen,
-					      device_data->side_timeout)) !=
-	CUPS_SC_STATUS_OK)
+    if ((sc_status = _prSideChannelDoRequest(_PR_SC_CMD_SOFT_RESET, NULL,
+					     &datalen,
+					     device_data->side_timeout)) !=
+	_PR_SC_STATUS_OK)
 	papplDeviceError(device, "Side channel error status: %s",
 			 pr_cups_sc_status_str[sc_status]);
     else if (datalen > 0)
@@ -731,10 +732,10 @@ _prDriverDelete(
 
   // Extension
   for (opt_name =
-	 (ipp_name_lookup_t *)cupsArrayFirst(extension->ipp_name_lookup);
+	 (ipp_name_lookup_t *)cupsArrayGetFirst(extension->ipp_name_lookup);
        opt_name;
        opt_name =
-	 (ipp_name_lookup_t *)cupsArrayNext(extension->ipp_name_lookup))
+	 (ipp_name_lookup_t *)cupsArrayGetNext(extension->ipp_name_lookup))
   {
     free(opt_name->ipp);
     free(opt_name);
@@ -1132,7 +1133,7 @@ _prDriverSetup(
                bytes;
   char         tempfile[1024];
   pr_stream_format_t *stream_format;
-  cups_page_header2_t header,              // CUPS raster headers to investigate
+  cups_page_header_t header,              // CUPS raster headers to investigate
                       optheader;           // PPD with ppdRasterInterpretPPD()
 
   ipp_attribute_t *attr;
@@ -1224,7 +1225,7 @@ _prDriverSetup(
     papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	     "Initializing driver data for driver \"%s\"", driver_name);
 
-    if (!ppd_paths || cupsArrayCount(ppd_paths) == 0)
+    if (!ppd_paths || cupsArrayGetCount(ppd_paths) == 0)
     {
       papplLog(system, PAPPL_LOGLEVEL_ERROR,
 	       "Driver callback did not find PPD indices.");
@@ -1411,7 +1412,7 @@ _prDriverSetup(
       tempfp = ppdCollectionGetPPD(ppd_path->ppd_path, NULL,
 				   (cf_logfunc_t)papplLog,
 				   system);
-      if ((tempfd = cupsTempFd(tempfile, sizeof(tempfile))) >= 0)
+      if ((tempfd = cupsCreateTempFd(NULL, NULL, tempfile, sizeof(tempfile))) >= 0)
       {
 	papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 		 "Creating physical PPD file for the CUPS filter: %s",
@@ -1436,11 +1437,11 @@ _prDriverSetup(
   
     for (stream_format =
 	   (pr_stream_format_t *)
-	   cupsArrayFirst(global_data->config->stream_formats);
+	   cupsArrayGetFirst(global_data->config->stream_formats);
 	 stream_format;
 	 stream_format =
 	   (pr_stream_format_t *)
-	   cupsArrayNext(global_data->config->stream_formats))
+	   cupsArrayGetNext(global_data->config->stream_formats))
       if ((ptr =
 	   _prPPDFindCUPSFilter(stream_format->dsttype,
 				   ppd->num_filters, ppd->filters,
@@ -1898,9 +1899,9 @@ _prDriverSetup(
 
   // Finishings
   driver_data->finishings = PAPPL_FINISHINGS_NONE;
-  for (finishings = (ppd_pwg_finishings_t *)cupsArrayFirst(pc->finishings);
+  for (finishings = (ppd_pwg_finishings_t *)cupsArrayGetFirst(pc->finishings);
        finishings;
-       finishings = (ppd_pwg_finishings_t *)cupsArrayNext(pc->finishings))
+       finishings = (ppd_pwg_finishings_t *)cupsArrayGetNext(pc->finishings))
   {
     for (i = finishings->num_options, opt = finishings->options; i > 0;
 	 i --, opt ++)
@@ -2512,7 +2513,7 @@ _prDriverSetup(
       // Does the option allow custom values?
       num_cparams = 0;
       if ((coption = ppdFindCustomOption(ppd, option->keyword)) != NULL)
-	num_cparams = cupsArrayCount(coption->params);
+	num_cparams = cupsArrayGetCount(coption->params);
 
       // Does the option have less than 2 choices and also does not
       // allow custom values? Then it does not make sense to let it
@@ -2590,13 +2591,13 @@ _prDriverSetup(
       // this PPD option
       opt_name = NULL;
       if (extension->ipp_name_lookup == NULL)
-	extension->ipp_name_lookup = cupsArrayNew(NULL, NULL);
+	extension->ipp_name_lookup = cupsArrayNew(NULL, NULL, NULL, 0, NULL, NULL);
       else
 	for (opt_name =
-	       (ipp_name_lookup_t *)cupsArrayFirst(extension->ipp_name_lookup);
+	       (ipp_name_lookup_t *)cupsArrayGetFirst(extension->ipp_name_lookup);
 	     opt_name;
 	     opt_name =
-	       (ipp_name_lookup_t *)cupsArrayNext(extension->ipp_name_lookup))
+	       (ipp_name_lookup_t *)cupsArrayGetNext(extension->ipp_name_lookup))
 	  if (strcmp(option->keyword, opt_name->ppd) == 0)
 	    break;
 
@@ -2648,10 +2649,10 @@ _prDriverSetup(
 
 	  // Look up IPP name in look-up table
 	  for (opt_name =
-	        (ipp_name_lookup_t *)cupsArrayFirst(extension->ipp_name_lookup);
+	        (ipp_name_lookup_t *)cupsArrayGetFirst(extension->ipp_name_lookup);
 	       opt_name;
 	       opt_name =
-		 (ipp_name_lookup_t *)cupsArrayNext(extension->ipp_name_lookup))
+		 (ipp_name_lookup_t *)cupsArrayGetNext(extension->ipp_name_lookup))
 	    if (strcmp(ipp_opt, opt_name->ipp) == 0)
 	      break;
 	  if (opt_name)
@@ -2819,7 +2820,7 @@ _prDriverSetup(
 	      {
 		for (m = 0; m < num_cparams; m++)
 		{
-		  cparam = (ppd_cparam_t *)cupsArrayIndex(coption->params, m);
+		  cparam = (ppd_cparam_t *)cupsArrayGetElement(coption->params, m);
 		  if (cparam->type != PPD_CUSTOM_INT &&
 		      cparam->type != PPD_CUSTOM_STRING &&
 		      cparam->type != PPD_CUSTOM_PASSWORD &&
@@ -2948,7 +2949,7 @@ _prDriverSetup(
       // Go through all custom parameters of the option
       for (k = 0; k < num_cparams; k++)
       {
-	cparam = (ppd_cparam_t *)cupsArrayIndex(coption->params, k);
+	cparam = (ppd_cparam_t *)cupsArrayGetElement(coption->params, k);
 	// Name for extra vendor option to set this parameter
 	if (num_cparams == 1)
 	{
@@ -3235,9 +3236,9 @@ _prPollDeviceOptionDefaults(
 
     // See if the backend supports bidirectional I/O...
     datalen = 1;
-    if (cupsSideChannelDoRequest(CUPS_SC_CMD_GET_BIDI, buf, &datalen,
-				 5.0) != CUPS_SC_STATUS_OK ||
-	buf[0] != CUPS_SC_BIDI_SUPPORTED)
+    if (_prSideChannelDoRequest(_PR_SC_CMD_GET_BIDI, buf, &datalen,
+				5.0) != _PR_SC_STATUS_OK ||
+	buf[0] != _PR_SC_BIDI_SUPPORTED)
     {
       papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
 		      "Unable to query defaults from printer - no "
@@ -3297,9 +3298,9 @@ _prPollDeviceOptionDefaults(
       sleep(1);
       datalen = 1;
     }
-    while (cupsSideChannelDoRequest(CUPS_SC_CMD_GET_CONNECTED, buf, &datalen,
-				    device_data->side_timeout) ==
-	   CUPS_SC_STATUS_OK && !buf[0]);
+    while (_prSideChannelDoRequest(_PR_SC_CMD_GET_CONNECTED, buf, &datalen,
+				   device_data->side_timeout) ==
+	   _PR_SC_STATUS_OK && !buf[0]);
   }
 
   //
@@ -3436,8 +3437,8 @@ _prPollDeviceOptionDefaults(
       {
 	// Flush the data from the backend into the printer
 	datalen = 0;
-	cupsSideChannelDoRequest(CUPS_SC_CMD_DRAIN_OUTPUT, buf, &datalen,
-				 device_data->side_timeout);
+	_prSideChannelDoRequest(_PR_SC_CMD_DRAIN_OUTPUT, buf, &datalen,
+				device_data->side_timeout);
       }
       
       //
@@ -3449,7 +3450,7 @@ _prPollDeviceOptionDefaults(
       // When we use a PAPPL-native backend then if no bytes get read
       // (bytes <= 0), we repeat up to 100 times in 100 msec intervals
       // (10 sec timeout), for a CUPS backend we use the built-in
-      // timeout handling of cupsBackChannelRead() (which is called by
+      // timeout handling of _prBackChannelRead() (which is called by
       // _prCUPSDevRead(), called by papplDeviceRead().
       for (k = 0; k < 100; k ++)
       {
@@ -3871,16 +3872,16 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
   if (ppds)
   {
     i = 0;
-    num_drivers = cupsArrayCount(ppds);
+    num_drivers = cupsArrayGetCount(ppds);
     papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	     "Found %d PPD files.", num_drivers);
     generic_ppd = NULL;
     if (!(global_data->config->components & PR_COPTIONS_NO_GENERIC_DRIVER))
     {
       // Search for a generic PPD to use as generic PostScript driver
-      for (ppd = (ppd_info_t *)cupsArrayFirst(ppds);
+      for (ppd = (ppd_info_t *)cupsArrayGetFirst(ppds);
 	   ppd;
-	   ppd = (ppd_info_t *)cupsArrayNext(ppds))
+	   ppd = (ppd_info_t *)cupsArrayGetNext(ppds))
       {
 	if (!strcasecmp(ppd->record.make, "Generic") ||
 	    !strncasecmp(ppd->record.make_and_model, "Generic", 7) ||
@@ -3907,7 +3908,7 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
     // Create list of PPD file paths
     if (ppd_paths)
       cupsArrayDelete(ppd_paths);
-    ppd_paths = cupsArrayNew(_prComparePPDPaths, NULL);
+    ppd_paths = cupsArrayNew(_prComparePPDPaths, NULL, NULL, 0, NULL, NULL);
     if (generic_ppd)
     {
       drivers[i].name = strdup("generic");
@@ -3937,9 +3938,9 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 	}
       }
     }
-    for (ppd = (ppd_info_t *)cupsArrayFirst(ppds);
+    for (ppd = (ppd_info_t *)cupsArrayGetFirst(ppds);
 	 ppd;
-	 ppd = (ppd_info_t *)cupsArrayNext(ppds))
+	 ppd = (ppd_info_t *)cupsArrayGetNext(ppds))
     {
       if (!generic_ppd || strcmp(ppd->record.name, generic_ppd))
       {
@@ -4280,8 +4281,8 @@ _prSetup(pr_printer_app_global_data_t *global_data)  // I - Global data
 
   global_data->num_drivers = 0;
   global_data->drivers = NULL;
-  global_data->ppd_paths = cupsArrayNew(_prComparePPDPaths, NULL);
-  global_data->ppd_collections = cupsArrayNew(NULL, NULL);
+  global_data->ppd_paths = cupsArrayNew(_prComparePPDPaths, NULL, NULL, 0, NULL, NULL);
+  global_data->ppd_collections = cupsArrayNew(NULL, NULL, NULL, 0, NULL, NULL);
 
   //
   // Build PPD list from all repositories
@@ -4333,11 +4334,11 @@ _prSetup(pr_printer_app_global_data_t *global_data)  // I - Global data
 
   for (conversion =
 	 (pr_spooling_conversion_t *)
-	 cupsArrayFirst(global_data->config->spooling_conversions);
+	 cupsArrayGetFirst(global_data->config->spooling_conversions);
        conversion;
        conversion =
 	 (pr_spooling_conversion_t *)
-	 cupsArrayNext(global_data->config->spooling_conversions))
+	 cupsArrayGetNext(global_data->config->spooling_conversions))
     papplSystemAddMIMEFilter(system,
 			     conversion->srctype,
 			     "application/vnd.printer-specific",
