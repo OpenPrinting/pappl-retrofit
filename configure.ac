@@ -57,7 +57,7 @@ AM_ICONV
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-LT_INIT
+AC_PROG_LIBTOOL
 
 # ==========
 # pkg-config
@@ -264,81 +264,10 @@ AS_IF([test "x$enable_pappl_backends_for_legacy_printer_app" != "xno"], [
     AC_DEFINE(ENABLE_PAPPL_BACKENDS, 1, [Build legacy-printer-app with PAPPL backend support])
 ])
 
-# ===========
-# Admin group
-# ===========
-AC_ARG_WITH([admin_group], AS_HELP_STRING([--with-admin-group=[GROUP]], [Set group which users are authenticated for remote configuration, default=none]), [
-    AS_IF([test $withval != yes -a $withval != no], [
-	ADMINGROUP=$withval
-    ], [
-	ADMINGROUP="none"
-    ])
-], [
-    ADMINGROUP="none"
-])
-AC_SUBST([ADMINGROUP])
-
-# =============================
-# PAM module for authentication
-# =============================
-AC_ARG_WITH([auth_service], AS_HELP_STRING([--with-auth-service=[SERVICE]], [Set PAM service to use for remote request authentication, default=none]), [
-    AS_IF([test $withval != yes -a $withval != no], [
-	AUTHSERV=$withval
-    ], [
-	AUTHSERV="none"
-    ])
-], [
-    AUTHSERV="none"
-])
-AC_SUBST([AUTHSERV])
-
-# =======================================
-# Listening on specified address/hostname
-# =======================================
-AC_ARG_WITH([listen_hostname], AS_HELP_STRING([--with-listen-hostname=[HOSTNAME]], [Set address/hostname where listen for connection, default=local IPv4 and IPv6 addresses]), [
-    AS_IF([test $withval != yes -a $withval != no], [
-	LISTENHOST="-o listen-hostname=$withval "
-    ], [
-	LISTENHOST=""
-    ])
-], [
-    LISTENHOST=""
-])
-AC_SUBST([LISTENHOST])
-
-# ============
-# Log location
-# ============
-AC_ARG_WITH([log_file], AS_HELP_STRING([--with-log-file=[LOCATION]], [Set location for logs: - (stderr), syslog (syslog service), FILENAME, default=-]), [
-    AS_IF([test $withval != yes -a $withval != no], [
-	LOGFILE="$withval"
-    ], [
-	LOGFILE="-"
-    ])
-], [
-    LOGFILE="-"
-])
-AC_SUBST([LOGFILE])
-
-# ==============
-# Server options
-# ==============
-AC_ARG_WITH([server_options], AS_HELP_STRING([--with-server-options=[SOPTIONS]], [Set default server options, default=multi-queue,web-interface]), [
-    AS_IF([test $withval != yes -a $withval != no], [
-	SOPTIONS="$withval"
-    ], [
-	SOPTIONS="multi-queue,web-interface"
-    ])
-], [
-    SOPTIONS="multi-queue,web-interface"
-])
-AC_SUBST([SOPTIONS])
-
 # =====================
 # Prepare all .in files
 # =====================
 AC_CONFIG_FILES([
-	legacy/legacy-printer-app.service
 	libpappl-retrofit.pc
 	Makefile
 ])
@@ -358,9 +287,5 @@ Build configuration:
 	legacy-printer-app as daemon: ${enable_legacy_printer_app_as_daemon}
 	legacy-printer-app w/ PAPPL backends: ${enable_pappl_backends_for_legacy_printer_app}
 	systemd unitdir: ${SYSTEMD_UNITDIR}
-	log file: ${LOGFILE}
-	server options: ${SOPTIONS}
-	auth service: ${AUTHSERV}
-	admin group: ${ADMINGROUP}
 ==============================================================================
 ])

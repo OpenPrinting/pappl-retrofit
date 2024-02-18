@@ -2,7 +2,7 @@
 Description=Legacy Printer Application
 
 [Service]
-ExecStart=legacy-printer-app server -o admin-group=wheel -o auth-service=password-auth -o listen-hostname=localhost -o log-file=syslog -o log-level=info -o server-options=multi-queue,web-interface,raw-socket,web-tls
+ExecStart=legacy-printer-app server
 ExecStop=legacy-printer-app shutdown
 Type=simple
 
