@@ -1,0 +1,10 @@
+[Unit]
+Description=Legacy Printer Application
+
+[Service]
+ExecStart=legacy-printer-app server -o admin-group=none -o auth-service=none -o log-file=- -o log-level=info -o server-options=multi-queue,web-interface
+ExecStop=legacy-printer-app shutdown
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

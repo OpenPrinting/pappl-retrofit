@@ -31,8 +31,11 @@ lib_LTLIBRARIES = libpappl-retrofit.la
 libpappl_retrofit_la_SOURCES = \
 	pappl-retrofit/pappl-retrofit.c \
 	pappl-retrofit/pappl-retrofit-private.h \
+	pappl-retrofit/pappl-sane.h \
+	pappl-retrofit/pappl-sane.c \
 	pappl-retrofit/print-job.c \
 	pappl-retrofit/print-job-private.h \
+	pappl-retrofit/scan.c \
 	pappl-retrofit/cups-backends.c \
 	pappl-retrofit/cups-backends-private.h \
 	pappl-retrofit/cups-side-back-channel.c \
@@ -45,7 +48,8 @@ libpappl_retrofit_la_LIBADD = \
 	$(CUPS_LIBS) \
 	$(CUPSFILTERS_LIBS) \
 	$(PPD_LIBS) \
-	$(PAPPL_LIBS)
+	$(PAPPL_LIBS) \
+	-lsane
 libpappl_retrofit_la_CFLAGS = \
 	$(CUPS_CFLAGS) \
 	$(CUPSFILTERS_CFLAGS) \
@@ -75,7 +79,8 @@ legacy_printer_app_LDADD = \
 	$(CUPS_LIBS) \
 	$(CUPSFILTERS_LIBS) \
 	$(PPD_LIBS) \
-	libpappl-retrofit.la
+	libpappl-retrofit.la \
+	-lsane
 legacy_printer_app_CFLAGS = \
 	$(CUPS_CFLAGS) \
 	$(CUPSFILTERS_CFLAGS) \
