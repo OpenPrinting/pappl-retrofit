@@ -190,6 +190,13 @@ AC_SUBST(CUPSFILTERS_LIBS)
 PKG_CHECK_MODULES([PPD], [libppd])
 AC_SUBST(PPD_CFLAGS)
 AC_SUBST(PPD_LIBS)
+PKG_CHECK_MODULES([SANE], [sane-backends], [
+  AC_DEFINE([HAVE_SANE], [1], [Define to 1 if you have the SANE libraries installed.])
+  AC_SUBST(SANE_CFLAGS)
+  AC_SUBST(SANE_LIBS)
+], [
+  AC_MSG_ERROR([SANE libraries not found. Please install SANE development packages.])
+])
 
 # ===================================
 # Check for large files and long long
