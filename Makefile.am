@@ -35,6 +35,7 @@ libpappl_retrofit_la_SOURCES = \
 	pappl-retrofit/pappl-sane.c \
 	pappl-retrofit/print-job.c \
 	pappl-retrofit/print-job-private.h \
+	pappl-retrofit/scan.c \
 	pappl-retrofit/cups-backends.c \
 	pappl-retrofit/cups-backends-private.h \
 	pappl-retrofit/cups-side-back-channel.c \

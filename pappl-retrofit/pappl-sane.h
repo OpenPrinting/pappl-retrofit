@@ -18,7 +18,7 @@ void cancelScan(SANE_Handle sane_handle);
 void closeScanningDevice(SANE_Handle sane_handle);
 void shutdownSane();
 SANE_Status getScanningDevices(const SANE_Device ***device_list);
-SANE_Status openScannerDevice(SANE_Device *device, SANE_Handle *sane_handle);
+SANE_Status openScanningDevice(SANE_Device *device, SANE_Handle *sane_handle);
 SANE_Status startScan(SANE_Handle sane_handle, SANE_String_Const fileName);
 
 #ifdef __cplusplus
