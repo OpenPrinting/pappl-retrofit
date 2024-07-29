@@ -1,0 +1,10 @@
+[Unit]
+Description=Legacy Printer Application
+
+[Service]
+ExecStart=legacy-printer-app server
+ExecStop=legacy-printer-app shutdown
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
