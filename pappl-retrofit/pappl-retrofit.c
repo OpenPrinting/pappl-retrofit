@@ -4553,6 +4553,7 @@ _prSystemCB(int            num_options,	// I - Number of options
   pappl_system_t	*system;	// System object
   const char		*val,		// Current option value
 			*hostname,	// Hostname, if any
+			*listenhost,	// Listen hostname, if any
 			*logfile,	// Log file, if any
 			*system_name;	// System name, if any
   pappl_loglevel_t	loglevel;	// Log level
@@ -4599,8 +4600,43 @@ _prSystemCB(int            num_options,	// I - Number of options
   else
     loglevel = PAPPL_LOGLEVEL_UNSPEC;
 
-  logfile     = cupsGetOption("log-file", num_options, options);
+  if ((val = cupsGetOption("server-options", num_options, options)) != NULL)
+  {
+    const char	*valptr;		// Pointer into value
+
+    for (valptr = val; valptr && *valptr;)
+    {
+      if (!strcmp(valptr, "none") || !strncmp(valptr, "none,", 5))
+        soptions = PAPPL_SOPTIONS_NONE;
+      else if (!strcmp(valptr, "dnssd-host") || !strncmp(valptr, "dnssd-host,", 11))
+        soptions |= PAPPL_SOPTIONS_DNSSD_HOST;
+      else if (!strcmp(valptr, "no-multi-queue") || !strncmp(valptr, "no-multi-queue,", 15))
+        soptions &= (pappl_soptions_t)~PAPPL_SOPTIONS_MULTI_QUEUE;
+      else if (!strcmp(valptr, "raw-socket") || !strncmp(valptr, "raw-socket,", 11))
+        soptions |= PAPPL_SOPTIONS_RAW_SOCKET;
+      else if (!strcmp(valptr, "usb-printer") || !strncmp(valptr, "usb-printer,", 12))
+        soptions |= PAPPL_SOPTIONS_USB_PRINTER;
+      else if (!strcmp(valptr, "no-web-interface") || !strncmp(valptr, "no-web-interface,", 17))
+        soptions &= (pappl_soptions_t)~PAPPL_SOPTIONS_WEB_INTERFACE;
+      else if (!strcmp(valptr, "web-log") || !strncmp(valptr, "web-log,", 8))
+        soptions |= PAPPL_SOPTIONS_WEB_LOG;
+      else if (!strcmp(valptr, "web-network") || !strncmp(valptr, "web-network,", 12))
+        soptions |= PAPPL_SOPTIONS_WEB_NETWORK;
+      else if (!strcmp(valptr, "web-remote") || !strncmp(valptr, "web-remote,", 11))
+        soptions |= PAPPL_SOPTIONS_WEB_REMOTE;
+      else if (!strcmp(valptr, "web-security") || !strncmp(valptr, "web-security,", 13))
+        soptions |= PAPPL_SOPTIONS_WEB_SECURITY;
+      else if (!strcmp(valptr, "no-tls") || !strncmp(valptr, "no-tls,", 7))
+        soptions |= PAPPL_SOPTIONS_NO_TLS;
+
+      if ((valptr = strchr(valptr, ',')) != NULL)
+        valptr ++;
+    }
+  }
+
+  listenhost  = cupsGetOption("listen-hostname", num_options, options);
   hostname    = cupsGetOption("server-hostname", num_options, options);
+  logfile     = cupsGetOption("log-file", num_options, options);
   system_name = cupsGetOption("system-name", num_options, options);
 
   if ((val = cupsGetOption("server-port", num_options, options)) != NULL)
@@ -4744,8 +4780,12 @@ _prSystemCB(int            num_options,	// I - Number of options
 
   global_data->system = system;
   
-  papplSystemAddListeners(system, NULL);
+  papplSystemAddListeners(system, listenhost);
   papplSystemSetHostName(system, hostname);
+
+  if ((val = cupsGetOption("admin-group", num_options, options)) != NULL)
+    papplSystemSetAdminGroup(system, val);
+
   _prSetup(global_data);
 
   // Extra setup steps for the system (like adding buttos/pages)
