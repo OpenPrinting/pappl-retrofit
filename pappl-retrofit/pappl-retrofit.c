@@ -4054,9 +4054,7 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 	      // word (cleaned manufacturer name or part of it) is the
 	      // same, we accept the data of the device ID as display
 	      // string.
-	      strncpy(buf1,
-		      (buf2[0] ? buf2 : ppd->record.make_and_model),
-		      sizeof(buf1));
+	      snprintf(buf1, sizeof(buf1), "%s", buf2[0] ? buf2 : ppd->record.make_and_model);
 	      if ((ptr = strchr(buf1, ' ')) != NULL)
 		*ptr = '\0';
 	      // Convert device ID to make/model string, so that we can add
