@@ -55,6 +55,10 @@ _prASCII85(FILE                *outputfp,
   static unsigned int   num_remaining = 0;
 
 
+  // Prevent possible negative lengths...
+  if (length < 0)
+    return;
+
   while (num_remaining + length > 0)
   {
     if (num_remaining > 0 || length < 4)

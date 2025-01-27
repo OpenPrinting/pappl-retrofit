@@ -470,7 +470,7 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	      //
 
 	      backends[i].bytes += bytes;
-              backends[i].buf[4095] = '\0';
+	      backends[i].buf[4095] = '\0';
 	      while ((newline = strchr(backends[i].buf, '\n')) != NULL)
 	      {
 		// We have read at least one line
