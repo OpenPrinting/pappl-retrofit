@@ -1294,6 +1294,9 @@ _prSystemWebAddPPD(
       // Flush remaining data...
       if (httpGetState(http) == initial_state)
 	httpFlush(http);
+
+      if (fp)
+	fclose(fp);
     }
 
     strbuf[0] = '\0';
