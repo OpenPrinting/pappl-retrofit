@@ -157,7 +157,7 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
         {
 	  if (regcomp(re, regex, REG_ICASE | REG_EXTENDED | REG_NOSUB))
 	  {
-	    regfree(re);
+	    free(re);
 	    papplLog(global_data->system, PAPPL_LOGLEVEL_ERROR,
 		     "Invalid regular expression: %s", regex);
 	    continue;
@@ -334,7 +334,7 @@ prRegExMatchDevIDField(const char *device_id,     // I - Device ID to search in
     // Compile the regular expression
     if (regcomp(re, value_regex, REG_ICASE | REG_EXTENDED | REG_NOSUB))
     {
-      regfree(re);
+      free(re);
       ret = -3;
       goto out;
     }
@@ -365,6 +365,7 @@ prRegExMatchDevIDField(const char *device_id,     // I - Device ID to search in
     }
 
     regfree(re);
+    free(re);
   }
   else
     ret = -5;
@@ -3930,7 +3931,7 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 	if (regcomp(driver_re, global_data->config->driver_display_regex,
 		    REG_ICASE | REG_EXTENDED))
 	{
-	  regfree(driver_re);
+	  free(driver_re);
 	  driver_re = NULL;
 	  papplLog(system, PAPPL_LOGLEVEL_ERROR,
 		   "Invalid regular expression: %s",
@@ -4054,9 +4055,7 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 	      // word (cleaned manufacturer name or part of it) is the
 	      // same, we accept the data of the device ID as display
 	      // string.
-	      strncpy(buf1,
-		      (buf2[0] ? buf2 : ppd->record.make_and_model),
-		      sizeof(buf1));
+	      snprintf(buf1, sizeof(buf1), "%s", buf2[0] ? buf2 : ppd->record.make_and_model);
 	      if ((ptr = strchr(buf1, ' ')) != NULL)
 		*ptr = '\0';
 	      // Convert device ID to make/model string, so that we can add
@@ -4232,7 +4231,10 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 
     // Free the compiled regular expression
     if (driver_re)
+    {
       regfree(driver_re);
+      free(driver_re);
+    }
 
     cupsArrayDelete(ppds);
 

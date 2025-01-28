@@ -55,6 +55,10 @@ _prASCII85(FILE                *outputfp,
   static unsigned int   num_remaining = 0;
 
 
+  // Prevent possible negative lengths...
+  if (length < 0)
+    return;
+
   while (num_remaining + length > 0)
   {
     if (num_remaining > 0 || length < 4)
@@ -992,6 +996,7 @@ _prFilter(
   {
     papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to open input file '%s' for printing: %s",
 		filename, strerror(errno));
+    _prFreeJobData(job_data);
     return (false);
   }
 
@@ -1029,6 +1034,8 @@ _prFilter(
     papplLogJob(job, PAPPL_LOGLEVEL_ERROR,
 		"No pre-filter found for input format %s",
 		informat);
+    _prFreeJobData(job_data);
+    close(fd);
     return (false);
   }
 
@@ -1651,6 +1658,7 @@ _prRasterPrepareJob(
 		"Unable to create pipe for filtering and sending off the job");
     if (strlen(job_data->stream_filter) > 1)
       free(ppd_filter_params);
+    _prFreeJobData(job_data);
     return (NULL);
   }
 
