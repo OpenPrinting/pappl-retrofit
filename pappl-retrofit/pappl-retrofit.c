@@ -254,7 +254,10 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
     {
       for (re = (regex_t *)cupsArrayGetFirst(compiled_re_list);
 	   re; re = (regex_t *)cupsArrayGetNext(compiled_re_list))
+      {
 	regfree(re);
+	free(re);
+      }
       cupsArrayDelete(compiled_re_list);
     }
   }
