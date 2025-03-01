@@ -205,7 +205,7 @@ To install this library, you need libcups (of
 [CUPS](https://github.com/OpenPrinting/cups) 2.2.x or newer),
 [PAPPL](https://www.msweet.org/pappl) 1.3.x or newer,
 [libcupsfilters](https://github.com/OpenPrinting/libcupsfilters) 2.0b1
-or newer, and [libppd](https://github.com/OpenPrinting/libood) 2.0b1
+or newer, and [libppd](https://github.com/OpenPrinting/libppd) 2.0b1
 or newer.
 
 With this installed, you do the usual
