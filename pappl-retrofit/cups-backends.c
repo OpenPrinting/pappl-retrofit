@@ -417,8 +417,8 @@ _prCUPSDevList(pappl_device_cb_t cb,
       // over the end of an output line before the backend terminates that we
       // do not get blocked until the next output line or the end of this
       // backend
-      if (fcntl(backend->pipe, F_SETFD,
-		fcntl(backend->pipe, F_GETFD) | O_NONBLOCK))
+      if (fcntl(backend->pipe, F_SETFL,
+		fcntl(backend->pipe, F_GETFL) | O_NONBLOCK))
       {
 	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
 		      "Unable to set output pipe of '%s' to non-blocking- %s\n",
