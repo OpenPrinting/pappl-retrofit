@@ -1156,6 +1156,15 @@ _prFilter(
   // The filter chain has no output, data is going to the device
   nullfd = open("/dev/null", O_RDWR);
 
+  // Safety check for filter chain 
+  if (!job_data->chain)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_ERROR,
+                "No filter chain available for the print job");
+    close(nullfd);
+    return (false);
+  }
+
   if (cfFilterChain(fd, nullfd, 1, job_data->filter_data, job_data->chain) == 0)
     ret = true;
 
