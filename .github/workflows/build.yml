@@ -1,0 +1,43 @@
+name: Build pappl-retrofit
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            autoconf \
+            automake \
+            autopoint \
+            gettext \
+            libtool \
+            libtool-bin \
+            pkg-config \
+            libcups2-dev \
+            libcupsfilters-dev \
+            libppd-dev \
+            libpappl-dev
+
+      - name: Build project
+        run: |
+          ./autogen.sh
+          ./configure
+          make
+      
+      - name: Run tests
+        run: make check
+
+      - name: Test legacy printer application 
+        run: |
+          ./legacy-printer-app --help
