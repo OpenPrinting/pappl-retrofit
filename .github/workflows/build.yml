@@ -37,3 +37,7 @@ jobs:
       
       - name: Run tests
         run: make check
+
+      - name: Test legacy printer application 
+        run: |
+          ./legacy-printer-app --help
