@@ -34,3 +34,6 @@ jobs:
           ./autogen.sh
           ./configure
           make
+      
+      - name: Run tests
+        run: make check
