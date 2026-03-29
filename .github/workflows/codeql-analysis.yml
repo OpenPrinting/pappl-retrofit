@@ -73,7 +73,7 @@ jobs:
         cd pappl
         ./configure --enable-shared
         make -j$(nproc)
-        sudo make install
+        sudo -E make install
         sudo ldconfig
         cd ..
         
