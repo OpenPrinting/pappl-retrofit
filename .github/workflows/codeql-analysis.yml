@@ -48,7 +48,7 @@ jobs:
           libcupsfilters-dev \
           libavahi-client-dev \
           libcups2-dev \
-          libppd-dev 
+          libppd-dev \
 
     - name: Install CUPS (latest)
       run: |
@@ -70,9 +70,9 @@ jobs:
         echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
         
         # Install PAPPL
-        git clone https://github.com/michaelrsweet/pappl.git
+        git clone --branch v1.4.10 https://github.com/michaelrsweet/pappl.git
         cd pappl
-        ./configure --enable-shared --disable-libpappl2-prefix --disable-tests
+        ./configure --enable-shared
         make -j$(nproc)
         sudo -E make install
         sudo ldconfig
