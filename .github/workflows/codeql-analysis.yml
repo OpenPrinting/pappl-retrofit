@@ -47,7 +47,8 @@ jobs:
           zlib1g-dev \
           libcupsfilters-dev \
           libavahi-client-dev \
-          libcups2-dev 
+          libcups2-dev \
+          libppd-dev 
 
     - name: Install CUPS (latest)
       run: |
