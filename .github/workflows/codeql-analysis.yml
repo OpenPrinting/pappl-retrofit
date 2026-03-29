@@ -1,0 +1,94 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  analyze:
+    name: Analyze (C/C++)
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: ${{ matrix.language }}
+        queries: +security-and-quality
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          autoconf \
+          automake \
+          autopoint \
+          libtool \
+          pkg-config \
+          git \
+          libjpeg-dev \
+          libpng-dev \
+          zlib1g-dev \
+          libcupsfilters-dev \
+          libavahi-client-dev \
+          libcups2-dev 
+
+    - name: Install CUPS (latest)
+      run: |
+        git clone https://github.com/OpenPrinting/cups.git
+        cd cups
+        ./configure
+        make -j$(nproc)
+        sudo make install
+        sudo ldconfig
+
+    - name: Export CUPS paths
+      run: |
+        echo "/usr/local/bin" >> $GITHUB_PATH 
+        echo "/usr/local/sbin" >> $GITHUB_PATH 
+
+    - name: Install PAPPL and Build project
+      run: | 
+        
+        # Install PAPPL
+        git clone https://github.com/michaelrsweet/pappl.git
+        cd pappl
+        ./configure --enable-shared
+        make -j$(nproc)
+        sudo make install
+        sudo ldconfig
+        cd ..
+        
+        echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig" >> $GITHUB_ENV
+
+        export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig
+
+        # Verify PAPPL
+        pkg-config --modversion pappl
+        
+        # Build project
+        ./autogen.sh || true
+        ./configure CUPS_CONFIG=/usr/local/bin/cups-config
+        make -j$(nproc)
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: "/language:${{ matrix.language }}"
+        
