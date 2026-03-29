@@ -71,7 +71,7 @@ jobs:
         # Install PAPPL
         git clone https://github.com/michaelrsweet/pappl.git
         cd pappl
-        ./configure --enable-shared
+        ./configure --enable-shared --disable-libpappl2-prefix --disable-tests
         make -j$(nproc)
         sudo -E make install
         sudo ldconfig
