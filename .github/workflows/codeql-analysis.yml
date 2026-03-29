@@ -64,7 +64,9 @@ jobs:
         echo "/usr/local/sbin" >> $GITHUB_PATH 
 
     - name: Install PAPPL and Build project
-      run: | 
+      run: |
+        export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
+        echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
         
         # Install PAPPL
         git clone https://github.com/michaelrsweet/pappl.git
@@ -75,16 +77,12 @@ jobs:
         sudo ldconfig
         cd ..
         
-        
         # Verify PAPPL
         pkg-config --modversion pappl
         
         # Build project
         ./autogen.sh || true
-
-        PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig \
         ./configure CUPS_CONFIG=/usr/local/bin/cups-config
-        
         make -j$(nproc)
 
     - name: Perform CodeQL Analysis
