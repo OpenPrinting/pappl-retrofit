@@ -50,20 +50,6 @@ jobs:
           libcups2-dev \
           libppd-dev \
 
-    - name: Install CUPS (latest)
-      run: |
-        git clone https://github.com/OpenPrinting/cups.git
-        cd cups
-        ./configure
-        make -j$(nproc)
-        sudo make install
-        sudo ldconfig
-
-    - name: Export CUPS paths
-      run: |
-        echo "/usr/local/bin" >> $GITHUB_PATH 
-        echo "/usr/local/sbin" >> $GITHUB_PATH 
-
     - name: Install PAPPL and Build project
       run: |
         export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
@@ -83,7 +69,7 @@ jobs:
         
         # Build project
         ./autogen.sh || true
-        ./configure CUPS_CONFIG=/usr/local/bin/cups-config
+        ./configure
         make -j$(nproc)
 
     - name: Perform CodeQL Analysis
