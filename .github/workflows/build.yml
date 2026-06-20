@@ -1,18 +1,16 @@
 # =============================================================================
 # Multi-Architecture / multi-CUPS Build & Test Workflow for pappl-retrofit
 #
-# Matrix: architectures x CUPS releases.  pappl-retrofit sits on top of the
-# deepest OpenPrinting dependency stack (PAPPL + libppd + libcupsfilters +
-# libcups), and PAPPL's ABI tracks CUPS, so each CUPS release is paired with the
-# PAPPL version that supports it:
+# Matrix: 4 architectures x 3 CUPS/PAPPL combinations = 12 combinations.
+#   architectures: amd64, arm64 (native runners); armhf, riscv64 (QEMU)
+#
+# pappl-retrofit sits on top of the deepest OpenPrinting dependency stack
+# (PAPPL + libppd + libcupsfilters + libcups), and PAPPL's ABI tracks CUPS, so
+# each CUPS release is paired with the PAPPL version that supports it:
 #
 #   CUPS 2.4.x (distro libcups2)            -> PAPPL 1.4.x
 #   CUPS 2.5.x (OpenPrinting/cups master)   -> PAPPL 1.4.x
 #   CUPS 3.x   (OpenPrinting/libcups master)-> PAPPL 2.x
-#
-# = 3 CUPS/PAPPL combinations.  Native arches (amd64, arm64) only for now; the
-# emulated armhf/riscv64 legs are re-enabled once the native legs are green, for
-# the full 12-combination matrix (see the commented block at the bottom).
 #
 # All per-combination work lives in ci/ci-setup.sh so the legs differ only in
 # which CUPS/PAPPL is provided and whether they run under emulation.
@@ -37,24 +35,38 @@ jobs:
     name: Build & Test (${{ matrix.arch }}, ${{ matrix.cups }})
     runs-on: ${{ matrix.runs-on }}
     # Building the whole stack (CUPS + libcupsfilters + libppd + PAPPL) from
-    # source is slow; allow plenty of head-room.
+    # source under QEMU is slow; allow plenty of head-room.
     timeout-minutes: 360
 
     strategy:
       fail-fast: false
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64, arm64, armhf, riscv64]
         cups: [system-2x, source-2.5.x, source-3.x]
         include:
           - arch: amd64
             runs-on: ubuntu-latest
+            use-qemu: false
           - arch: arm64
             runs-on: ubuntu-24.04-arm
+            use-qemu: false
+          - arch: armhf
+            runs-on: ubuntu-latest
+            use-qemu: true
+            qemu-arch: armv7
+          - arch: riscv64
+            runs-on: ubuntu-latest
+            use-qemu: true
+            qemu-arch: riscv64
 
     steps:
       - uses: actions/checkout@v4
 
+      # ==========================================
+      # NATIVE EXECUTION (amd64 and arm64)
+      # ==========================================
       - name: Build & Test (Native)
+        if: matrix.use-qemu == false
         env:
           CUPS_KIND: ${{ matrix.cups }}
           EMULATED: "0"
@@ -69,12 +81,13 @@ jobs:
           sh ci/ci-setup.sh build-retrofit
 
       - name: Autopkgtest (DESTDIR staging, native)
+        if: matrix.use-qemu == false
         run: |
           set -ex
           make test-autopkgtest V=1
 
-      - name: Upload test artifacts
-        if: always()
+      - name: Upload test artifacts (Native)
+        if: matrix.use-qemu == false && always()
         continue-on-error: true
         timeout-minutes: 5
         uses: actions/upload-artifact@v4
@@ -87,24 +100,42 @@ jobs:
             *.trs
           if-no-files-found: ignore
 
-# =============================================================================
-# EMULATED LEGS (armhf via QEMU armv7, riscv64 via QEMU) - re-enable for the
-# full 12-combination matrix once the 6 native legs are green.  Add to the
-# matrix above:
-#
-#     arch: [amd64, arm64, armhf, riscv64]
-#     include:
-#       ...
-#       - arch: armhf
-#         runs-on: ubuntu-latest
-#         use-qemu: true
-#         qemu-arch: armv7
-#       - arch: riscv64
-#         runs-on: ubuntu-latest
-#         use-qemu: true
-#         qemu-arch: riscv64
-#
-# and gate the native step on `if: matrix.use-qemu != true`, adding an emulated
-# step that runs the same ci-setup.sh sequence inside
-# uraimo/run-on-arch-action@v3 (distro ubuntu24.04).
-# =============================================================================
+      # ==========================================
+      # EMULATED EXECUTION (armhf and riscv64)
+      # ==========================================
+      - name: Build & Test (Emulated)
+        if: matrix.use-qemu == true
+        uses: uraimo/run-on-arch-action@v3
+        with:
+          arch: ${{ matrix.qemu-arch }}
+          distro: ubuntu24.04
+          githubToken: ${{ github.token }}
+          install: |
+            apt-get update --fix-missing -y
+            DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata ca-certificates git
+          run: |
+            set -ex
+            export CUPS_KIND="${{ matrix.cups }}"
+            export EMULATED=1
+            sh ci/ci-setup.sh deps
+            sh ci/ci-setup.sh cups "${{ matrix.cups }}"
+            sh ci/ci-setup.sh pdfio
+            sh ci/ci-setup.sh libcupsfilters "${{ matrix.cups }}"
+            sh ci/ci-setup.sh libppd "${{ matrix.cups }}"
+            sh ci/ci-setup.sh pappl "${{ matrix.cups }}"
+            sh ci/ci-setup.sh build-retrofit
+            make test-autopkgtest V=1
+
+      - name: Upload test artifacts (Emulated)
+        if: matrix.use-qemu == true && always()
+        continue-on-error: true
+        timeout-minutes: 5
+        uses: actions/upload-artifact@v4
+        with:
+          name: pappl-retrofit-logs-${{ matrix.arch }}-${{ matrix.cups }}
+          path: |
+            config.log
+            test-suite.log
+            *.log
+            *.trs
+          if-no-files-found: ignore
