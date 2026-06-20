@@ -46,10 +46,8 @@ set -eu
 PDFIO_VER=1.6.4
 LIBCUPSFILTERS_URL="${LIBCUPSFILTERS_URL:-https://github.com/OpenPrinting/libcupsfilters.git}"
 LIBCUPSFILTERS_REF="${LIBCUPSFILTERS_REF:-master}"
-# libppd's CUPS 2.5/3.x support is on this branch until the upstream PR lands;
-# switch to OpenPrinting/libppd master once it is merged.
-LIBPPD_URL="${LIBPPD_URL:-https://github.com/rkt0209/libppd.git}"
-LIBPPD_REF="${LIBPPD_REF:-cups-2.5-and-3.x-support}"
+LIBPPD_URL="${LIBPPD_URL:-https://github.com/OpenPrinting/libppd.git}"
+LIBPPD_REF="${LIBPPD_REF:-master}"
 PAPPL_URL="${PAPPL_URL:-https://github.com/michaelrsweet/pappl.git}"
 PAPPL_REF_14="${PAPPL_REF_14:-v1.4.x}"
 PAPPL_REF_2X="${PAPPL_REF_2X:-master}"
