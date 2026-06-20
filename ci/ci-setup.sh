@@ -105,6 +105,8 @@ build_autoconf() {
 # CUPS 2.5 (OpenPrinting/cups master) ships cups.pc but has dropped cups-config.
 # PAPPL 1.4.x's configure still calls cups-config, so install a thin shim that
 # answers from pkg-config.  Harmless if a real cups-config is already present.
+# Workaround for https://github.com/michaelrsweet/pappl/issues/423 — remove once
+# PAPPL 1.4.x no longer requires cups-config on CUPS 2.5.x.
 install_cups_config_shim() {
 	command -v cups-config >/dev/null 2>&1 && return 0
 	echo "ci-setup: installing cups-config shim (CUPS 2.5 has no cups-config)"
