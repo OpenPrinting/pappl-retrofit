@@ -38,6 +38,12 @@
 #    define prJobCreatePrintOptions(job, num_pages, color) \
               papplJobCreatePrintOptions((job), 1, (num_pages), (color))
 
+//   The single-document job accessors became document-indexed in PAPPL 2.x;
+//   pappl-retrofit always operates on the first document.
+
+#    define papplJobGetFilename(job)  papplJobGetDocumentFilename((job), 1)
+#    define papplJobGetFormat(job)    papplJobGetDocumentFormat((job), 1)
+
 #  else // PAPPL 1.4.x
 
 #    define pr_driver_finishings           finishings
