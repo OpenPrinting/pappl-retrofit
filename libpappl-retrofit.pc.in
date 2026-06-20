@@ -9,4 +9,4 @@ Version: @VERSION@
 
 Libs: -L${libdir} -lpappl-retrofit
 Libs.private: @CUPS_LIBS@ @CUPSFILTERS_LIBS@ @PPD_LIBS@ @PAPPL_LIBS@
-Cflags: -I${includedir} @CUPS_CFLAGS@
+Cflags: -I${includedir} @CUPS_CFLAGS@ @PAPPL_CFLAGS@ @CUPSFILTERS_CFLAGS@ @PPD_CFLAGS@
