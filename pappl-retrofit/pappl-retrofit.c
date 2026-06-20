@@ -3724,7 +3724,7 @@ _prPrinterUpdateForInstallableOptions(
       cupsFreeOptions(extension->num_inst_options, extension->inst_options);
       extension->inst_options = 0;
     }
-    extension->num_inst_options = cupsParseOptions(instoptstr, 0,
+    extension->num_inst_options = cupsParseOptions(instoptstr, NULL, 0,
 						   &extension->inst_options);
     ppdMarkOptions(extension->ppd,
 		   extension->num_inst_options, extension->inst_options);
