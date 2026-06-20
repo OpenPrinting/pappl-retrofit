@@ -21,6 +21,7 @@
 
 #include <pappl-retrofit/print-job-private.h>
 #include <pappl-retrofit/pappl-retrofit-private.h>
+#include <pappl-retrofit/pappl2-private.h>
 #include <pappl-retrofit/libcups2-private.h>
 
 
@@ -976,7 +977,7 @@ _prFilter(
   // seetings correspond to our job options
   //
 
-  job_options = papplJobCreatePrintOptions(job, INT_MAX, 1);
+  job_options = prJobCreatePrintOptions(job, INT_MAX, 1);
 
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 	      "Printing job in spooling mode");

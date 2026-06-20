@@ -20,6 +20,7 @@
 #endif
 
 #include <pappl-retrofit/pappl-retrofit-private.h>
+#include <pappl-retrofit/pappl2-private.h>
 #include <pappl-retrofit/libcups2-private.h>
 
 
@@ -1902,7 +1903,7 @@ _prDriverSetup(
   }
 
   // Finishings
-  driver_data->finishings = PAPPL_FINISHINGS_NONE;
+  driver_data->pr_driver_finishings = PAPPL_FINISHINGS_NONE;
   for (finishings = (ppd_pwg_finishings_t *)cupsArrayGetFirst(pc->finishings);
        finishings;
        finishings = (ppd_pwg_finishings_t *)cupsArrayGetNext(pc->finishings))
@@ -1920,11 +1921,11 @@ _prDriverSetup(
     if (i > 0)
       continue;
     if (finishings->value == IPP_FINISHINGS_STAPLE)
-      driver_data->finishings |= PAPPL_FINISHINGS_STAPLE;
+      driver_data->pr_driver_finishings |= PAPPL_FINISHINGS_STAPLE;
     else  if (finishings->value == IPP_FINISHINGS_PUNCH)
-      driver_data->finishings |= PAPPL_FINISHINGS_PUNCH;
+      driver_data->pr_driver_finishings |= PAPPL_FINISHINGS_PUNCH;
     else if (finishings->value == IPP_FINISHINGS_TRIM)
-      driver_data->finishings |= PAPPL_FINISHINGS_TRIM;
+      driver_data->pr_driver_finishings |= PAPPL_FINISHINGS_TRIM;
   }
 
   // For the options Media Source and Media Type we do not need to

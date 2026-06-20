@@ -42,7 +42,8 @@ libpappl_retrofit_la_SOURCES = \
 	pappl-retrofit/cups-side-back-channel-private.h \
 	pappl-retrofit/web-interface.c \
 	pappl-retrofit/web-interface-private.h \
-	pappl-retrofit/libcups2-private.h
+	pappl-retrofit/libcups2-private.h \
+	pappl-retrofit/pappl2-private.h
 	$(pkgpappl_retrofitinclude_DATA)
 libpappl_retrofit_la_LIBADD = \
 	$(CUPS_LIBS) \
@@ -147,6 +148,7 @@ legacy_printer_app_CFLAGS = \
 	$(CUPS_CFLAGS) \
 	$(CUPSFILTERS_CFLAGS) \
 	$(PPD_CFLAGS) \
+	$(PAPPL_CFLAGS) \
 	-I$(srcdir)/pappl-retrofit/
 
 EXTRA_DIST += \
