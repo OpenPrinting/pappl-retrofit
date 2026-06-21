@@ -102,43 +102,6 @@ build_autoconf() {
 	$SUDO ldconfig || true
 }
 
-# CUPS 2.5 (OpenPrinting/cups master) ships cups.pc but has dropped cups-config.
-# PAPPL 1.4.x's configure still calls cups-config, so install a thin shim that
-# answers from pkg-config.  Harmless if a real cups-config is already present.
-# Workaround for https://github.com/michaelrsweet/pappl/issues/423 — remove once
-# PAPPL 1.4.x no longer requires cups-config on CUPS 2.5.x.
-install_cups_config_shim() {
-	command -v cups-config >/dev/null 2>&1 && return 0
-	echo "ci-setup: installing cups-config shim (CUPS 2.5 has no cups-config)"
-	shim="/usr/local/bin/cups-config"
-	$SUDO mkdir -p /usr/local/bin
-	$SUDO tee "$shim" >/dev/null <<'EOF'
-#!/bin/sh
-# Minimal cups-config shim backed by pkg-config (for CUPS 2.5, no cups-config).
-prefix=$(pkg-config --variable=prefix cups 2>/dev/null)
-[ -n "$prefix" ] || prefix=/usr
-out=""
-add() { out="$out $1"; }
-while [ $# -gt 0 ]; do
-	case "$1" in
-		--cflags)              add "$(pkg-config --cflags cups)" ;;
-		--libs|--image)        add "$(pkg-config --libs cups)" ;;
-		--ldflags)             : ;;
-		--datadir)             add "$prefix/share/cups" ;;
-		--serverbin)           add "$prefix/lib/cups" ;;
-		--serverroot)          add "$prefix/etc/cups" ;;
-		--version)             add "$(pkg-config --modversion cups)" ;;
-		--api-version)         add "$(pkg-config --modversion cups | cut -d. -f1,2)" ;;
-		--help|--build|--prefix|--static) : ;;
-		*)                     : ;;
-	esac
-	shift
-done
-echo $out
-EOF
-	$SUDO chmod +x "$shim"
-}
-
 cmd_cups() {
 	kind="$1"
 	case "$kind" in
@@ -148,10 +111,12 @@ cmd_cups() {
 		source-2.5.x)
 			# CUPS 2.5 (OpenPrinting/cups master) ships cups.pc and has
 			# dropped cups-config.  Force the multiarch libdir so libcups
-			# lands on the default linker search path for transitive linking.
+			# lands on the default linker search path for transitive linking;
+			# its cups.pc then sits on PKG_CONFIG_PATH (set above), which is how
+			# PAPPL 1.4.x and pappl-retrofit's configure find CUPS without
+			# cups-config (per michaelrsweet/pappl#423).
 			build_autoconf https://github.com/OpenPrinting/cups.git master "" \
 				--disable-systemd ${ma:+--libdir=/usr/lib/$ma}
-			install_cups_config_shim
 			;;
 		source-3.x)
 			build_autoconf https://github.com/OpenPrinting/libcups.git master \
