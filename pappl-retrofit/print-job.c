@@ -21,7 +21,7 @@
 
 #include <pappl-retrofit/print-job-private.h>
 #include <pappl-retrofit/pappl-retrofit-private.h>
-#include <pappl-retrofit/pappl2-private.h>
+#include <pappl-retrofit/pappl1-private.h>
 #include <pappl-retrofit/libcups2-private.h>
 
 
@@ -275,7 +275,7 @@ _prGetFileContentType(pappl_job_t *job)
   
   found = NULL;
   content_type = PAPPL_CONTENT_AUTO;
-  informat = papplJobGetFormat(job);
+  informat = papplJobGetDocumentFormat(job, 1);
   if (!strcmp(informat, "image/jpeg"))            // Photos
     content_type = PAPPL_CONTENT_PHOTO;
   else if (!strcmp(informat, "image/png"))        // Screen shots
@@ -283,7 +283,7 @@ _prGetFileContentType(pappl_job_t *job)
   else if (!strcmp(informat, "application/pdf"))  // PDF, creating app in
                                                   // metadata
   {
-    filename = papplJobGetFilename(job);
+    filename = papplJobGetDocumentFilename(job, 1);
     // Run one of the command "pdfinfo" or "exiftool" with the input file,
     // use the first which gets found
     snprintf(command, sizeof(command),
@@ -977,7 +977,7 @@ _prFilter(
   // seetings correspond to our job options
   //
 
-  job_options = prJobCreatePrintOptions(job, INT_MAX, 1);
+  job_options = papplJobCreatePrintOptions(job, 1, INT_MAX, 1);
 
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 	      "Printing job in spooling mode");
@@ -992,7 +992,7 @@ _prFilter(
   // Open the input file...
   //
 
-  filename = papplJobGetFilename(job);
+  filename = papplJobGetDocumentFilename(job, 1);
   if ((fd = open(filename, O_RDONLY)) < 0)
   {
     papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to open input file '%s' for printing: %s",
@@ -1005,7 +1005,7 @@ _prFilter(
   // Get input file format
   //
 
-  informat = papplJobGetFormat(job);
+  informat = papplJobGetDocumentFormat(job, 1);
   papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 	      "Input file format: %s", informat);
 
@@ -1324,8 +1324,8 @@ _prOneBitDitherOnDraft(
   pappl_pr_driver_data_t driver_data;
 
 
-  if (!strcmp(papplJobGetFormat(job), "image/urf") ||
-      !strcmp(papplJobGetFormat(job), "image/pwg-raster"))
+  if (!strcmp(papplJobGetDocumentFormat(job, 1), "image/urf") ||
+      !strcmp(papplJobGetDocumentFormat(job, 1), "image/pwg-raster"))
   {
     papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 		"Not changing Raster input color depth on PWG/Apple Raster input");
@@ -1346,8 +1346,8 @@ _prOneBitDitherOnDraft(
     papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
 		"Monochrome draft quality job -> 1-bit dithering for speed-up");
     if (options->print_content_optimize == PAPPL_CONTENT_PHOTO ||
-	!strcmp(papplJobGetFormat(job), "image/jpeg") ||
-	!strcmp(papplJobGetFormat(job), "image/png"))
+	!strcmp(papplJobGetDocumentFormat(job, 1), "image/jpeg") ||
+	!strcmp(papplJobGetDocumentFormat(job, 1), "image/png"))
     {
       memcpy(options->dither, driver_data.pdither, sizeof(options->dither));
       papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,

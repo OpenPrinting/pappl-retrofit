@@ -20,7 +20,7 @@
 #endif
 
 #include <pappl-retrofit/pappl-retrofit-private.h>
-#include <pappl-retrofit/pappl2-private.h>
+#include <pappl-retrofit/pappl1-private.h>
 #include <pappl-retrofit/libcups2-private.h>
 
 
@@ -1837,11 +1837,11 @@ _prDriverSetup(
   // Raster graphics modes fo PWG Raster input
   if (ppd->color_device)
     driver_data->raster_types =
-      PAPPL_PWG_RASTER_TYPE_BLACK_1 | PAPPL_PWG_RASTER_TYPE_SGRAY_8 |
-      PAPPL_PWG_RASTER_TYPE_SRGB_8;
+      PAPPL_RASTER_TYPE_BLACK_1 | PAPPL_RASTER_TYPE_SGRAY_8 |
+      PAPPL_RASTER_TYPE_SRGB_8;
   else
     driver_data->raster_types =
-      PAPPL_PWG_RASTER_TYPE_BLACK_1 | PAPPL_PWG_RASTER_TYPE_SGRAY_8;
+      PAPPL_RASTER_TYPE_BLACK_1 | PAPPL_RASTER_TYPE_SGRAY_8;
   driver_data->force_raster_type = 0;
 
   // Duplex
@@ -1903,7 +1903,7 @@ _prDriverSetup(
   }
 
   // Finishings
-  driver_data->pr_driver_finishings = PAPPL_FINISHINGS_NONE;
+  driver_data->finishings_supported = PAPPL_FINISHINGS_NONE;
   for (finishings = (ppd_pwg_finishings_t *)cupsArrayGetFirst(pc->finishings);
        finishings;
        finishings = (ppd_pwg_finishings_t *)cupsArrayGetNext(pc->finishings))
@@ -1921,11 +1921,11 @@ _prDriverSetup(
     if (i > 0)
       continue;
     if (finishings->value == IPP_FINISHINGS_STAPLE)
-      driver_data->pr_driver_finishings |= PAPPL_FINISHINGS_STAPLE;
+      driver_data->finishings_supported |= PAPPL_FINISHINGS_STAPLE;
     else  if (finishings->value == IPP_FINISHINGS_PUNCH)
-      driver_data->pr_driver_finishings |= PAPPL_FINISHINGS_PUNCH;
+      driver_data->finishings_supported |= PAPPL_FINISHINGS_PUNCH;
     else if (finishings->value == IPP_FINISHINGS_TRIM)
-      driver_data->pr_driver_finishings |= PAPPL_FINISHINGS_TRIM;
+      driver_data->finishings_supported |= PAPPL_FINISHINGS_TRIM;
   }
 
   // For the options Media Source and Media Type we do not need to

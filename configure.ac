@@ -216,13 +216,13 @@ AC_CHECK_HEADER(strings.h,AC_DEFINE(HAVE_STRINGS_H))
 # ==========================
 # Check for needed libraries
 # ==========================
-# PAPPL 2.x (libcups3) ships its pkg-config module as "pappl2" and installs its
-# headers under .../pappl2/; PAPPL 1.4.x (libcups2) uses "pappl".  Accept either
-# so pappl-retrofit builds against both PAPPL generations.
-PKG_CHECK_MODULES([PAPPL], [pappl2], [
-    AC_DEFINE([HAVE_PAPPL2], [1], [Building against PAPPL 2.x (libcups3)])
-], [
+# pappl-retrofit's principal code targets PAPPL 2.x (libcups3), whose pkg-config
+# module is "pappl2" (headers under .../pappl2/).  PAPPL 1.4.x (libcups2) ships
+# the "pappl" module; when only that is present, define HAVE_PAPPL1 so the
+# pappl1-private.h compatibility shims are applied.
+PKG_CHECK_MODULES([PAPPL], [pappl2], [], [
     PKG_CHECK_MODULES([PAPPL], [pappl])
+    AC_DEFINE([HAVE_PAPPL1], [1], [Building against PAPPL 1.4.x (libcups2)])
 ])
 AC_SUBST(PAPPL_CFLAGS)
 AC_SUBST(PAPPL_LIBS)
