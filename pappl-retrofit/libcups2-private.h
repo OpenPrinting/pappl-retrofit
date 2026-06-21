@@ -45,6 +45,16 @@
 
 #    define cupsCreateTempFd(prefix,suffix,buffer,bufsize) cupsTempFd(buffer,bufsize)
 
+//   cupsParseOptions gained a 4th parameter ("end") in libcups3.  The code
+//   uses the libcups3 4-argument signature; map it onto the libcups2 forms:
+//   CUPS 2.5 provides cupsParseOptions2 (4-arg), CUPS 2.4 has the 3-arg form.
+
+#    if CUPS_VERSION_MINOR >= 5
+#      define cupsParseOptions cupsParseOptions2
+#    else
+#      define cupsParseOptions(arg, end, num_options, options) cupsParseOptions(arg, num_options, options)
+#    endif
+
 //   Data types renamed in libcups3
 
 #    define cups_acopy_cb_t       cups_acopy_func_t
@@ -57,8 +67,10 @@
 
 #    define cups_len_t            int
 
-//   Data type newly introduced in libcups3
+//   Data type newly introduced in libcups3.  CUPS 2.5 already provides it, so
+//   only define it for older libcups2 (CUPS 2.4.x and earlier).
 
+#    if CUPS_VERSION_MINOR < 5
 enum http_resolve_e			// @link httpResolveURI@ options bit values
 {
   HTTP_RESOLVE_DEFAULT = 0,		// Resolve with default options
@@ -66,6 +78,7 @@ enum http_resolve_e			// @link httpResolveURI@ options bit values
   HTTP_RESOLVE_FAXOUT = 2		// Resolve FaxOut service instead of Print
 };
 typedef unsigned http_resolve_t;	// @link httpResolveURI@ options bitfield
+#    endif
 
 #  else
 
