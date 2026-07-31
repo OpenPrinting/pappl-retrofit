@@ -3820,6 +3820,18 @@ prSetupDeviceSettingsPage(pappl_printer_t *printer, // I - Printer
 
   papplPrinterGetDriverData(printer, &driver_data);
   extension = (pr_driver_extension_t *)driver_data.extension;
+
+  if (!extension->human_strings_resource && extension->human_strings)
+  {
+    papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
+		    "Registering human-readable strings of the PPD's options for the web interface.");
+    snprintf(path, sizeof(path), "/%s/ui.strings",
+	     papplPrinterGetName(printer));
+    extension->human_strings_resource = strdup(path);
+    papplSystemAddStringsData(system, extension->human_strings_resource,
+			      "en", extension->human_strings);
+  }
+
   if (extension->defaults_pollable ||
       extension->installable_options)
   {
@@ -4401,7 +4413,6 @@ _prStatus(pappl_printer_t *printer) // I - Printer
   pr_printer_app_global_data_t *global_data;
   pappl_device_t	*device;		// Printer device
   pappl_supply_t	supply[32];		// Printer supply information
-  char                  buf[1024];
 
   // Get system...
   system = papplPrinterGetSystem(printer);
@@ -4413,17 +4424,6 @@ _prStatus(pappl_printer_t *printer) // I - Printer
   papplPrinterGetDriverData(printer, &driver_data);
   extension = (pr_driver_extension_t *)driver_data.extension;
   global_data = extension->global_data;
-  if (!extension->human_strings_resource && extension->human_strings)
-  {
-    // Register human-readable strings of vendor options for web interface
-    papplLogPrinter(printer, PAPPL_LOGLEVEL_DEBUG,
-		    "Registering human-readable strings of the PPD's options for the web interface.");
-    snprintf(buf, sizeof(buf), "/%s/ui.strings",
-	     papplPrinterGetName(printer));
-    extension->human_strings_resource = strdup(buf);
-    papplSystemAddStringsData(system, extension->human_strings_resource,
-			      "en", extension->human_strings);
-  }
   if (!extension->updated)
   {
     // Adjust the driver data according to the installed accessories
