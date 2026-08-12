@@ -49,13 +49,14 @@
 static void
 cups_setup(fd_set         *set,		// I - Set for select()
            struct timeval *tval,	// I - Timer value
-	   double         timeout)	// I - Timeout in seconds
+	   double         timeout,	// I - Timeout in seconds
+	   int            fd)		// I - File descriptor
 {
   tval->tv_sec = (time_t)timeout;
   tval->tv_usec = (suseconds_t)(1000000.0 * (timeout - tval->tv_sec));
 
   FD_ZERO(set);
-  FD_SET(3, set);
+  FD_SET(fd, set);
 }
 
 
@@ -68,7 +69,8 @@ cups_setup(fd_set         *set,		// I - Set for select()
 //
 
 ssize_t					// O - Bytes read or -1 on error
-_prBackChannelRead(char   *buffer,	// I - Buffer to read into
+_prBackChannelRead(int    fd,		// I - Back-channel file descriptor
+                    char   *buffer,	// I - Buffer to read into
                     size_t bytes,	// I - Bytes to read
 		    double timeout)	// I - Timeout in seconds, typically
                                         //     0.0 to poll
@@ -84,12 +86,12 @@ _prBackChannelRead(char   *buffer,	// I - Buffer to read into
 
   do
   {
-    cups_setup(&input, &tval, timeout);
+    cups_setup(&input, &tval, timeout, fd);
 
     if (timeout < 0.0)
-      status = select(4, &input, NULL, NULL, NULL);
+      status = select(fd + 1, &input, NULL, NULL, NULL);
     else
-      status = select(4, &input, NULL, NULL, &tval);
+      status = select(fd + 1, &input, NULL, NULL, &tval);
   }
   while (status < 0 && errno != EINTR && errno != EAGAIN);
 
@@ -101,9 +103,9 @@ _prBackChannelRead(char   *buffer,	// I - Buffer to read into
   //
 
 #ifdef _WIN32
-  return ((ssize_t)_read(3, buffer, (unsigned)bytes));
+  return ((ssize_t)_read(fd, buffer, (unsigned)bytes));
 #else
-  return (read(3, buffer, bytes));
+  return (read(fd, buffer, bytes));
 #endif // _WIN32
 }
 
@@ -119,6 +121,7 @@ _prBackChannelRead(char   *buffer,	// I - Buffer to read into
 
 ssize_t					// O - Bytes written or -1 on error
 _prBackChannelWrite(
+    int        fd,			// I - Back-channel file descriptor
     const char *buffer,			// I - Buffer to write
     size_t     bytes,			// I - Bytes to write
     double     timeout)			// I - Timeout in seconds, typically 1.0
@@ -144,12 +147,12 @@ _prBackChannelWrite(
 
     do
     {
-      cups_setup(&output, &tval, timeout);
+      cups_setup(&output, &tval, timeout, fd);
 
       if (timeout < 0.0)
-	status = select(4, NULL, &output, NULL, NULL);
+	status = select(fd + 1, NULL, &output, NULL, NULL);
       else
-	status = select(4, NULL, &output, NULL, &tval);
+	status = select(fd + 1, NULL, &output, NULL, &tval);
     }
     while (status < 0 && errno != EINTR && errno != EAGAIN);
 
@@ -161,9 +164,9 @@ _prBackChannelWrite(
     //
 
 #ifdef _WIN32
-    count = (ssize_t)_write(3, buffer, (unsigned)(bytes - total));
+    count = (ssize_t)_write(fd, buffer, (unsigned)(bytes - total));
 #else
-    count = write(3, buffer, bytes - total);
+    count = write(fd, buffer, bytes - total);
 #endif // _WIN32
 
     if (count < 0)
@@ -207,6 +210,7 @@ _prBackChannelWrite(
 
 pr_sc_status_t				// O  - Status of command
 _prSideChannelDoRequest(
+    int               fd,		// I  - Side-channel file descriptor
     pr_sc_command_t command,		// I  - Command to send
     char              *data,		// O  - Response data buffer pointer
     int               *datalen,		// IO - Size of data buffer on entry,
@@ -218,10 +222,10 @@ _prSideChannelDoRequest(
   pr_sc_command_t	rcommand;	// Response command
 
 
-  if (_prSideChannelWrite(command, _PR_SC_STATUS_NONE, NULL, 0, timeout))
+  if (_prSideChannelWrite(fd, command, _PR_SC_STATUS_NONE, NULL, 0, timeout))
     return (_PR_SC_STATUS_TIMEOUT);
 
-  if (_prSideChannelRead(&rcommand, &status, data, datalen, timeout))
+  if (_prSideChannelRead(fd, &rcommand, &status, data, datalen, timeout))
     return (_PR_SC_STATUS_TIMEOUT);
 
   if (rcommand != command)
@@ -246,6 +250,7 @@ _prSideChannelDoRequest(
 
 int					// O  - 0 on success, -1 on error
 _prSideChannelRead(
+    int               fd,		// I  - Side-channel file descriptor
     pr_sc_command_t *command,		// O  - Command code
     pr_sc_status_t  *status,		// O  - Status code
     char              *data,		// O  - Data buffer pointer
@@ -278,7 +283,7 @@ _prSideChannelRead(
   //
 
 #ifdef HAVE_POLL
-  pfd.fd     = _PR_SC_FD;
+  pfd.fd     = fd;
   pfd.events = POLLIN;
 
   while ((nfds = poll(&pfd, 1,
@@ -288,12 +293,12 @@ _prSideChannelRead(
 
 #else // select()
   FD_ZERO(&input_set);
-  FD_SET(_PR_SC_FD, &input_set);
+  FD_SET(fd, &input_set);
 
   stimeout.tv_sec  = (int)timeout;
   stimeout.tv_usec = (int)(timeout * 1000000) % 1000000;
 
-  while ((nfds = select(_PR_SC_FD + 1, &input_set, NULL, NULL,
+  while ((nfds = select(fd + 1, &input_set, NULL, NULL,
 			timeout < 0.0 ? NULL : &stimeout)) < 0 &&
 	 (errno == EINTR || errno == EAGAIN))
     ;
@@ -326,7 +331,7 @@ _prSideChannelRead(
     return (-1);
   }
 
-  while ((bytes = read(_PR_SC_FD, buffer, _PR_SC_MAX_BUFFER)) < 0)
+  while ((bytes = read(fd, buffer, _PR_SC_MAX_BUFFER)) < 0)
     if (errno != EINTR && errno != EAGAIN)
     {
       free(buffer);
@@ -434,6 +439,7 @@ _prSideChannelRead(
 
 pr_sc_status_t				// O  - Query status
 _prSideChannelSNMPGet(
+    int        fd,			// I  - Side-channel file descriptor
     const char *oid,			// I  - OID to query
     char       *data,			// I  - Buffer for OID value
     int        *datalen,		// IO - Size of OID buffer on entry,
@@ -460,7 +466,7 @@ _prSideChannelSNMPGet(
   // Send the request to the backend and wait for a response...
   //
 
-  if (_prSideChannelWrite(_PR_SC_CMD_SNMP_GET, _PR_SC_STATUS_NONE, oid,
+  if (_prSideChannelWrite(fd, _PR_SC_CMD_SNMP_GET, _PR_SC_STATUS_NONE, oid,
                            (int)strlen(oid) + 1, timeout))
     return (_PR_SC_STATUS_TIMEOUT);
 
@@ -468,7 +474,7 @@ _prSideChannelSNMPGet(
     return (_PR_SC_STATUS_TOO_BIG);
 
   real_datalen = _PR_SC_MAX_BUFFER;
-  if (_prSideChannelRead(&rcommand, &status, real_data, &real_datalen, timeout))
+  if (_prSideChannelRead(fd, &rcommand, &status, real_data, &real_datalen, timeout))
   {
     free(real_data);
     return (_PR_SC_STATUS_TIMEOUT);
@@ -537,6 +543,7 @@ pr_sc_status_t				// O - Status of first query of
                                         //     @code _PR_SC_STATUS_OK@ on
                                         //     success
 _prSideChannelSNMPWalk(
+    int                 fd,		// I - Side-channel file descriptor
     const char          *oid,		// I - First numeric OID to query
     double              timeout,	// I - Timeout for each query in seconds
     pr_sc_walk_func_t cb,		// I - Function to call with each value
@@ -576,7 +583,7 @@ _prSideChannelSNMPWalk(
     // Send the request to the backend and wait for a response...
     //
 
-    if (_prSideChannelWrite(_PR_SC_CMD_SNMP_GET_NEXT, _PR_SC_STATUS_NONE,
+    if (_prSideChannelWrite(fd, _PR_SC_CMD_SNMP_GET_NEXT, _PR_SC_STATUS_NONE,
                              current_oid, (int)strlen(current_oid) + 1, timeout))
     {
       free(real_data);
@@ -584,7 +591,7 @@ _prSideChannelSNMPWalk(
     }
 
     real_datalen = _PR_SC_MAX_BUFFER;
-    if (_prSideChannelRead(&rcommand, &status, real_data, &real_datalen,
+    if (_prSideChannelRead(fd, &rcommand, &status, real_data, &real_datalen,
                             timeout))
     {
       free(real_data);
@@ -651,6 +658,7 @@ _prSideChannelSNMPWalk(
 
 int					// O - 0 on success, -1 on error
 _prSideChannelWrite(
+    int               fd,		// I - Side-channel file descriptor
     pr_sc_command_t command,		// I - Command code
     pr_sc_status_t  status,		// I - Status code
     const char        *data,		// I - Data buffer pointer
@@ -680,7 +688,7 @@ _prSideChannelWrite(
   //
 
 #ifdef HAVE_POLL
-  pfd.fd     = _PR_SC_FD;
+  pfd.fd     = fd;
   pfd.events = POLLOUT;
 
   if (timeout < 0.0)
@@ -693,11 +701,11 @@ _prSideChannelWrite(
 
 #else // select()
   FD_ZERO(&output_set);
-  FD_SET(_PR_SC_FD, &output_set);
+  FD_SET(fd, &output_set);
 
   if (timeout < 0.0)
   {
-    if (select(_PR_SC_FD + 1, NULL, &output_set, NULL, NULL) < 1)
+    if (select(fd + 1, NULL, &output_set, NULL, NULL) < 1)
       return (-1);
   }
   else
@@ -705,7 +713,7 @@ _prSideChannelWrite(
     stimeout.tv_sec  = (int)timeout;
     stimeout.tv_usec = (int)(timeout * 1000000) % 1000000;
 
-    if (select(_PR_SC_FD + 1, NULL, &output_set, NULL, &stimeout) < 1)
+    if (select(fd + 1, NULL, &output_set, NULL, &stimeout) < 1)
       return (-1);
   }
 #endif // HAVE_POLL
@@ -737,7 +745,7 @@ _prSideChannelWrite(
     bytes += datalen;
   }
 
-  while (write(_PR_SC_FD, buffer, (size_t)bytes) < 0)
+  while (write(fd, buffer, (size_t)bytes) < 0)
     if (errno != EINTR && errno != EAGAIN)
     {
       free(buffer);

@@ -1014,13 +1014,9 @@ _prCUPSDevRead(pappl_device_t *device,
   if (!device_data->backend_pid && !_prCUPSDevLaunchBackend(device))
     return (-1);
 
-  // Standard FD for back channel is 3, the CUPS library functions use
-  // always FD 3. Therefore we redirect our back channel pipe end to
-  // FD 3
-  dup2(device_data->backfd, 3);
-
   // Read from the back channel of the backend
-  return (_prBackChannelRead(buffer, bytes, device_data->back_timeout));
+  return (_prBackChannelRead(device_data->backfd, buffer, bytes,
+			     device_data->back_timeout));
 }
 
 
@@ -1092,13 +1088,9 @@ _prCUPSDevStatus(pappl_device_t *device)
 
   // Query status via side channel
 
-  // Standard FD for side channel is 4, the CUPS library functions
-  // always use FD 4. Therefore we redirect our side channel pipe end
-  // to FD 4
-  dup2(device_data->sidefd, 4);
-
   datalen = 1;
-  if ((sc_status = _prSideChannelDoRequest(_PR_SC_CMD_GET_STATE, &_prStatus,
+  if ((sc_status = _prSideChannelDoRequest(device_data->sidefd,
+					   _PR_SC_CMD_GET_STATE, &_prStatus,
 					   &datalen,
 					   device_data->side_timeout)) !=
       _PR_SC_STATUS_OK)
@@ -1166,13 +1158,9 @@ _prCUPSDevID(pappl_device_t *device,
 
   // Query device ID via side channel
 
-  // Standard FD for side channel is 4, the CUPS library functions
-  // always use FD 4. Therefore we redirect our side channel pipe end
-  // to FD 4
-  dup2(device_data->sidefd, 4);
-
   datalen = bufsize;
-  if ((sc_status = _prSideChannelDoRequest(_PR_SC_CMD_GET_DEVICE_ID,
+  if ((sc_status = _prSideChannelDoRequest(device_data->sidefd,
+					   _PR_SC_CMD_GET_DEVICE_ID,
 					   buffer, &datalen,
 					   device_data->side_timeout)) !=
       _PR_SC_STATUS_OK)

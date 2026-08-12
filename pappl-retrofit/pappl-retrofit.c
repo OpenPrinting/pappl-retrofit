@@ -624,13 +624,9 @@ prIdentify(
     if (!device_data->backend_pid && !_prCUPSDevLaunchBackend(device))
       return;
 
-    // Standard FD for the side channel is 4, the CUPS library
-    // functions use always FD 4. Therefore we redirect our side
-    // channel pipe end to FD 4
-    dup2(device_data->sidefd, 4);
-
     datalen = 0;
-    if ((sc_status = _prSideChannelDoRequest(_PR_SC_CMD_SOFT_RESET, NULL,
+    if ((sc_status = _prSideChannelDoRequest(device_data->sidefd,
+					     _PR_SC_CMD_SOFT_RESET, NULL,
 					     &datalen,
 					     device_data->side_timeout)) !=
 	_PR_SC_STATUS_OK)
@@ -3234,14 +3230,10 @@ _prPollDeviceOptionDefaults(
     if (!device_data->backend_pid && !_prCUPSDevLaunchBackend(device))
       return (0);
 
-    // Standard FD for the side channel is 4, the CUPS library
-    // functions use always FD 4. Therefore we redirect our side
-    // channel pipe end to FD 4
-    dup2(device_data->sidefd, 4);
-
     // See if the backend supports bidirectional I/O...
     datalen = 1;
-    if (_prSideChannelDoRequest(_PR_SC_CMD_GET_BIDI, buf, &datalen,
+    if (_prSideChannelDoRequest(device_data->sidefd,
+				_PR_SC_CMD_GET_BIDI, buf, &datalen,
 				5.0) != _PR_SC_STATUS_OK ||
 	buf[0] != _PR_SC_BIDI_SUPPORTED)
     {
@@ -3303,7 +3295,8 @@ _prPollDeviceOptionDefaults(
       sleep(1);
       datalen = 1;
     }
-    while (_prSideChannelDoRequest(_PR_SC_CMD_GET_CONNECTED, buf, &datalen,
+    while (_prSideChannelDoRequest(device_data->sidefd,
+				   _PR_SC_CMD_GET_CONNECTED, buf, &datalen,
 				   device_data->side_timeout) ==
 	   _PR_SC_STATUS_OK && !buf[0]);
   }
@@ -3442,7 +3435,8 @@ _prPollDeviceOptionDefaults(
       {
 	// Flush the data from the backend into the printer
 	datalen = 0;
-	_prSideChannelDoRequest(_PR_SC_CMD_DRAIN_OUTPUT, buf, &datalen,
+	_prSideChannelDoRequest(device_data->sidefd,
+				_PR_SC_CMD_DRAIN_OUTPUT, buf, &datalen,
 				device_data->side_timeout);
       }
       

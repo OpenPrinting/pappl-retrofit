@@ -38,9 +38,6 @@ extern "C" {
 // Constants...
 //
 
-#define _PR_SC_FD	4		// File descriptor for select/poll
-
-
 //
 // Enumerations...
 //
@@ -118,24 +115,29 @@ typedef void (*pr_sc_walk_func_t)(const char *oid, const char *data,
 // Prototypes...
 //
 
-extern ssize_t		_prBackChannelRead(char *buffer, size_t bytes,
-					   double timeout);
-extern ssize_t		_prBackChannelWrite(const char *buffer, size_t bytes,
-					    double timeout);
-extern pr_sc_status_t	_prSideChannelDoRequest(pr_sc_command_t command,
+extern ssize_t		_prBackChannelRead(int fd, char *buffer,
+					   size_t bytes, double timeout);
+extern ssize_t		_prBackChannelWrite(int fd, const char *buffer,
+					    size_t bytes, double timeout);
+extern pr_sc_status_t	_prSideChannelDoRequest(int fd,
+						pr_sc_command_t command,
 						char *data, int *datalen,
 						double timeout);
-extern int		_prSideChannelRead(pr_sc_command_t *command,
+extern int		_prSideChannelRead(int fd,
+					   pr_sc_command_t *command,
 					   pr_sc_status_t *status,
 					   char *data, int *datalen,
 					   double timeout);
-extern int		_prSideChannelWrite(pr_sc_command_t command,
+extern int		_prSideChannelWrite(int fd,
+					    pr_sc_command_t command,
 					    pr_sc_status_t status,
 					    const char *data, int datalen,
 					    double timeout);
-extern pr_sc_status_t	_prSideChannelSNMPGet(const char *oid, char *data,
-					      int *datalen, double timeout);
-extern pr_sc_status_t	_prSideChannelSNMPWalk(const char *oid, double timeout,
+extern pr_sc_status_t	_prSideChannelSNMPGet(int fd, const char *oid,
+					      char *data, int *datalen,
+					      double timeout);
+extern pr_sc_status_t	_prSideChannelSNMPWalk(int fd, const char *oid,
+					       double timeout,
 					       pr_sc_walk_func_t cb,
 					       void *context);
 
