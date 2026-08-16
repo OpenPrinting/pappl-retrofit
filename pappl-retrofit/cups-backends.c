@@ -173,7 +173,7 @@ _prCUPSSigchldSigAction(int sig,		// I - Signal number (unused)
 
   // One of the backends terminated, mark it as done and add the status
   // to its record
-  for (i = 0; backend_list[i].name && i < MAX_BACKENDS; i ++)
+  for (i = 0; i < MAX_BACKENDS && backend_list[i].name; i ++)
     if (backend_list[i].pid == info->si_pid)
     {
       papplLog(global_data->system, PAPPL_LOGLEVEL_DEBUG,
