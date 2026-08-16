@@ -2114,7 +2114,7 @@ prPSRasterStartPage(
   _prOneBitDitherOnDraft(job, options);
 
   // DSC header
-  fprintf(devout, "%%%%Page: (%d) %d\n", page, page);
+  fprintf(devout, "%%%%Page: (%u) %u\n", page, page);
   fputs("%%BeginPageSetup\n", devout);
   ppdEmit(job_data->ppd, devout, PPD_ORDER_PAGE);
   fputs("%%EndPageSetup\n", devout);

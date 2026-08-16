@@ -954,7 +954,7 @@ _prPPDMissingFilters(int num_filters,          // I - Number of filter
     if (!filter_name[0])
       continue;
 
-    if (!filter_name[0] || strcmp(filter_name, "-") == 0)
+    if (strcmp(filter_name, "-") == 0)
       // Null filter ("-")
       continue;
     else if ((filter_path = _prCUPSFilterPath(filter_name, filter_dir)) ==
