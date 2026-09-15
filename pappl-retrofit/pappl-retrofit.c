@@ -1362,7 +1362,7 @@ _prDriverSetup(
     driver_data->identify_default   = PAPPL_IDENTIFY_ACTIONS_SOUND;
     driver_data->identify_supported = PAPPL_IDENTIFY_ACTIONS_DISPLAY |
                                       PAPPL_IDENTIFY_ACTIONS_SOUND;
-    driver_data->printfile_cb       = NULL;
+    driver_data->printfile_cb       = prPrintFile;
     driver_data->rendjob_cb         = NULL;
     driver_data->rendpage_cb        = NULL;
     driver_data->rstartjob_cb       = NULL;

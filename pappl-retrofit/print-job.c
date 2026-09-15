@@ -1534,6 +1534,214 @@ _prPrintFilterFunction(int inputfd,           // I - File descriptor input
 
 
 //
+// 'prPrintFile()' - Print a raw file by passing it directly to
+//                   the device without filtering.  Used as the
+//                   printfile_cb callback for PAPPL's raw print
+//                   path when the job format matches the driver's
+//                   native format.
+//
+
+bool                                         // O - `true` on success, `false` on failure
+prPrintFile(
+    pappl_job_t        *job,                 // I - Job
+    pappl_pr_options_t *options,             // I - Job options
+    pappl_device_t     *device)              // I - Output device
+{
+  int                   fd;                  // Input file descriptor
+  ssize_t               bytes;               // Bytes read/written
+  char                  buffer[65536];       // Read/write buffer
+  pappl_printer_t       *printer = NULL;     // Printer
+  pappl_pr_driver_data_t driver_data,        // Driver data
+                         *ret_data = NULL;   // Return data pointer
+  pr_driver_extension_t *extension;          // Driver extension data
+  pr_printer_app_global_data_t *global_data; // Global data
+  const char            *device_uri;         // Printer device URI
+  pr_cups_device_data_t *device_data = NULL; // CUPS backend device data
+  cf_filter_data_t      *filter_data = NULL; // Filter data for CUPS backend
+  char                  filename[2048];      // Debug copy file name
+  int                   debug_fd = -1;       // File descriptor for debug copy
+  bool                  ret = true;          // Return value
+
+
+  (void)options;
+
+  if (!job || !device)
+    return (false);
+
+  if ((printer = papplJobGetPrinter(job)) == NULL)
+    return (false);
+
+  if ((ret_data = papplPrinterGetDriverData(printer, &driver_data)) == NULL)
+    return (false);
+
+  extension = (pr_driver_extension_t *)driver_data.extension;
+
+  if (!extension || !extension->global_data)
+    return (false);
+
+  global_data = extension->global_data;
+
+  if ((device_uri = papplPrinterGetDeviceURI(printer)) == NULL)
+    return (false);
+
+  //
+  // Connect filter_data to CUPS backend if using cups: device URI
+  //
+
+  if (global_data->config && global_data->config->components & PR_COPTIONS_CUPS_BACKENDS &&
+      strncmp(device_uri, "cups:", 5) == 0)
+  {
+    filter_data = (cf_filter_data_t *)calloc(1, sizeof(cf_filter_data_t));
+
+    if (!filter_data)
+    {
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+      return (false);
+    }
+
+    filter_data->back_pipe[0] = -1;
+    filter_data->back_pipe[1] = -1;
+    filter_data->side_pipe[0] = -1;
+    filter_data->side_pipe[1] = -1;
+    filter_data->logfunc = _prJobLog;
+    filter_data->logdata = job;
+    filter_data->iscanceledfunc = _prJobIsCanceled;
+    filter_data->iscanceleddata = job;
+
+    if (cfFilterOpenBackAndSidePipes(filter_data))
+    {
+      free(filter_data);
+
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Couldn't open side and back channels to the backend");
+      return (false);
+    }
+
+    if ((device_data = (pr_cups_device_data_t *)papplDeviceGetData(device)) == NULL)
+    {
+      cfFilterCloseBackAndSidePipes(filter_data);
+      free(filter_data);
+
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "No device data found");
+      return (false);
+    }
+    else
+      device_data->filter_data = filter_data;
+  }
+
+  //
+  // Update printer status
+  //
+
+  _prUpdateStatus(printer, device);
+
+  //
+  // Clean up old debug copies and open a new one if in debug mode
+  //
+
+  _prCleanDebugCopies(global_data);
+
+  if (papplSystemGetLogLevel(global_data->system) == PAPPL_LOGLEVEL_DEBUG)
+  {
+    snprintf(filename, sizeof(filename), "%s/debug-jobdata-%s-%d.prn",
+             global_data->spool_dir, papplPrinterGetName(printer),
+             papplJobGetID(job));
+    papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+                "Creating debug copy: %s", filename);
+    debug_fd = open(filename, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
+  }
+
+  //
+  // Open the raw job file
+  //
+
+  papplJobSetImpressions(job, 1);
+
+  if ((fd = open(papplJobGetDocumentFilename(job, 1), O_RDONLY)) < 0)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_ERROR,
+                "Unable to open print file '%s': %s",
+                papplJobGetDocumentFilename(job, 1), strerror(errno));
+    ret = false;
+    goto cleanup;
+  }
+
+  //
+  // Copy raw data to the device
+  //
+
+  while ((bytes = read(fd, buffer, sizeof(buffer))) > 0)
+  {
+    if (debug_fd >= 0)
+    {
+      if (write(debug_fd, buffer, (size_t)bytes) != bytes)
+      {
+        papplLogJob(job, PAPPL_LOGLEVEL_WARN,
+                    "Debug copy: Unable to write %d bytes, "
+                    "stopping debug copy, continuing job.",
+                    (int)bytes);
+        close(debug_fd);
+        debug_fd = -1;
+      }
+    }
+
+    if (papplDeviceWrite(device, buffer, (size_t)bytes) < 0)
+    {
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR,
+                  "Unable to send %d bytes to printer.",
+                  (int)bytes);
+      close(fd);
+      ret = false;
+      goto cleanup;
+    }
+  }
+  close(fd);
+
+  if (bytes < 0)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_ERROR,
+                "Unable to read print file: %s", strerror(errno));
+    ret = false;
+    goto cleanup;
+  }
+
+  papplDeviceFlush(device);
+
+  papplJobSetImpressionsCompleted(job, 1);
+
+  //
+  // Clean up
+  //
+
+cleanup:
+
+  if (debug_fd >= 0)
+    close(debug_fd);
+
+  //
+  // Update printer status
+  //
+
+  _prUpdateStatus(printer, device);
+
+  //
+  // Stop CUPS backend and disconnect filter_data
+  //
+
+  if (device_data && filter_data)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_DEBUG,
+                "Shutting down CUPS backend");
+    _prCUPSDevStopBackend(device);
+    device_data->filter_data = NULL;
+    cfFilterCloseBackAndSidePipes(filter_data);
+    free(filter_data);
+  }
+
+  return (ret);
+}
+
+
+//
 // '_prRasterPrepareJob()' - Create job data record to carry through
 //                           all the raster printing callbacks from
 //                           the PPD and job attributes.  Also create

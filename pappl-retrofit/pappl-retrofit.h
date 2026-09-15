@@ -274,6 +274,8 @@ extern bool   prPSRasterStartPage(pappl_job_t *job, pappl_pr_options_t *options,
 extern bool   prPSRasterWriteLine(pappl_job_t *job, pappl_pr_options_t *options,
 				  pappl_device_t *device, unsigned y,
 				  const unsigned char *pixels);
+extern bool   prPrintFile(pappl_job_t *job, pappl_pr_options_t *options,
+			  pappl_device_t *device);
 extern void   prSetupAddPPDFilesPage(void *data);
 extern void   prSetupDeviceSettingsPage(pappl_printer_t *printer,
 					void *data);
