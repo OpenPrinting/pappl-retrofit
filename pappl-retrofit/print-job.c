@@ -1541,58 +1541,91 @@ _prPrintFilterFunction(int inputfd,           // I - File descriptor input
 //                   native format.
 //
 
-bool                                    // O - `true` on success, `false` on failure
+bool                                         // O - `true` on success, `false` on failure
 prPrintFile(
-    pappl_job_t        *job,            // I - Job
-    pappl_pr_options_t *options,        // I - Job options
-    pappl_device_t     *device)         // I - Output device
+    pappl_job_t        *job,                 // I - Job
+    pappl_pr_options_t *options,             // I - Job options
+    pappl_device_t     *device)              // I - Output device
 {
-  int                   fd;             // Input file descriptor
-  ssize_t               bytes;          // Bytes read/written
-  char                  buffer[65536];  // Read/write buffer
-  pappl_printer_t       *printer;       // Printer
-  pappl_pr_driver_data_t driver_data;   // Driver data
-  pr_driver_extension_t *extension;     // Driver extension data
+  int                   fd;                  // Input file descriptor
+  ssize_t               bytes;               // Bytes read/written
+  char                  buffer[65536];       // Read/write buffer
+  pappl_printer_t       *printer = NULL;     // Printer
+  pappl_pr_driver_data_t driver_data,        // Driver data
+                         *ret_data = NULL;   // Return data pointer
+  pr_driver_extension_t *extension;          // Driver extension data
   pr_printer_app_global_data_t *global_data; // Global data
-  const char            *device_uri;    // Printer device URI
+  const char            *device_uri;         // Printer device URI
   pr_cups_device_data_t *device_data = NULL; // CUPS backend device data
   cf_filter_data_t      *filter_data = NULL; // Filter data for CUPS backend
-  char                  filename[2048]; // Debug copy file name
-  int                   debug_fd = -1; // File descriptor for debug copy
-  bool                  ret = true;    // Return value
+  char                  filename[2048];      // Debug copy file name
+  int                   debug_fd = -1;       // File descriptor for debug copy
+  bool                  ret = true;          // Return value
 
 
   (void)options;
 
-  printer = papplJobGetPrinter(job);
-  papplPrinterGetDriverData(printer, &driver_data);
+  if (!job || !device)
+    return (false);
+
+  if ((printer = papplJobGetPrinter(job)) == NULL)
+    return (false);
+
+  if ((ret_data = papplPrinterGetDriverData(printer, &driver_data)) == NULL)
+    return (false);
+
   extension = (pr_driver_extension_t *)driver_data.extension;
+
+  if (!extension || !extension->global_data)
+    return (false);
+
   global_data = extension->global_data;
-  device_uri = papplPrinterGetDeviceURI(printer);
+
+  if ((device_uri = papplPrinterGetDeviceURI(printer)) == NULL)
+    return (false);
 
   //
   // Connect filter_data to CUPS backend if using cups: device URI
   //
 
-  if (global_data->config->components & PR_COPTIONS_CUPS_BACKENDS &&
+  if (global_data->config && global_data->config->components & PR_COPTIONS_CUPS_BACKENDS &&
       strncmp(device_uri, "cups:", 5) == 0)
   {
     filter_data = (cf_filter_data_t *)calloc(1, sizeof(cf_filter_data_t));
-    if (filter_data)
-    {
-      filter_data->back_pipe[0] = -1;
-      filter_data->back_pipe[1] = -1;
-      filter_data->side_pipe[0] = -1;
-      filter_data->side_pipe[1] = -1;
-      filter_data->logfunc = _prJobLog;
-      filter_data->logdata = job;
-      filter_data->iscanceledfunc = _prJobIsCanceled;
-      filter_data->iscanceleddata = job;
-      cfFilterOpenBackAndSidePipes(filter_data);
 
-      device_data = (pr_cups_device_data_t *)papplDeviceGetData(device);
-      device_data->filter_data = filter_data;
+    if (!filter_data)
+    {
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+      return (false);
     }
+
+    filter_data->back_pipe[0] = -1;
+    filter_data->back_pipe[1] = -1;
+    filter_data->side_pipe[0] = -1;
+    filter_data->side_pipe[1] = -1;
+    filter_data->logfunc = _prJobLog;
+    filter_data->logdata = job;
+    filter_data->iscanceledfunc = _prJobIsCanceled;
+    filter_data->iscanceleddata = job;
+
+    if (cfFilterOpenBackAndSidePipes(filter_data))
+    {
+      free(filter_data);
+
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Couldn't open side and back channels to the backend");
+      return (false);
+    }
+
+    if ((device_data = (pr_cups_device_data_t *)papplDeviceGetData(device)) == NULL)
+    {
+      cfFilterCloseBackAndSidePipes(filter_data);
+      free(filter_data);
+
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "No device data found");
+      return (false);
+    }
+    else
+      device_data->filter_data = filter_data;
   }
 
   //
@@ -1623,11 +1656,11 @@ prPrintFile(
 
   papplJobSetImpressions(job, 1);
 
-  if ((fd = open(papplJobGetFilename(job), O_RDONLY)) < 0)
+  if ((fd = open(papplJobGetDocumentFilename(job, 1), O_RDONLY)) < 0)
   {
     papplLogJob(job, PAPPL_LOGLEVEL_ERROR,
                 "Unable to open print file '%s': %s",
-                papplJobGetFilename(job), strerror(errno));
+                papplJobGetDocumentFilename(job, 1), strerror(errno));
     ret = false;
     goto cleanup;
   }
