@@ -1,79 +1,45 @@
-name: CodeQL
+name: CodeQL Analysis
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
 
 jobs:
   analyze:
-    name: Analyze (C/C++)
+    name: Analyze
     runs-on: ubuntu-latest
 
     permissions:
-      actions: read
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'cpp' ]
-
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
       with:
-        languages: ${{ matrix.language }}
+        languages: c
         queries: +security-and-quality
 
     - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          autoconf \
-          automake \
-          autopoint \
-          libtool \
-          pkg-config \
-          git \
-          libjpeg-dev \
-          libpng-dev \
-          zlib1g-dev \
-          libcupsfilters-dev \
-          libavahi-client-dev \
-          libcups2-dev \
-          libppd-dev \
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: autoconf automake autopoint build-essential libcups2-dev libcupsfilters-dev libppd-dev libpappl-dev
 
-    - name: Install PAPPL and Build project
+    - name: Build project
       run: |
-        export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig
-        echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
-        
-        # Install PAPPL
-        git clone --branch v1.4.10 https://github.com/michaelrsweet/pappl.git
-        cd pappl
-        ./configure --enable-shared
-        make -j$(nproc)
-        sudo -E make install
-        sudo ldconfig
-        cd ..
-        
-        # Verify PAPPL
-        pkg-config --modversion pappl
-        
-        # Build project
-        ./autogen.sh || true
+        ./autogen.sh
         ./configure
         make -j$(nproc)
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
       with:
-        category: "/language:${{ matrix.language }}"
-        
+        category: "/language:c"
