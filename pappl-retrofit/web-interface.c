@@ -1019,6 +1019,9 @@ _prSystemWebAddPPD(
 		  ptr += bytes;
 		}
 
+		if (error)
+		  break;
+
 		// Close the file and verify whether it is a usable PPD file
 		if (bufreadptr > bend) // We have read the boundary string
 		{
