@@ -32,6 +32,7 @@
 #include <cupsfilters/ieee1284.h>
 #include <cups/cups.h>
 #include <cups/dir.h>
+#include <cups/sidechannel.h>
 #include <limits.h>
 #include <poll.h>
 #include <regex.h>
