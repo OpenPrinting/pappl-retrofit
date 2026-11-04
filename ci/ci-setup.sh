@@ -80,7 +80,7 @@ cmd_deps() {
 	apt_install \
 		build-essential autoconf automake libtool libtool-bin pkg-config \
 		gettext autopoint autotools-dev cmake git wget tar make gcc g++ \
-		file dbus \
+		file dbus curl \
 		libavahi-client-dev libssl-dev libpam-dev libusb-1.0-0-dev \
 		zlib1g-dev libqpdf-dev libexif-dev liblcms2-dev libfontconfig1-dev \
 		libfreetype6-dev libcairo2-dev libjpeg-dev libpng-dev libtiff-dev \
