@@ -79,7 +79,10 @@ check_PROGRAMS = \
 TESTS = \
 	test_backend_parse \
 	test_ascii85 \
-	test_devid_match
+	test_devid_match \
+	test_ppd_path.sh
+EXTRA_DIST += \
+	test_ppd_path.sh
 
 test_backend_parse_SOURCES = pappl-retrofit/test_backend_parse.c
 test_backend_parse_LDADD = \
