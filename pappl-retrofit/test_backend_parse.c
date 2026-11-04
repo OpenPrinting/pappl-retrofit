@@ -79,9 +79,11 @@
 #include "test-internal.h"
 #include "cups-backends-private.h"
 
+#include <cupsfilters/ieee1284.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 
 
@@ -360,29 +362,35 @@ main(void)
   }
 
   // ----------------------------------------------------------------------
-  //  T15 — Whitespace differences are NOT normalised away.  Empirically,
-  //  cfIEEE1284NormalizeMakeModel() under
-  //  CF_IEEE1284_NORMALIZE_COMPARE | LOWERCASE | SEPARATOR_SPACE |
-  //  PAD_NUMBERS does collapse case and certain make-name variants
-  //  (T08, T14), but it does NOT squash leading/trailing whitespace
-  //  or runs of internal whitespace in the device_info string.  This
-  //  test pins that behaviour down so a future change to the
-  //  normaliser (or a future flag rearrangement here) that suddenly
-  //  starts squashing whitespace would surface as a test failure
-  //  instead of a silent semantic shift.
-  //
-  //  If you ever do want " HP  LJ " and "HP LJ" to dedupe, you have
-  //  to pre-trim/canonicalise the device_info string before storing
-  //  it in pr_backend_device_t.  The comparator alone will not do it
-  //  for you.
+  //  T15 — Whitespace in device_info. Collapsing runs of spaces is
+  //  libcupsfilters' policy: distro CUPS 2.x leaves them, and the
+  //  cups-filters that the 2.5 and 3 CI jobs build from source
+  //  collapses them. The comparator has to agree with the copy it
+  //  linked, so this checks that instead of pinning one policy.
   // ----------------------------------------------------------------------
-  testBegin("T15: whitespace runs in device_info are NOT normalised away");
+  testBegin("T15: device_info comparison follows the IEEE 1284 normaliser");
   {
+    static const cf_ieee1284_normalize_modes_t mode =
+        CF_IEEE1284_NORMALIZE_COMPARE |
+        CF_IEEE1284_NORMALIZE_LOWERCASE |
+        CF_IEEE1284_NORMALIZE_SEPARATOR_SPACE |
+        CF_IEEE1284_NORMALIZE_PAD_NUMBERS;
+    char bufa[1024], bufb[1024];
+    char *na, *nb;
+    int want, diff;
+
     mkdev(&a, "direct", "  HP   LaserJet  4000  ", "usb://X");
     mkdev(&b, "direct", "HP LaserJet 4000",         "usb://X");
-    int diff = _prCUPSCompareDevices(&a, &b);
-    testEndMessage(diff != 0, "diff=%d (expected !=0 — normaliser does "
-                              "NOT squash whitespace runs)", diff);
+    na = cfIEEE1284NormalizeMakeModel(a.device_info, NULL, mode,
+                                      NULL, bufa, sizeof(bufa),
+                                      NULL, NULL, NULL);
+    nb = cfIEEE1284NormalizeMakeModel(b.device_info, NULL, mode,
+                                      NULL, bufb, sizeof(bufb),
+                                      NULL, NULL, NULL);
+    want = strcasecmp(na, nb);
+    diff = _prCUPSCompareDevices(&a, &b);
+    testEndMessage((diff == 0) == (want == 0),
+                   "diff=%d normaliser=%d", diff, want);
   }
 
 
