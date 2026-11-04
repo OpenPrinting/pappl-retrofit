@@ -744,6 +744,27 @@ _prPrinterWebDeviceConfig(
 }
 
 
+
+//
+// '_prPPDFileNameOk()' - Is this one PPD file name, with no directory?
+//
+
+static int				// O - 1 if the name stays in the directory
+_prPPDFileNameOk(const char *name)	// I - Name from the form
+{
+  const char *p;			// Pointer into name
+
+  if (!name || !name[0] || !strcmp(name, ".") || !strcmp(name, ".."))
+    return (0);
+
+  for (p = name; *p; p ++)
+    if (*p == '/' || *p == '\\')
+      return (0);
+
+  return (1);
+}
+
+
 //
 // '_prSystemWebAddPPD()' - Web interface page for adding/deleting PPD
 //                          files by the user, to add support for
@@ -962,6 +983,15 @@ _prSystemWebAddPPD(
 	    if (filename[0])
 	    {
 	      // Save data of an embedded file...
+
+	      if (!_prPPDFileNameOk(filename))
+	      {
+		papplLogClient(client, PAPPL_LOGLEVEL_ERROR,
+			       "Rejected PPD file name \"%s\".", filename);
+		status = "Error uploading PPD file(s), uploading stopped.";
+		error = true;
+		break;
+	      }
 
 	      // New file
 	      if (fp == NULL) // First data portion
@@ -1328,6 +1358,14 @@ _prSystemWebAddPPD(
 	     i --, opt ++)
 	  if (opt->name[0] == '\t')
 	  {
+	    if (!_prPPDFileNameOk(opt->name + 1))
+	    {
+	      papplLogClient(client, PAPPL_LOGLEVEL_ERROR,
+			     "Rejected PPD delete name \"%s\".",
+			     opt->name + 1);
+	      continue;
+	    }
+
 	    snprintf(destpath, sizeof(destpath), "%s/%s",
 		     global_data->user_ppd_dir, opt->name + 1);
 	    papplLogClient(client, PAPPL_LOGLEVEL_DEBUG,
