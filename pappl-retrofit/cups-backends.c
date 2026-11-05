@@ -612,8 +612,32 @@ _prCUPSDevList(pappl_device_cb_t cb,
 			   (num_backends > 1 ? backends[i].name : ""),
 			   (num_backends > 1 ? ")" : ""));
 		  if (num_backends > 1)
-		    for (ptr1 = buf + strlen(info) + 2; *ptr1 != ')'; ptr1 ++)
-		      *ptr1 = toupper(*ptr1);
+		  {
+		    // "info" can be long enough (it comes straight off a
+		    // backend's discovery output) that the "(name)" suffix
+		    // above got truncated away by snprintf() when it did
+		    // not fit into "buf". Starting the scan at an offset
+		    // derived from the untruncated strlen(info) can then
+		    // point past the end of "buf" entirely, with nothing
+		    // to stop the loop below from running off into
+		    // unrelated memory looking for a ')' that was never
+		    // written. Only walk the suffix if it is actually
+		    // there, found by scanning backward from the end of
+		    // the (always NUL-terminated) buffer we got back.
+		    size_t buflen = strlen(buf);
+
+		    if (buflen > 0 && buf[buflen - 1] == ')')
+		    {
+		      char *close = buf + buflen - 1;
+		      char *open = close;
+
+		      while (open > buf && *open != '(')
+			open --;
+		      if (*open == '(')
+			for (ptr1 = open + 1; ptr1 < close; ptr1 ++)
+			  *ptr1 = toupper(*ptr1);
+		    }
+		  }
 
 		  // Submit device info...
 		  ret = (*cb)(buf, device->device_uri, device_id, data);
