@@ -91,7 +91,12 @@ enum pr_coptions_e                           // Component option bits
   PR_COPTIONS_QUERY_PS_DEFAULTS = 0x0008,    // Support query code in PPDs
   PR_COPTIONS_WEB_ADD_PPDS = 0x0010,         // Support user adding PPDs
   PR_COPTIONS_CUPS_BACKENDS = 0x0020,        // Also use CUPS backends
-  PR_COPTIONS_NO_PAPPL_BACKENDS = 0x0040     // Only use CUPS backends
+  PR_COPTIONS_NO_PAPPL_BACKENDS = 0x0040,    // Only use CUPS backends
+  PR_COPTIONS_FILTER_DRIVERS_BY_STREAM_FORMAT = 0x0080 // Only offer PPDs whose
+                                             // libppd ppd-type matches a
+                                             // stream format (PDL) this
+                                             // Printer Application
+                                             // supports
 };
 typedef unsigned int pr_coptions_t;          // Bitfield for component options
 

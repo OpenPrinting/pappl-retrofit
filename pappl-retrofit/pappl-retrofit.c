@@ -912,6 +912,57 @@ _prPPDFindCUPSFilter(const char *input_format, // I - Input data format
 
 
 //
+// '_prPPDTypeMatchesStreamFormats()' - Check whether libppd's ppd-type
+//                                      for this PPD is one of the stream
+//                                      formats (PDLs) which the Printer
+//                                      Application supports.
+//
+// The result is based on ppd-type and config->stream_formats. Returns
+// true when ppd-type is the libppd type of one of those formats
+// (PostScript, PDF, or CUPS Raster). Also returns true when
+// PR_COPTIONS_FILTER_DRIVERS_BY_STREAM_FORMAT is unset or
+// config->stream_formats is empty, so every PPD stays in the driver
+// list.
+//
+
+static bool                            // O - true if PPD should be
+                                       //     offered as a driver
+_prPPDTypeMatchesStreamFormats(int ppd_type,                    // I - libppd ppd-type
+                               pr_printer_app_config_t *config) // I - Printer Application configuration
+{
+  pr_stream_format_t *stream_format;   // Current stream format
+  const char         *dsttype;         // Stream format MIME type
+
+  // Filtering not requested or no stream format defined
+  if (!(config->components & PR_COPTIONS_FILTER_DRIVERS_BY_STREAM_FORMAT) ||
+      !config->stream_formats)
+    return (true);
+
+  // Check if the ppd-type matches any of the stream formats
+  for (stream_format = (pr_stream_format_t *) cupsArrayGetFirst(config->stream_formats);
+       stream_format;
+       stream_format = (pr_stream_format_t *) cupsArrayGetNext(config->stream_formats))
+  {
+    dsttype = stream_format->dsttype;
+    if (!dsttype)
+      continue;
+
+    if (ppd_type == PPD_TYPE_POSTSCRIPT &&
+        !strcmp(dsttype, PR_STREAM_POSTSCRIPT.dsttype))
+      return (true);
+    if (ppd_type == PPD_TYPE_PDF &&
+        !strcmp(dsttype, PR_STREAM_PDF.dsttype))
+      return (true);
+    if (ppd_type == PPD_TYPE_RASTER &&
+        !strcmp(dsttype, PR_STREAM_CUPS_RASTER.dsttype))
+      return (true);
+  }
+
+  return (false);
+}
+
+
+//
 // '_prPPDMissingFilters()' - Check the strings of the
 //                            "*cupsFilter(2):" lines in a PPD file
 //                            whether all the CUPS filters defined in
@@ -3894,9 +3945,10 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 	   ppd;
 	   ppd = (ppd_info_t *)cupsArrayGetNext(ppds))
       {
-	if (!strcasecmp(ppd->record.make, "Generic") ||
-	    !strncasecmp(ppd->record.make_and_model, "Generic", 7) ||
-	    !strncasecmp(ppd->record.products[0], "Generic", 7))
+	if ((!strcasecmp(ppd->record.make, "Generic") ||
+	     !strncasecmp(ppd->record.make_and_model, "Generic", 7) ||
+	     !strncasecmp(ppd->record.products[0], "Generic", 7)) &&
+	    _prPPDTypeMatchesStreamFormats(ppd->record.type, global_data->config))
 	{
 	  generic_ppd = ppd->record.name;
 	  break;
@@ -3955,6 +4007,18 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
     {
       if (!generic_ppd || strcmp(ppd->record.name, generic_ppd))
       {
+	// Only offer PPDs whose libppd ppd-type matches a stream
+	// format (PDL) which this Printer Application supports
+	if (!_prPPDTypeMatchesStreamFormats(ppd->record.type, global_data->config))
+	{
+	  papplLog(system, PAPPL_LOGLEVEL_DEBUG,
+		   "Skipping PPD %s: ppd-type %d matches none of the "
+		   "served stream formats.",
+		   ppd->record.name, ppd->record.type);
+	  free(ppd);
+	  continue;
+	}
+
 	// If we have a regular expression to extract the extra info
 	// (driver info) from the *NickName entries of the PPDs (for
 	// example if the Printer Application contains more than one
