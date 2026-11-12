@@ -371,7 +371,7 @@ _prSideChannelRead(
     return (-1);
   }
 
-  //command = (pr_sc_command_t)buffer[0];
+  *command = (pr_sc_command_t)buffer[0];
 
   //
   // Validate the data length in the message...
