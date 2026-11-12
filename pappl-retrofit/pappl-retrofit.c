@@ -175,7 +175,7 @@ prBestMatchingPPD(const char *device_id,	// I - IEEE-1284 device ID
     }
 
     // Match make and model with device ID of driver list entry
-    for (i = 1; i < num_drivers; i ++)
+    for (i = 0; i < num_drivers; i ++)
     {
       score = 0;
 
