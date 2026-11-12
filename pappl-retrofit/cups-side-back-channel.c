@@ -621,7 +621,7 @@ _prSideChannelSNMPWalk(
         return (_PR_SC_STATUS_OK);
       }
 
-      if ((size_t)real_datalen < sizeof(real_data))
+      if ((size_t)real_datalen < _PR_SC_MAX_BUFFER)
         real_data[real_datalen] = '\0';
 
       real_oidlen  = strlen(real_data) + 1;
