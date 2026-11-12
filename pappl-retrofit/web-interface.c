@@ -1454,27 +1454,29 @@ _prSystemWebAddPPD(
   if (cupsArrayGetCount(rejected_report))
   {
     papplClientHTMLPrintf(client,
-			"              <tr><div class=\"col-12\"><div class=\"log\" style = \"height: 200px\"><pre>");
+			"              <tr><td colspan=\"3\"><div class=\"log\" style=\"height: 200px\"><pre>");
     for (i = 0; i < cupsArrayGetCount(rejected_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
 			     "              Upload&nbsp;failed:%s\n" :
 			     "              %s\n"),
 			    (char *)cupsArrayGetElement(rejected_report, i));
+    papplClientHTMLPuts(client,
+			"              </pre></div></td></tr>\n");
   }
   if (cupsArrayGetCount(accepted_report))
   {
     papplClientHTMLPrintf(client,
-			"              <tr><div class=\"col-12\"><div class=\"log\" style = \"height: 200px\"><pre>");
+			"              <tr><td colspan=\"3\"><div class=\"log\" style=\"height: 200px\"><pre>");
     for (i = 0; i < cupsArrayGetCount(accepted_report); i ++)
       papplClientHTMLPrintf(client,
 			    (i == 0 ?
 			     "              Uploaded:%s\n" :
 			     "              %s\n"),
 			    (char *)cupsArrayGetElement(accepted_report, i));
+    papplClientHTMLPuts(client,
+			"              </pre></div></td></tr>\n");
   }
-  papplClientHTMLPrintf(client,
-			"              </pre></div></div></tr>");
   papplClientHTMLPuts(client,
 		      "              <tr><th><label for=\"ppdfiles\">PPD&nbsp;file(s):</label></th><td><input type=\"file\" name=\"ppdfiles\" accept=\".ppd,.PPD,.ppd.gz,.PPD.gz\" required multiple></td><td>(Only individual PPD files, no PPD-generating executables)</td></tr>\n");
   papplClientHTMLPuts(client,
