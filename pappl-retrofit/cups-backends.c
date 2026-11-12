@@ -250,7 +250,7 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	        *uri,		// Device URI
 	        *info,		// Device info
 	        *device_id;	// 1284 device ID
-  size_t        bytes;          // Bytes read from pipe
+  ssize_t       bytes;          // Bytes read from pipe
   int           nullfd;         // File descriptor for /dev/null
   pr_backend_device_t *device;  // New device
 
