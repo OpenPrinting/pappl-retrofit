@@ -1869,6 +1869,8 @@ _prRasterPrepareJob(
   job_data->device_fd = cfFilterPOpen(cfFilterChain, -1, nullfd,
 				      0, job_data->filter_data, job_data->chain,
 				      &(job_data->device_pid));
+  if (nullfd >= 0)
+    close(nullfd);
 
   if (job_data->device_fd < 0)
   {

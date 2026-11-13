@@ -1286,9 +1286,12 @@ _prDriverSetup(
       }
     }
 
-    if ((ppd = ppdOpen2(ppdCollectionGetPPD(ppd_path->ppd_path, NULL,
-					    (cf_logfunc_t)papplLog,
-					    system))) == NULL)
+    tempfp = ppdCollectionGetPPD(ppd_path->ppd_path, NULL,
+				 (cf_logfunc_t)papplLog,
+				 system);
+    ppd = ppdOpen2(tempfp);
+    cupsFileClose(tempfp);
+    if (ppd == NULL)
     {
       ppd_status_t	err;		// Last error in file
       int		line;		// Line number in file
@@ -1425,8 +1428,11 @@ _prDriverSetup(
 	extension->temp_ppd_name = strdup(tempfile);
       }
       else
+      {
+	cupsFileClose(tempfp);
 	papplLog(system, PAPPL_LOGLEVEL_WARN,
 		 "Unable to create physical PPD file for the CUPS filter, filter may not work correctly.");
+      }
     }
     else
       papplLog(system, PAPPL_LOGLEVEL_DEBUG,
