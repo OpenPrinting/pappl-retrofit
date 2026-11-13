@@ -251,6 +251,7 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	        *info,		// Device info
 	        *device_id;	// 1284 device ID
   size_t        bytes;          // Bytes read from pipe
+  int           nullfd;         // File descriptor for /dev/null
   pr_backend_device_t *device;  // New device
 
   // Common arguments amd parameters for calling the CUPS backends in
@@ -402,10 +403,14 @@ _prCUPSDevList(pappl_device_cb_t cb,
 	backends[num_backends + 1].name = NULL;
 
       // Launch the backend with pipe providing backend's stdout
-      if ((backend->pipe = cfFilterPOpen(ppdFilterExternalCUPS,
-					 open("/dev/null", O_RDWR), -1,
-					 0, &filter_data, &backend_params,
-					 &(backend->pid))) == 0)
+      nullfd = open("/dev/null", O_RDWR);
+      backend->pipe = cfFilterPOpen(ppdFilterExternalCUPS,
+				    nullfd, -1,
+				    0, &filter_data, &backend_params,
+				    &(backend->pid));
+      if (nullfd >= 0)
+	close(nullfd);
+      if (backend->pipe == 0)
       {
 	_prCUPSDevLog(&devlog_data, PAPPL_LOGLEVEL_ERROR,
 		      "Unable to execute '%s' - %s\n",
@@ -754,6 +759,7 @@ _prCUPSDevLaunchBackend(pappl_device_t *device)
   pr_cups_device_data_t *device_data =
     (pr_cups_device_data_t *)papplDeviceGetData(device);
   char buf[2048];
+  int nullfd;
 
 
   if (!device_data)
@@ -828,11 +834,15 @@ _prCUPSDevLaunchBackend(pappl_device_t *device)
   device_data->sidefd = device_data->filter_data->side_pipe[0];
 
   // Launch the backend with pipe providing backend's stdin
-  if ((device_data->inputfd =
-       cfFilterPOpen(ppdFilterExternalCUPS,
-		     -1, open("/dev/null", O_RDWR),
-		     0, device_data->filter_data, &device_data->backend_params,
-		     &device_data->backend_pid)) == 0)
+  nullfd = open("/dev/null", O_RDWR);
+  device_data->inputfd =
+    cfFilterPOpen(ppdFilterExternalCUPS,
+		  -1, nullfd,
+		  0, device_data->filter_data, &device_data->backend_params,
+		  &device_data->backend_pid);
+  if (nullfd >= 0)
+    close(nullfd);
+  if (device_data->inputfd == 0)
   {
     papplDeviceError(device,
 		     "Unable to execute '%s' - %s\n",
