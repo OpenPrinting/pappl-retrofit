@@ -156,7 +156,7 @@ _prGetFileContentType(pappl_job_t *job)
              *found;
   char       command[512],
              line[256];
-  char       *p, *q;
+  char       *p, *q, *s;
   int        creatorline_found = 0;
   pappl_content_t content_type;
 
@@ -327,7 +327,8 @@ _prGetFileContentType(pappl_job_t *job)
 	    {
 	      for (k = 0; creating_apps[j][k]; k ++)
 	      {
-		while ((q = strcasestr(p, creating_apps[j][k])))
+		for (s = p; (q = strcasestr(s, creating_apps[j][k])) != NULL;
+		     s = q + 1)
 		  if (!isalnum(*(q - 1)) &&
 		      !isalnum(*(q + strlen(creating_apps[j][k]))))
 		  {
@@ -337,8 +338,6 @@ _prGetFileContentType(pappl_job_t *job)
 				"  Found: %s", creating_apps[j][k]);
 		    break;
 		  }
-		  else
-		    p = q;
 		if (found)
 		  break;
 	      }
