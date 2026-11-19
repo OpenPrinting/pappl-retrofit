@@ -4849,8 +4849,12 @@ _prSystemCB(int            num_options,	// I - Number of options
     return (NULL);
 
   global_data->system = system;
-  
-  papplSystemAddListeners(system, listenhost);
+
+  // Honor "private-server", as PAPPL does. Do not create any TCP
+  // listener at all, leaving only the domain socket PAPPL's mainloop
+  // creates.
+  if (!cupsGetOption("private-server", num_options, options))
+    papplSystemAddListeners(system, listenhost);
   papplSystemSetHostName(system, hostname);
 
   if ((val = cupsGetOption("admin-group", num_options, options)) != NULL)
