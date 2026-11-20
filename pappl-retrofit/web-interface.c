@@ -946,8 +946,18 @@ _prSystemWebAddPPD(
 	      break;
 	    }
 
-	    for (bend = bufinptr - blen - 2,
-		   ptr = memchr(bufreadptr, '\r', (size_t)(bend - bufreadptr));
+	    bend = bufinptr - blen - 2;
+	    if (bend <= bufreadptr)
+	    {
+	      // Not enough data buffered yet to search for the boundary
+	      // while still keeping its length in reserve near the end
+	      // (it may straddle the next read). Searching now would make
+	      // "bend - bufreadptr" negative, which wraps to a huge size_t
+	      // and runs memchr() far out of bounds. Wait for more data.
+	      break;
+	    }
+
+	    for (ptr = memchr(bufreadptr, '\r', (size_t)(bend - bufreadptr));
 		 ptr;
 		 ptr = memchr(ptr + 1, '\r', (size_t)(bend - ptr - 1)))
 	    {
