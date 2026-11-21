@@ -63,7 +63,7 @@ legacy_autoadd(const char *device_info,	// I - Device name (unused)
     return (NULL);
 
   // Look at the COMMAND SET (CMD) key for the list of printer languages...
-  if (1 || prSupportsPostScript(device_id))
+  if (prSupportsPostScript(device_id))
     // Printer supports our PDL, so find the best-matching PPD file
     ret = prBestMatchingPPD(device_id, global_data);
   else
