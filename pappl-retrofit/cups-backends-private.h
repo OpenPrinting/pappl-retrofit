@@ -126,8 +126,7 @@ extern bool   _prCUPSDevList(pappl_device_cb_t cb, void *data,
 			     pappl_deverror_cb_t err_cb, void *err_data);
 extern bool   _prCUPSDevLaunchBackend(pappl_device_t *device);
 extern void   _prCUPSDevStopBackend(pappl_device_t *device);
-extern bool   _prCUPSDevOpen(pappl_device_t *device, const char *device_uri,
-			     const char *name);
+extern bool   _prCUPSDevOpen(pappl_device_t *device, const char *device_uri);
 extern void   _prCUPSDevClose(pappl_device_t *device);
 extern ssize_t _prCUPSDevRead(pappl_device_t *device, void *buffer,
 			      size_t bytes);

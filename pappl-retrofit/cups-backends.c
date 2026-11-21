@@ -954,8 +954,7 @@ _prCUPSDevStopBackend(pappl_device_t *device)
 
 bool
 _prCUPSDevOpen(pappl_device_t *device,
-	       const char *device_uri,
-	       const char *name)
+	       const char *device_uri)
 {
   pr_cups_device_data_t *device_data;
 
