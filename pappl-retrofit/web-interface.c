@@ -126,6 +126,8 @@ _prPrinterWebDeviceConfig(
 	  if (opt->name[1] == '\t')
 	  {
 	    ptr1 = strdup(opt->name + 2);
+	    if (ptr1 == NULL)
+	      continue;
 	    if ((ptr2 = strchr(ptr1, '\t')) == NULL)
 	    {
 	      free(ptr1);

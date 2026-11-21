@@ -209,10 +209,19 @@ _prCUPSSigchldSigAction(int sig,		// I - Signal number (unused)
 //
 
 bool
+#ifdef PAPPL_API_VERSION_MAJOR // PAPPL 2.x: the device list callback gained a
+                                // leading device-type argument
+_prCUPSDevList(pappl_devtype_t types,
+	       pappl_device_cb_t cb,
+	       void *data,
+	       pappl_deverror_cb_t err_cb,
+	       void *err_data)
+#else // PAPPL 1.4.x
 _prCUPSDevList(pappl_device_cb_t cb,
 	       void *data,
 	       pappl_deverror_cb_t err_cb,
 	       void *err_data)
+#endif
 {
   pr_printer_app_global_data_t *global_data =
     (pr_printer_app_global_data_t *)_PRCUPSDeviceUserData;
@@ -253,6 +262,11 @@ _prCUPSDevList(pappl_device_cb_t cb,
   ssize_t       bytes;          // Bytes read from pipe
   int           nullfd;         // File descriptor for /dev/null
   pr_backend_device_t *device;  // New device
+
+#ifdef PAPPL_API_VERSION_MAJOR
+  (void)types; // The "cups" scheme always lists every backend regardless
+               // of the requested device type(s)
+#endif
 
   // Common arguments amd parameters for calling the CUPS backends in
   // discovery mode
@@ -953,11 +967,21 @@ _prCUPSDevStopBackend(pappl_device_t *device)
 
 
 bool
+#ifdef PAPPL_API_VERSION_MAJOR // PAPPL 2.x: open_cb's 3rd argument became the
+                                // job instead of a name string (unused here
+                                // either way)
 _prCUPSDevOpen(pappl_device_t *device,
 	       const char *device_uri,
-	       const char *name)
+	       pappl_job_t *job)
+#else // PAPPL 1.4.x
+_prCUPSDevOpen(pappl_device_t *device,
+	       const char *device_uri,
+	       const char *job)
+#endif
 {
   pr_cups_device_data_t *device_data;
+
+  (void)job; // Not used: the backend is only prepared here, not started
 
 
   if (papplDeviceGetData(device) != NULL)

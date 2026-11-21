@@ -194,8 +194,13 @@ extern void   _prSetup(pr_printer_app_global_data_t *global_data);
 extern bool   _prStatus(pappl_printer_t *printer);
 extern bool   _prUpdateStatus(pappl_printer_t *printer,
 			      pappl_device_t *device);
+#  ifdef PAPPL_API_VERSION_MAJOR // PAPPL 2.x uses size_t, PAPPL 1.4.x uses int
+extern pappl_system_t *_prSystemCB(size_t num_options, cups_option_t *options,
+				   void *data);
+#  else
 extern pappl_system_t *_prSystemCB(int num_options, cups_option_t *options,
 				   void *data);
+#  endif
 
 
 //
