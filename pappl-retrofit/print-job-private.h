@@ -87,7 +87,14 @@ extern void   _prASCII85(FILE *outputfp, const unsigned char *data, int length,
 extern pappl_content_t _prGetFileContentType(pappl_job_t *job);
 extern pr_job_data_t *_prCreateJobData(pappl_job_t *job,
 					 pappl_pr_options_t *job_options);
+#  ifdef PAPPL_API_VERSION_MAJOR // PAPPL 2.x: the MIME filter callback gained
+                                  // a document-number and an options argument
+extern bool   _prFilter(pappl_job_t *job, int doc_number,
+			pappl_pr_options_t *options, pappl_device_t *device,
+			void *data);
+#  else // PAPPL 1.4.x
 extern bool   _prFilter(pappl_job_t *job, pappl_device_t *device, void *data);
+#  endif
 extern void   _prFreeJobData(pr_job_data_t *job_data);
 extern int    _prJobIsCanceled(void *data);
 extern void   _prJobLog(void *data, cf_loglevel_t level,

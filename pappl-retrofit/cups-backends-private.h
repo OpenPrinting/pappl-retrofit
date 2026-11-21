@@ -122,12 +122,25 @@ extern int    _prCUPSCompareDevices(pr_backend_device_t *d0,
 				    pr_backend_device_t *d1);
 extern void   _prCUPSSigchldSigAction(int sig, siginfo_t *info,
 				      void *ucontext);
+#  ifdef PAPPL_API_VERSION_MAJOR // PAPPL 2.x: the device list callback gained
+                                  // a leading device-type argument
+extern bool   _prCUPSDevList(pappl_devtype_t types, pappl_device_cb_t cb,
+			     void *data, pappl_deverror_cb_t err_cb,
+			     void *err_data);
+#  else // PAPPL 1.4.x
 extern bool   _prCUPSDevList(pappl_device_cb_t cb, void *data,
 			     pappl_deverror_cb_t err_cb, void *err_data);
+#  endif
 extern bool   _prCUPSDevLaunchBackend(pappl_device_t *device);
 extern void   _prCUPSDevStopBackend(pappl_device_t *device);
+#  ifdef PAPPL_API_VERSION_MAJOR // PAPPL 2.x: open_cb's 3rd argument became
+                                  // the job instead of a name string
+extern bool   _prCUPSDevOpen(pappl_device_t *device, const char *device_uri,
+			     pappl_job_t *job);
+#  else // PAPPL 1.4.x
 extern bool   _prCUPSDevOpen(pappl_device_t *device, const char *device_uri,
 			     const char *name);
+#  endif
 extern void   _prCUPSDevClose(pappl_device_t *device);
 extern ssize_t _prCUPSDevRead(pappl_device_t *device, void *buffer,
 			      size_t bytes);

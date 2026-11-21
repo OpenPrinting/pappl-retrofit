@@ -3986,6 +3986,11 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
       drivers[i].extension = strdup(" generic");
       i ++;
       ppd_path = (pr_ppd_path_t *)calloc(1, sizeof(pr_ppd_path_t));
+      if (!ppd_path)
+      {
+	papplLog(system, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+	return;
+      }
       ppd_path->driver_name = strdup("generic");
       ppd_path->ppd_path = strdup(generic_ppd);
       cupsArrayAdd(ppd_paths, ppd_path);
@@ -4379,6 +4384,11 @@ _prSetup(pr_printer_app_global_data_t *global_data)  // I - Global data
       if (ptr2)
 	*ptr2 = '\0';
       col = (ppd_collection_t *)calloc(1, sizeof(ppd_collection_t));
+      if (!col)
+      {
+	papplLog(system, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+	return;
+      }
       col->name = NULL;
       col->path = ptr1;
       cupsArrayAdd(global_data->ppd_collections, col);
@@ -4613,9 +4623,15 @@ prTestPage(
 //
 
 pappl_system_t *			// O - New system object
+#ifdef PAPPL_API_VERSION_MAJOR // PAPPL 2.x uses size_t, PAPPL 1.4.x uses int
+_prSystemCB(size_t         num_options,	// I - Number of options
+	     cups_option_t *options,	// I - Options
+	     void          *data)	// I - Callback data
+#else
 _prSystemCB(int            num_options,	// I - Number of options
 	     cups_option_t *options,	// I - Options
 	     void          *data)	// I - Callback data
+#endif
 {
   int                   i;
   pr_printer_app_global_data_t *global_data =
