@@ -427,6 +427,11 @@ _prCreateJobData(pappl_job_t *job,
   //
 
   job_data = (pr_job_data_t *)calloc(1, sizeof(pr_job_data_t));
+  if (!job_data)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+    return (NULL);
+  }
 
   papplPrinterGetDriverData(printer, &driver_data);
   extension = (pr_driver_extension_t *)driver_data.extension;
@@ -891,6 +896,12 @@ _prCreateJobData(pappl_job_t *job,
   // Prepare job data to be supplied to filter functions/CUPS filters
   // called during job execution
   filter_data = (cf_filter_data_t *)calloc(1, sizeof(cf_filter_data_t));
+  if (!filter_data)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+    free(job_data);
+    return (NULL);
+  }
   job_data->filter_data = filter_data;
   filter_data->printer = strdup(papplPrinterGetName(printer));
   filter_data->job_id = papplJobGetID(job);
@@ -917,6 +928,12 @@ _prCreateJobData(pappl_job_t *job,
   // Attach PPD file data as "libppd" filter data extension
   filter_data_ext =
     (ppd_filter_data_ext_t *)calloc(1, sizeof(ppd_filter_data_ext_t));
+  if (!filter_data_ext)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+    free(job_data);
+    return (NULL);
+  }
   filter_data_ext->ppdfile = job_data->temp_ppd_name; // PPD file name
   filter_data_ext->ppd = job_data->ppd;               // PPD data
   cfFilterDataAddExt(filter_data, PPD_FILTER_DATA_EXT, filter_data_ext);
@@ -1115,10 +1132,17 @@ _prFilter(
   {
     ppd_filter_params =
       (cf_filter_external_t *)calloc(1, sizeof(cf_filter_external_t));
-    ppd_filter_params->filter = filter_path;
     job_data->ppd_filter =
       (cf_filter_filter_in_chain_t *)calloc(1,
 			                sizeof(cf_filter_filter_in_chain_t));
+    if (!ppd_filter_params || !job_data->ppd_filter)
+    {
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+      free(ppd_filter_params);
+      _prFreeJobData(job_data);
+      return (false);
+    }
+    ppd_filter_params->filter = filter_path;
     job_data->ppd_filter->function = ppdFilterExternalCUPS;
     job_data->ppd_filter->parameters = ppd_filter_params;
     job_data->ppd_filter->name = strrchr(filter_path, '/') + 1;
@@ -1133,6 +1157,13 @@ _prFilter(
   print_params =
     (pr_print_filter_function_data_t *)
     calloc(1, sizeof(pr_print_filter_function_data_t));
+  if (!job_data->print || !print_params)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+    free(print_params);
+    _prFreeJobData(job_data);
+    return (false);
+  }
   print_params->device = device;
   print_params->device_uri = job_data->device_uri;
   print_params->job = job;
@@ -1835,10 +1866,17 @@ _prRasterPrepareJob(
 		job_data->stream_filter);
     ppd_filter_params =
       (cf_filter_external_t *)calloc(1, sizeof(cf_filter_external_t));
-    ppd_filter_params->filter = job_data->stream_filter;
     job_data->ppd_filter =
       (cf_filter_filter_in_chain_t *)calloc(1,
 					  sizeof(cf_filter_filter_in_chain_t));
+    if (!ppd_filter_params || !job_data->ppd_filter)
+    {
+      papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+      free(ppd_filter_params);
+      _prFreeJobData(job_data);
+      return (NULL);
+    }
+    ppd_filter_params->filter = job_data->stream_filter;
     job_data->ppd_filter->function = ppdFilterExternalCUPS;
     job_data->ppd_filter->parameters = ppd_filter_params;
     job_data->ppd_filter->name = strrchr(job_data->stream_filter, '/') + 1;
@@ -1850,13 +1888,20 @@ _prRasterPrepareJob(
   print_params =
     (pr_print_filter_function_data_t *)
     calloc(1, sizeof(pr_print_filter_function_data_t));
+  job_data->print =
+    (cf_filter_filter_in_chain_t *)calloc(1,
+					  sizeof(cf_filter_filter_in_chain_t));
+  if (!print_params || !job_data->print)
+  {
+    papplLogJob(job, PAPPL_LOGLEVEL_ERROR, "Unable to allocate memory");
+    free(print_params);
+    _prFreeJobData(job_data);
+    return (NULL);
+  }
   print_params->device = device;
   print_params->device_uri = job_data->device_uri;
   print_params->job = job;
   print_params->global_data = job_data->global_data;
-  job_data->print =
-    (cf_filter_filter_in_chain_t *)calloc(1,
-					  sizeof(cf_filter_filter_in_chain_t));
   job_data->print->function = _prPrintFilterFunction;
   job_data->print->parameters = print_params;
   job_data->print->name = "Backend";
