@@ -52,6 +52,16 @@
 #    define papplJobGetDocumentFilename(job, doc)  papplJobGetFilename(job)
 #    define papplJobGetDocumentFormat(job, doc)    papplJobGetFormat(job)
 
+//   Some PAPPL API functions' parameters use size_t for option counts in
+//   PAPPL 2.x while PAPPL 1.4.x uses int.  We use this type in such a case,
+//   mirroring cups_len_t in libcups2-private.h.
+
+#    define pappl_len_t                 int
+
+#  else
+
+#    define pappl_len_t                 size_t
+
 #  endif // HAVE_PAPPL1
 
 #endif // !_PAPPL1_PRIVATE_H_

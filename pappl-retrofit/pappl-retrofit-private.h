@@ -27,6 +27,7 @@
 #include <pappl-retrofit/cups-backends-private.h>
 #include <pappl-retrofit/cups-side-back-channel-private.h>
 #include <pappl-retrofit/web-interface-private.h>
+#include <pappl-retrofit/pappl1-private.h>
 #include <pappl/pappl.h>
 #include <ppd/ppd.h>
 #include <cupsfilters/ieee1284.h>
@@ -194,8 +195,8 @@ extern void   _prSetup(pr_printer_app_global_data_t *global_data);
 extern bool   _prStatus(pappl_printer_t *printer);
 extern bool   _prUpdateStatus(pappl_printer_t *printer,
 			      pappl_device_t *device);
-extern pappl_system_t *_prSystemCB(int num_options, cups_option_t *options,
-				   void *data);
+extern pappl_system_t *_prSystemCB(pappl_len_t num_options,
+				   cups_option_t *options, void *data);
 
 
 //

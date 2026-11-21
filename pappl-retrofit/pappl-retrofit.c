@@ -1157,6 +1157,31 @@ add_strings_line(
 //                      "Device Settings" web interface page.
 //
 
+#  ifndef HAVE_PAPPL1
+//
+// '_prPrintFileCB()' - Adapt prPrintFile() to PAPPL 2.x's printfile_cb
+//                      signature, which inserts a document-number argument
+//                      prPrintFile() does not use.  prPrintFile() is a
+//                      pappl-retrofit public API function and must keep its
+//                      own signature unchanged across PAPPL versions, so
+//                      this small trampoline carries the version difference
+//                      instead of a bare cast (which would misalign the
+//                      following arguments, not just drop the extra one).
+//
+
+static bool
+_prPrintFileCB(pappl_job_t        *job,
+	       int                doc_number,
+	       pappl_pr_options_t *options,
+	       pappl_device_t     *device)
+{
+  (void)doc_number;
+
+  return (prPrintFile(job, options, device));
+}
+#  endif // !HAVE_PAPPL1
+
+
 bool					   // O - `true` on success, `false`
                                            //     on failure
 _prDriverSetup(
@@ -1416,7 +1441,11 @@ _prDriverSetup(
     driver_data->identify_default   = PAPPL_IDENTIFY_ACTIONS_SOUND;
     driver_data->identify_supported = PAPPL_IDENTIFY_ACTIONS_DISPLAY |
                                       PAPPL_IDENTIFY_ACTIONS_SOUND;
+#  ifdef HAVE_PAPPL1
     driver_data->printfile_cb       = prPrintFile;
+#  else
+    driver_data->printfile_cb       = _prPrintFileCB;
+#  endif
     driver_data->rendjob_cb         = NULL;
     driver_data->rendpage_cb        = NULL;
     driver_data->rstartjob_cb       = NULL;
@@ -4338,12 +4367,61 @@ _prSetupDriverList(pr_printer_app_global_data_t *global_data)
 }
 
 
+#  ifndef HAVE_PAPPL1
+//
+// '_prFilterCB()' - Adapt _prFilter() to PAPPL 2.x's MIME filter callback
+//                   signature, which inserts a document-number and an
+//                   options argument before the device argument that
+//                   _prFilter() does not use.  A bare cast here would
+//                   misalign device/data with the wrong arguments, not
+//                   just drop the extra ones, so this trampoline carries
+//                   the version difference instead.
+//
+
+static bool
+_prFilterCB(pappl_job_t         *job,
+	    int                 doc_number,
+	    pappl_pr_options_t  *options,
+	    pappl_device_t      *device,
+	    void                *data)
+{
+  (void)doc_number;
+  (void)options;
+
+  return (_prFilter(job, device, data));
+}
+
+
+//
+// '_prCUPSDevListCB()' - Adapt _prCUPSDevList() to PAPPL 2.x's device-list
+//                        callback signature, which inserts a leading
+//                        device-type argument _prCUPSDevList() does not
+//                        use.  A bare cast would shift every following
+//                        argument into the wrong parameter, not just drop
+//                        the extra one, so this trampoline carries the
+//                        version difference instead.
+//
+
+static bool
+_prCUPSDevListCB(pappl_devtype_t      types,
+		 pappl_device_cb_t    cb,
+		 void                 *data,
+		 pappl_deverror_cb_t  err_cb,
+		 void                 *err_data)
+{
+  (void)types;
+
+  return (_prCUPSDevList(cb, data, err_cb, err_data));
+}
+#  endif // !HAVE_PAPPL1
+
+
 //
 // '_prSetup()' - Setup CUPS driver(s).
 //
 
 void
-_prSetup(pr_printer_app_global_data_t *global_data)  // I - Global data 
+_prSetup(pr_printer_app_global_data_t *global_data)  // I - Global data
 {
   pappl_system_t   *system = global_data->system;
   char             *ptr1, *ptr2;
@@ -4424,7 +4502,12 @@ _prSetup(pr_printer_app_global_data_t *global_data)  // I - Global data
     papplSystemAddMIMEFilter(system,
 			     conversion->srctype,
 			     "application/vnd.printer-specific",
-			     _prFilter, global_data);
+#  ifdef HAVE_PAPPL1
+			     _prFilter,
+#  else
+			     _prFilterCB,
+#  endif
+			     global_data);
 
   //
   // Add "cups" scheme to use CUPS backends for devices
@@ -4456,8 +4539,19 @@ _prSetup(pr_printer_app_global_data_t *global_data)  // I - Global data
     // URIs will be "cups:" followed by the original CUPS URI
     papplLog(system, PAPPL_LOGLEVEL_DEBUG,
 	     "Adding \"cups\" device scheme for CUPS backends");
-    papplDeviceAddScheme("cups", PAPPL_DEVTYPE_ALL, _prCUPSDevList,
-			 _prCUPSDevOpen, _prCUPSDevClose, _prCUPSDevRead,
+    // _prCUPSDevOpen() does not declare its unused 3rd argument at all
+    // (its position/type is the only thing PAPPL 1.x/2.x disagree on), so a
+    // bare cast at this call site is safe for it; _prCUPSDevList() needs
+    // the _prCUPSDevListCB() trampoline defined above instead (PAPPL 2.x
+    // inserts its extra argument leading, not trailing)
+    papplDeviceAddScheme("cups", PAPPL_DEVTYPE_ALL,
+#  ifdef HAVE_PAPPL1
+			 _prCUPSDevList,
+#  else
+			 _prCUPSDevListCB,
+#  endif
+			 (pappl_devopen_cb_t)_prCUPSDevOpen,
+			 _prCUPSDevClose, _prCUPSDevRead,
 			 _prCUPSDevWrite, _prCUPSDevStatus,
 			 _prCUPSDevID);
   }
@@ -4613,7 +4707,7 @@ prTestPage(
 //
 
 pappl_system_t *			// O - New system object
-_prSystemCB(int            num_options,	// I - Number of options
+_prSystemCB(pappl_len_t    num_options,	// I - Number of options
 	     cups_option_t *options,	// I - Options
 	     void          *data)	// I - Callback data
 {
