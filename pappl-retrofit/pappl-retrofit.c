@@ -1113,6 +1113,7 @@ add_strings_line(
     const char *ui_string) // Human-readable string or translation
 {
   char buf[1024];
+  char *new_data;
   size_t append_pos, append_chars;
 
   if (!strings_data || !key || !ui_string)
@@ -1123,9 +1124,16 @@ add_strings_line(
   append_pos = *strings_data ? strlen(*strings_data) : 0;
   append_chars = strlen(buf);
 
-  *strings_data = realloc(*strings_data,
-			  (append_pos + append_chars + 1) *
-			  sizeof(char));
+  new_data = realloc(*strings_data,
+		      (append_pos + append_chars + 1) *
+		      sizeof(char));
+  if (!new_data)
+  {
+    fprintf(stderr, "ps-printer-app: Unable to allocate memory for "
+	    "translation string, dropping entry for \"%s\".\n", key);
+    return;
+  }
+  *strings_data = new_data;
   strcpy(*strings_data + append_pos, buf);
 }
 
