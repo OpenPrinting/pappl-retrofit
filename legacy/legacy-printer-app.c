@@ -62,14 +62,12 @@ legacy_autoadd(const char *device_info,	// I - Device name (unused)
   if (device_id == NULL || global_data == NULL)
     return (NULL);
 
-  // Look at the COMMAND SET (CMD) key for the list of printer languages...
-  if (prSupportsPostScript(device_id))
-    // Printer supports our PDL, so find the best-matching PPD file
-    ret = prBestMatchingPPD(device_id, global_data);
-  else
-    // Printer does not support our PDL, it is not supported by this
-    // Printer Application
-    ret = NULL;
+  // The Legacy Printer Application is not limited to PostScript printers:
+  // it works with any classic CUPS driver (a PPD plus a filter executable,
+  // and sometimes a backend), so let prBestMatchingPPD() decide purely by
+  // make and model, independent of which page description language the
+  // device reports.
+  ret = prBestMatchingPPD(device_id, global_data);
 
   return (ret);
 }
