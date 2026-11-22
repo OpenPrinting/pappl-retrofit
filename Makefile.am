@@ -75,11 +75,13 @@ EXTRA_DIST += \
 check_PROGRAMS = \
 	test_backend_parse \
 	test_ascii85 \
-	test_devid_match
+	test_devid_match \
+	test_public_api_abi
 TESTS = \
 	test_backend_parse \
 	test_ascii85 \
 	test_devid_match \
+	test_public_api_abi \
 	test_ppd_path.sh \
 	test_installable_form.sh
 EXTRA_DIST += \
@@ -124,6 +126,21 @@ test_devid_match_LDADD = \
 	$(PPD_LIBS) \
 	$(PAPPL_LIBS)
 test_devid_match_CFLAGS = \
+	-I$(srcdir) \
+	-I$(srcdir)/pappl-retrofit/ \
+	$(CUPS_CFLAGS) \
+	$(CUPSFILTERS_CFLAGS) \
+	$(PPD_CFLAGS) \
+	$(PAPPL_CFLAGS)
+
+test_public_api_abi_SOURCES = pappl-retrofit/test_public_api_abi.c
+test_public_api_abi_LDADD = \
+	libpappl-retrofit.la \
+	$(CUPS_LIBS) \
+	$(CUPSFILTERS_LIBS) \
+	$(PPD_LIBS) \
+	$(PAPPL_LIBS)
+test_public_api_abi_CFLAGS = \
 	-I$(srcdir) \
 	-I$(srcdir)/pappl-retrofit/ \
 	$(CUPS_CFLAGS) \
