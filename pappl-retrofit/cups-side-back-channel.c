@@ -449,6 +449,7 @@ _prSideChannelSNMPGet(
   pr_sc_status_t	status;		// Status of command
   pr_sc_command_t	rcommand;	// Response command
   char			*real_data;	// Real data buffer for response
+  char			*real_nul;	// Position of the NUL ending the OID
   int			real_datalen,	// Real length of data buffer
 			real_oidlen;	// Length of returned OID string
 
@@ -492,7 +493,13 @@ _prSideChannelSNMPGet(
     // Parse the response of the form "oid\0value"...
     //
 
-    real_oidlen  = (int)strlen(real_data) + 1;
+    if ((real_nul = memchr(real_data, '\0', (size_t)real_datalen)) == NULL)
+    {
+      free(real_data);
+      return (_PR_SC_STATUS_BAD_MESSAGE);
+    }
+
+    real_oidlen  = (int)(real_nul - real_data) + 1;
     real_datalen -= real_oidlen;
 
     if ((real_datalen + 1) > *datalen)
@@ -552,6 +559,7 @@ _prSideChannelSNMPWalk(
   pr_sc_status_t	status;		// Status of command
   pr_sc_command_t	rcommand;	// Response command
   char			*real_data;	// Real data buffer for response
+  char			*real_nul;	// Position of the NUL ending the OID
   int			real_datalen;	// Real length of data buffer
   size_t		real_oidlen,	// Length of returned OID string
 			oidlen;		// Length of first OID
@@ -621,10 +629,13 @@ _prSideChannelSNMPWalk(
         return (_PR_SC_STATUS_OK);
       }
 
-      if ((size_t)real_datalen < _PR_SC_MAX_BUFFER)
-        real_data[real_datalen] = '\0';
+      if ((real_nul = memchr(real_data, '\0', (size_t)real_datalen)) == NULL)
+      {
+	free(real_data);
+	return (_PR_SC_STATUS_BAD_MESSAGE);
+      }
 
-      real_oidlen  = strlen(real_data) + 1;
+      real_oidlen  = (size_t)(real_nul - real_data) + 1;
       real_datalen -= (int)real_oidlen;
 
       //
