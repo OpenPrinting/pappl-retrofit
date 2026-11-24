@@ -1299,6 +1299,7 @@ _prSystemWebAddPPD(
 	      if ((ptr = strstr(line + 20, " name=\"")) != NULL)
 	      {
 		strncpy(name, ptr + 7, sizeof(name) - 1);
+		name[sizeof(name) - 1] = '\0';
 
 		if ((ptr = strchr(name, '\"')) != NULL)
 		  *ptr = '\0';
@@ -1307,6 +1308,7 @@ _prSystemWebAddPPD(
 	      if ((ptr = strstr(line + 20, " filename=\"")) != NULL)
 	      {
 		strncpy(filename, ptr + 11, sizeof(filename) - 1);
+		filename[sizeof(filename) - 1] = '\0';
 
 		if ((ptr = strchr(filename, '\"')) != NULL)
 		  *ptr = '\0';
