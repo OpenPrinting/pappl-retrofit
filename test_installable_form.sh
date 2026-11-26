@@ -136,6 +136,30 @@ else
   fail=1
 fi
 
+SAMPLE="$BASE/sample.ps"
+printf '%%!PS-Adobe-3.0\n%%%%Pages: 1\n%%%%Page: 1 1\nshowpage\n%%%%EOF\n' > "$SAMPLE"
+if "$APP" submit -d test "$SAMPLE" >"$BASE/submit.log" 2>&1; then
+  i=0
+  while [ "$i" -lt 25 ]; do
+    if ! "$APP" jobs -d test 2>/dev/null | grep -Eiq 'pending|processing|held'; then
+      break
+    fi
+    i=$((i + 1))
+    sleep 0.2
+  done
+  curl -sS -o "$BASE/page.html" "$URL"
+  if grep -F "$(printf 'name="\t\tDuplexer\tTrue" checked')" "$BASE/page.html" >/dev/null; then
+    echo "PASS Duplexer stayed checked across a job"
+  else
+    echo "FAIL Duplexer was reset to the PPD default after a job (issue #18)"
+    fail=1
+  fi
+else
+  echo "FAIL could not submit a job to the test printer" >&2
+  cat "$BASE/submit.log" >&2 || true
+  fail=1
+fi
+
 code=$(post malformed '%09%09Duplexer=on')
 if [ "$code" = 200 ] && kill -0 "$SRV" 2>/dev/null; then
   echo "PASS server answered a check box field with no choice"
