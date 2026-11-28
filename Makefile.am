@@ -260,9 +260,9 @@ uninstall-hook:
 	-if [ -d $(CUPS_SERVERBIN) ]; then \
 	  $(RM) $(DESTDIR)$(legacy_printer_app_serverbin);\
 	else \
-	  rmdir $(DESTDIR)$(legacy_printer_app_serverbin);\
 	  rmdir $(DESTDIR)$(legacy_printer_app_serverbin)/filter;\
 	  rmdir $(DESTDIR)$(legacy_printer_app_serverbin)/backend;\
+	  rmdir $(DESTDIR)$(legacy_printer_app_serverbin);\
 	fi
 	-rmdir $(DESTDIR)$(includedir)/pappl-retrofit
 	-rmdir $(DESTDIR)$(docdir)
