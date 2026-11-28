@@ -448,6 +448,20 @@ _prCreateJobData(pappl_job_t *job,
   // Find the PPD (or filter) options corresponding to the job options
   //
 
+  // Installable accessory configuration ("Device Settings"): The PPD
+  // data is shared with the printer and its marked choices get reset
+  // to the PPD defaults for each job, here and by the libppd filter
+  // functions which mark the job's options on it. So add the
+  // configuration to the job's options to keep it in effect (and
+  // shown on the "Device Settings" page), and mark it right away for
+  // the installable-option conflict checks below
+  for (i = 0; i < extension->num_inst_options; i ++)
+    num_options = cupsAddOption(extension->inst_options[i].name,
+				extension->inst_options[i].value,
+				num_options, &(options));
+  ppdMarkOptions(job_data->ppd, extension->num_inst_options,
+		 extension->inst_options);
+
   // Job options without PPD equivalent
   //  - print-darkness
   //  - darkness-configured
